@@ -3,6 +3,8 @@ project:
   output-dir: _site
   # Le dépôt d'exercice, en archive téléchargeable : _site/indexeur.zip.
   post-render: python3 outils/archiver_depot.py
+  resources:
+    - images/*.png
   render:
     - "*.qmd"
     - "modules/**/*.qmd"
@@ -69,6 +71,8 @@ format:
     toc: true
     toc-title: "Sur cette page"
     code-copy: true
+    include-in-header:
+      - _includes/icones.html
     include-after-body:
       - _includes/theme.html
       - _includes/liens.html
