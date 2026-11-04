@@ -43,8 +43,8 @@
 
   <!-- Intégration -->
   <g fill="none" stroke="#52514e" stroke-width="1.5" marker-end="url(#fleche)">
-    <path d="M360 202 C360 236 150 236 150 204"/>
-    <path d="M590 202 C590 252 110 252 110 204"/>
+    <path d="M360 200 C360 236 150 236 150 201"/>
+    <path d="M590 200 C590 252 110 252 110 201"/>
   </g>
   <text x="360" y="268" text-anchor="middle" fill="#52514e" font-size="12">une branche à la fois, les tests après chaque intégration</text>
 

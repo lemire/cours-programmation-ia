@@ -31,14 +31,14 @@
     <path d="M140 135 L206 85"/>
     <path d="M140 155 L206 205"/>
     <path d="M142 145 L406 145"/>
-    <path d="M340 85 L408 132"/>
-    <path d="M340 66 C480 30 600 60 640 116"/>
+    <path d="M340 92 L408 132"/>
+    <path d="M340 58 C480 20 610 50 640 116"/>
     <path d="M522 145 L586 145"/>
   </g>
 
   <!-- Écart 1 : index importe recherche -->
-  <path d="M440 118 C420 100 380 92 344 90" fill="none" stroke="#e34948" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#fleche-rouge)"/>
-  <text x="430" y="104" fill="#e34948" font-size="12">✗ import qui remonte</text>
+  <path d="M465 118 L465 75 L344 75" fill="none" stroke="#e34948" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#fleche-rouge)"/>
+  <text x="473" y="100" fill="#e34948" font-size="12">✗ import qui remonte</text>
 
   <!-- Écart 2 : racinisation dans rechercher -->
   <rect x="210" y="16" width="130" height="24" rx="4" fill="#ffffff" stroke="#e34948" stroke-dasharray="4 3"/>

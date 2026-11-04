@@ -13,7 +13,7 @@
   <text x="280" y="30" text-anchor="middle" fill="#2a78d6" font-size="12">indépendantes : en parallèle possible</text>
 
   <g fill="#ffffff" stroke="#b9b8b2">
-    <rect x="20" y="70" width="130" height="56" rx="6" stroke-dasharray="3 3"/>
+    <rect x="20" y="117" width="130" height="56" rx="6" stroke-dasharray="3 3"/>
     <rect x="182" y="70" width="196" height="56" rx="6"/>
     <rect x="182" y="164" width="196" height="56" rx="6"/>
     <rect x="410" y="117" width="140" height="56" rx="6" stroke="#2a78d6" stroke-width="1.5"/>
@@ -21,14 +21,14 @@
   </g>
 
   <g fill="#0b0b0b">
-    <text x="85" y="94" text-anchor="middle">1. Exploration</text>
+    <text x="85" y="141" text-anchor="middle">1. Exploration</text>
     <text x="280" y="94" text-anchor="middle">2. Positions dans l'index</text>
     <text x="280" y="188" text-anchor="middle">3. Analyse de la requête</text>
     <text x="480" y="141" text-anchor="middle">4. Recherche</text>
     <text x="645" y="141" text-anchor="middle">5. Exemple</text>
   </g>
   <g fill="#52514e" font-size="12">
-    <text x="85" y="113" text-anchor="middle">aucune modification</text>
+    <text x="85" y="160" text-anchor="middle">aucune modification</text>
     <text x="280" y="113" text-anchor="middle">comportement inchangé</text>
     <text x="280" y="207" text-anchor="middle">fonction pure</text>
     <text x="480" y="160" text-anchor="middle">d'expression</text>
@@ -36,9 +36,10 @@
   </g>
 
   <g fill="none" stroke="#52514e" stroke-width="1.5" marker-end="url(#fleche)">
-    <path d="M152 98 L178 98"/>
-    <path d="M380 98 C396 98 394 135 406 138"/>
-    <path d="M380 192 C396 192 394 155 406 152"/>
+    <path d="M152 138 L178 104"/>
+    <path d="M152 152 L178 186"/>
+    <path d="M380 104 L406 136"/>
+    <path d="M380 186 L406 154"/>
     <path d="M552 145 L586 145"/>
   </g>
 

@@ -44,7 +44,7 @@
     <path d="M360 112 L360 191"/>
     <path d="M422 225 L575 225 L575 136"/>
   </g>
-  <path d="M180 257 C180 285 250 285 250 260" fill="none" stroke="#52514e" stroke-width="1.2" marker-end="url(#fleche)"/>
+  <path d="M185 256 C185 288 250 288 250 257" fill="none" stroke="#52514e" stroke-width="1.2" marker-end="url(#fleche)"/>
   <text x="260" y="285" fill="#52514e" font-size="12">rouge : on recommence</text>
 
   <text x="372" y="172" fill="#52514e" font-size="12">« Ne modifie pas les tests. »</text>
