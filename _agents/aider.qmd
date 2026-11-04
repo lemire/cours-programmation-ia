@@ -1,0 +1,279 @@
+## Aider {#sec-aider}
+
+Aider est un assistant de programmation en terminal, écrit en Python et
+publié sous licence Apache 2.0 par Aider AI LLC (projet lancé par Paul
+Gauthier). Il se présente comme un outil de programmation en binôme
+étroitement lié à Git : chaque modification qu'il fait est commitée
+automatiquement, avec un message généré. Aider se branche sur presque tous
+les fournisseurs de modèles (Anthropic, OpenAI, Google, DeepSeek,
+OpenRouter, etc.) ainsi que sur des modèles locaux par Ollama ou par toute
+API compatible OpenAI. Le logiciel est gratuit; on paie seulement le
+fournisseur de modèles, à l'usage. Aider est plus ancien et plus sobre que
+les agents décrits ailleurs dans cette page : le modèle ne lance aucune
+commande de lui-même, il propose des modifications de fichiers, qu'Aider
+applique, et des commandes, qu'Aider vous demande d'approuver. En
+novembre 2026, la dernière version publiée sur PyPI est la 0.86.2
+(février 2026), et le dépôt n'a pas reçu de contribution depuis mai 2026 :
+le rythme de développement a nettement ralenti.
+
+### Installer et lancer
+
+La documentation recommande d'installer Aider dans un environnement
+séparé. Avec uv, déjà utilisé dans le cours :
+
+```bash
+uv tool install --force --python python3.12 --with pip aider-chat@latest
+# ou bien, sans uv
+python -m pip install aider-install
+aider-install
+```
+
+Aider ne fonctionne qu'avec Python 3.10 à 3.12; uv installe au besoin un
+Python 3.12 distinct. Il n'y a pas de compte à ouvrir : on fournit une clé
+d'API par l'option `--api-key fournisseur=clé`, par une variable
+d'environnement (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, etc.) ou dans un
+fichier `.env` à la racine du dépôt. On lance Aider depuis la racine
+d'`indexeur` :
+
+```bash
+cd indexeur
+aider --model sonnet
+```
+
+`sonnet`, `opus`, `gemini` ou `deepseek` sont des alias; leur cible dépend
+de la version d'Aider installée, et `/models` permet de chercher un nom
+exact. Pour un modèle local avec Ollama :
+
+```bash
+ollama pull <modèle>
+OLLAMA_CONTEXT_LENGTH=8192 ollama serve      # dans un autre terminal
+export OLLAMA_API_BASE=http://127.0.0.1:11434
+aider --model ollama_chat/<modèle>
+```
+
+La documentation recommande le préfixe `ollama_chat/` plutôt
+qu'`ollama/`. Elle signale qu'Ollama tronque silencieusement le contexte
+qui dépasse sa fenêtre (2 000 jetons par défaut); Aider ajuste lui-même
+`num_ctx` à chaque requête pour éviter cette perte.
+
+Au premier lancement, Aider propose d'ajouter `.aider*` (et `.env` s'il
+existe) au `.gitignore`. Acceptez : ces fichiers contiennent l'historique
+des conversations.
+
+### Une première session sur indexeur
+
+Aider ne fouille pas le dépôt comme un agent. Il construit une carte du
+dépôt (les fichiers et leurs principales définitions) et ne modifie que les
+fichiers que vous avez ajoutés à la conversation. On choisit donc soi-même
+le contexte, à la ligne de commande ou avec `/add` (en écriture) et
+`/read-only` (en lecture seule) :
+
+```bash
+aider --read ARCHITECTURE.md \
+  src/indexeur/index.py src/indexeur/cli.py tests/test_index.py
+```
+
+Une bonne pratique documentée consiste à alterner entre le mode `ask`, qui
+discute sans rien modifier, et le mode `code` :
+
+```text
+ask> Comment ajouterais-tu une commande `indexeur termes DOSSIER` qui
+affiche les dix termes les plus fréquents du corpus? Le calcul doit aller
+dans une méthode `Index.termes_frequents(n)` testée dans tests/test_index.py,
+cli.py ne fait que l'affichage, et à fréquence égale on trie par ordre
+alphabétique. Ne modifie rien pour l'instant.
+```
+
+Après avoir lu le plan, `/code` (ou `/ok`, raccourci pour « vas-y »)
+déclenche les modifications. Schématiquement (illustration, pas une
+transcription) :
+
+```text
+Applied edit to src/indexeur/index.py
+Applied edit to tests/test_index.py
+Commit 3f2a9c1 feat: add termes_frequents and termes command
+uv run pytest -q
+Run shell command? (Y)es/(N)o/(D)on't ask again [Yes]:
+Tokens: 6.1k sent, 900 received. Cost: $0.03 message, $0.05 session.
+```
+
+Il n'y a pas d'approbation fichier par fichier : Aider applique les
+modifications, affiche le diff puis commite. Si le modèle veut modifier un
+fichier qui n'est pas dans la conversation, Aider vous demande d'abord de
+l'y ajouter. On relit ensuite avec `/diff` (les changements depuis le
+dernier message) ou `git show`, et on revient en arrière avec `/undo`, qui
+annule le dernier commit fait par Aider. `/test uv run pytest -q` lance les
+tests et, s'ils échouent, renvoie la sortie au modèle pour qu'il corrige.
+
+### Fichier d'instructions
+
+Aider n'a pas de fichier d'instructions chargé automatiquement : sa
+documentation ne mentionne ni `AGENTS.md` ni `CLAUDE.md`. Elle propose
+plutôt un fichier de conventions (par exemple `CONVENTIONS.md`) qu'on
+charge en lecture seule, avec `/read CONVENTIONS.md` ou
+`aider --read CONVENTIONS.md`. En lecture seule, le fichier n'est pas
+modifié et peut profiter de la mise en cache des invites. Pour qu'il soit
+toujours chargé, on l'indique dans la configuration. Rien n'empêche de
+réutiliser l'`AGENTS.md` de la semaine 12 (@sec-s12) :
+
+```yaml
+# .aider.conf.yml, à la racine du dépôt
+read: [AGENTS.md, ARCHITECTURE.md]
+```
+
+Il n'y a pas de hiérarchie par dossier : `.aider.conf.yml` est cherché dans
+le répertoire personnel, à la racine du dépôt Git, puis dans le répertoire
+courant, et le dernier chargé l'emporte. L'option `--config` charge un seul
+fichier, à l'exclusion des autres.
+
+### Permissions et bac à sable
+
+Les rubriques « autoriser, demander, interdire » de la semaine 11 (@sec-s11)
+ne s'appliquent pas telles quelles, parce qu'Aider ne donne pas d'outils au
+modèle. Le modèle peut seulement :
+
+- modifier les fichiers ajoutés à la conversation, sans approbation
+  individuelle, chaque modification étant commitée;
+- demander l'ajout d'autres fichiers, ce qu'Aider soumet à votre accord;
+- suggérer des commandes shell, qu'Aider vous soumet une à une
+  (« Run shell command? »). On peut aussi désactiver complètement ces
+  suggestions.
+
+Il n'y a ni liste d'autorisation ni liste d'interdiction de commandes. Ce
+qui s'en rapproche le plus, pour `indexeur`, est une configuration
+versionnée qui fixe les tests, retire les commits automatiques et coupe les
+suggestions de commandes :
+
+```yaml
+# .aider.conf.yml (vérifié avec Aider 0.86, novembre 2026)
+read: [AGENTS.md, ARCHITECTURE.md]
+test-cmd: uv run pytest -q
+auto-test: true               # lance les tests après chaque modification
+auto-commits: false           # vous commitez vous-même, après relecture
+suggest-shell-commands: false # aucune commande proposée par le modèle
+```
+
+Avec cette configuration, `uv run pytest` s'exécute sans demande, parce que
+c'est vous qui l'avez fixé. Le `git commit` revient entre vos mains (Aider
+garde `/commit` pour le faire à la demande). Le modèle n'a aucun moyen de
+lancer `git push` ou `curl`, puisqu'il ne lance rien. L'interdiction ne tient
+qu'à cela : si vous réactivez les suggestions, c'est votre « oui » qui fait
+le tri. Dernier point : `/web` et la détection des adresses dans vos messages
+(`detect-urls`) récupèrent des pages Web, mais à votre initiative.
+
+Aider n'a pas de bac à sable : les tests et les commandes approuvées
+s'exécutent avec vos droits. Pour isoler, on peut utiliser l'image Docker
+officielle, en montant seulement le dépôt :
+
+```bash
+docker run -it --user $(id -u):$(id -g) --volume $(pwd):/app \
+  paulgauthier/aider --anthropic-api-key $ANTHROPIC_API_KEY
+```
+
+### MCP et extensions
+
+Aider ne prend pas en charge MCP : ni sa documentation ni son code source
+n'en font mention. Il n'a pas non plus de compétences, de commandes
+personnalisées ni d'agents personnalisés au sens des autres outils. Les
+extensions possibles sont plus modestes :
+
+- `--load fichier` (ou `/load`) exécute une suite de commandes `/` au
+  lancement, et `/save` enregistre les commandes qui reconstituent l'ensemble
+  de fichiers de la session courante;
+- `--lint-cmd` et `--test-cmd` branchent vos propres vérifications, dont la
+  sortie est renvoyée au modèle en cas d'échec;
+- `--watch-files` fait réagir Aider aux commentaires terminés par `AI!` ou
+  `AI?` que vous écrivez dans votre éditeur.
+
+### Gérer le contexte et le coût
+
+Le contexte, c'est d'abord la liste des fichiers ajoutés : `/ls` l'affiche,
+`/drop` retire des fichiers, `/clear` vide l'historique de la conversation
+et `/reset` fait les deux. `/tokens` détaille les jetons occupés par
+l'historique, la carte du dépôt et chaque fichier; l'option `--map-tokens`
+règle la taille de la carte. Il n'y a pas de commande de compaction, mais
+Aider résume lui-même l'ancien historique au-delà d'un seuil
+(`--max-chat-history-tokens`).
+
+Après chaque réponse, Aider affiche les jetons envoyés et reçus et le coût du
+message et de la session, calculés à partir des tarifs connus du modèle.
+Pour les fournisseurs qui le permettent, `--cache-prompts` active la mise en
+cache des invites.
+
+La conversation est écrite dans `.aider.chat.history.md`. Une nouvelle
+session repart à zéro, sauf si l'on passe `--restore-chat-history`. Il n'y a
+pas de sous-agents. Le mode `architect` est ce qui s'en approche le plus :
+un modèle « architecte » propose la solution et un modèle « éditeur » la
+traduit en modifications de fichiers. Un modèle « faible »
+(`--weak-model`) rédige les messages de commit et résume l'historique.
+
+### Sans interface : scripts et intégration continue
+
+`--message` (ou `-m`) envoie une seule demande, applique les modifications
+et termine; `--message-file` lit la demande dans un fichier :
+
+```bash
+aider --read AGENTS.md --yes-always \
+  --message-file demande-termes.md \
+  src/indexeur/index.py src/indexeur/cli.py tests/test_index.py
+```
+
+`--yes-always` répond oui à toutes les confirmations, à une exception près
+que la documentation ne signale pas : le code source d'Aider répond non aux
+demandes d'exécution de commandes shell, qui exigent un oui explicite. En
+mode non interactif, le modèle ne lance donc aucune commande. Les tests, eux,
+passent par `--test-cmd` et `--auto-test`, ou par `--test` (lancer les
+tests, corriger, puis terminer). `--dry-run` montre ce qui serait fait sans
+rien écrire.
+
+Aider n'offre pas de sortie JSON. Il existe une interface Python
+(`aider.coders.Coder`), mais la documentation précise qu'elle n'est ni
+officiellement prise en charge ni stable. Aucune action GitHub officielle
+n'est documentée : en intégration continue, on installe Aider dans le flux
+de travail et on l'appelle avec `--message`.
+
+### Travail en parallèle
+
+Aider travaille sur un seul dépôt à la fois et ne gère ni arbres de travail
+ni tâches en arrière-plan. Il fonctionne en revanche dans n'importe quel
+arbre de travail créé avec `git worktree add` (@sec-s14) : une instance
+d'Aider par arbre, chacune commitant sur sa propre branche. Les commits
+automatiques sont ici un avantage, puisque chaque branche garde la trace
+fine de ce que l'outil a fait. La documentation précise aussi qu'on peut
+modifier des fichiers soi-même pendant qu'Aider tourne, en évitant ceux de
+la conversation pendant qu'il répond.
+
+### Pièges et particularités
+
+- Les commits automatiques sont actifs par défaut, et Aider commite aussi
+  vos modifications non commitées avant d'appliquer les siennes. Si vous
+  voulez relire avant de commiter, `auto-commits: false` (et, au besoin,
+  `dirty-commits: false`).
+- Par défaut, les commits d'Aider portent une ligne
+  `Co-authored-by: aider (<modèle>)`, et Aider contourne les crochets `pre-commit` (il commite
+  avec `--no-verify`). Les options `--no-attribute-co-authored-by` et
+  `--git-commit-verify` changent ces comportements; vérifiez ce que votre
+  équipe exige.
+- `/undo` n'annule que le dernier commit d'Aider, et refuse s'il a déjà été
+  poussé.
+- Le modèle ne voit que ce que vous avez ajouté (plus la carte du dépôt).
+  Oublier d'ajouter `tests/test_index.py`, c'est souvent obtenir une
+  fonction sans test.
+- Une partie de la documentation n'est plus à jour : sa liste des
+  « meilleurs modèles » date de 2025. Les alias de modèles sont plus récents
+  dans le code que dans la documentation.
+
+Sources consultées (novembre 2026) :
+
+- [Installation](https://aider.chat/docs/install.html) et [installation avec Docker](https://aider.chat/docs/install/docker.html)
+- [Clés d'API](https://aider.chat/docs/config/api-keys.html) et [fichier `.aider.conf.yml`](https://aider.chat/docs/config/aider_conf.html)
+- [Options de la ligne de commande](https://aider.chat/docs/config/options.html)
+- [Commandes de la conversation](https://aider.chat/docs/usage/commands.html) et [modes de conversation](https://aider.chat/docs/usage/modes.html)
+- [Conventions de codage](https://aider.chat/docs/usage/conventions.html)
+- [Intégration Git](https://aider.chat/docs/git.html)
+- [Lint et tests](https://aider.chat/docs/usage/lint-test.html)
+- [Aider dans votre éditeur (`--watch-files`)](https://aider.chat/docs/usage/watch.html)
+- [Scripts](https://aider.chat/docs/scripting.html) et [FAQ](https://aider.chat/docs/faq.html)
+- [Modèles](https://aider.chat/docs/llms.html) et [Ollama](https://aider.chat/docs/llms/ollama.html)
+- [Dépôt `Aider-AI/aider`](https://github.com/Aider-AI/aider) : licence, alias de modèles (`aider/models.py`), confirmations (`aider/io.py`, `aider/coders/base_coder.py`)
+- [Page PyPI `aider-chat`](https://pypi.org/project/aider-chat/) (version 0.86.2)

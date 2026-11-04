@@ -1,0 +1,325 @@
+## OpenCode {#sec-opencode}
+
+OpenCode est un agent de codage libre (licence MIT) publié par la société
+Anomaly. Son dépôt, autrefois `sst/opencode`, est maintenant
+[`anomalyco/opencode`](https://github.com/anomalyco/opencode). C'est d'abord
+une interface en terminal (TUI), mais il existe aussi une application de
+bureau, une interface Web (`opencode web`) et des extensions d'éditeur.
+OpenCode n'est lié à aucun fournisseur de modèles : il s'appuie sur la liste
+de [Models.dev](https://models.dev) et accepte aussi bien les API commerciales
+que des modèles locaux servis par Ollama, LM Studio ou llama.cpp. Le logiciel
+est gratuit; on paie le fournisseur de modèles choisi. Anomaly vend aussi
+l'accès à des modèles qu'il a testés, à l'usage (OpenCode Console, avec
+quelques modèles gratuits pour une durée limitée) ou par abonnement
+(OpenCode Go). En novembre 2026, deux lignées coexistent : OpenCode 1
+(version 1.19) et OpenCode 2 (version 2.2). La documentation principale,
+sur laquelle repose cette fiche, décrit OpenCode 1. OpenCode 2 a sa propre
+documentation et change certains formats de configuration (voir plus bas).
+
+### Installer et lancer
+
+Le script officiel installe OpenCode 1. Le paquet npm fait de même :
+
+```bash
+curl -fsSL https://opencode.ai/install | bash
+# ou
+npm install -g opencode-ai
+# ou, sur macOS (dépôt Homebrew d'Anomaly, version 1)
+brew install anomalyco/tap/opencode
+```
+
+Attention : la formule Homebrew officielle (`brew install opencode`)
+installe maintenant OpenCode 2, et les deux versions ne peuvent pas
+cohabiter sous le même nom de commande. Sous Windows, la documentation
+recommande WSL.
+
+Il faut ensuite brancher un fournisseur. Dans l'interface, la commande
+`/connect` ajoute un fournisseur et sa clé; en ligne de commande, c'est
+`opencode auth login`. Les clés sont conservées dans
+`~/.local/share/opencode/auth.json`. On lance l'agent depuis la racine du
+dépôt :
+
+```bash
+cd indexeur
+opencode
+```
+
+Pour un modèle local avec Ollama, le plus simple est de laisser Ollama
+configurer OpenCode (`ollama launch opencode`). On peut aussi déclarer le
+serveur local dans `opencode.json` :
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "ollama": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Ollama (local)",
+      "options": { "baseURL": "http://localhost:11434/v1" },
+      "models": { "qwen3.5": { "name": "Qwen 3.5 (local)" } }
+    }
+  }
+}
+```
+
+La documentation d'Ollama indique qu'OpenCode exige une fenêtre de contexte
+d'au moins 64 000 jetons. Avec la fenêtre par défaut d'Ollama, les appels
+d'outils échouent souvent : c'est le premier réglage à vérifier si l'agent
+« parle » au lieu d'agir. On choisit ensuite le modèle avec `/models`.
+
+### Une première session sur indexeur
+
+La commande `/init` analyse le projet et propose un `AGENTS.md` à la racine.
+Pour la demande de la semaine 1, on écrit la version précise directement
+dans l'invite. On peut joindre un fichier à la demande avec `@` (recherche
+floue dans le dépôt) et lancer soi-même une commande avec `!` en début de
+message :
+
+```text
+@ARCHITECTURE.md Ajoute une commande `indexeur termes DOSSIER` qui affiche
+les dix termes les plus fréquents du corpus. Le calcul va dans une méthode
+`Index.termes_frequents(n)`, testée dans tests/test_index.py; cli.py ne fait
+que l'affichage. À fréquence égale, trier par ordre alphabétique. Lance
+`uv run pytest -q` avant de conclure.
+```
+
+La touche Tab fait alterner les deux agents principaux : `plan` (analyse,
+sans modification de fichiers) et `build` (l'agent par défaut, qui a tous
+les outils). Une bonne habitude consiste à demander d'abord un plan dans
+`plan`, puis à passer à `build`. L'interaction ressemble schématiquement à
+ceci (illustration, pas une transcription) :
+
+```text
+build › Read src/indexeur/index.py
+build › Edit src/indexeur/index.py   (+14 −0)
+build › Edit tests/test_index.py     (+22 −0)
+  Permission requise : bash « uv run pytest -q »
+  [once] [always] [reject]
+```
+
+À chaque demande de permission, on peut accepter une fois (`once`),
+accepter les requêtes semblables pour le reste de la session (`always`) ou
+refuser (`reject`). La commande `/undo` retire le dernier message et annule
+les modifications de fichiers qui l'ont suivi; `/redo` les rétablit. Ce
+mécanisme repose sur des instantanés internes, distincts de votre historique
+Git.
+
+### Fichier d'instructions
+
+OpenCode lit `AGENTS.md`. Il cherche le fichier en remontant à partir du
+répertoire courant; un fichier de projet ne s'applique qu'à ce répertoire et
+à ses sous-répertoires. Les instructions personnelles vont dans
+`~/.config/opencode/AGENTS.md`. Par compatibilité avec Claude Code, OpenCode
+lit `CLAUDE.md` à défaut d'`AGENTS.md`, et `~/.claude/CLAUDE.md` à défaut du
+fichier global. Dans chaque catégorie, le premier fichier trouvé l'emporte :
+si `AGENTS.md` et `CLAUDE.md` coexistent, seul `AGENTS.md` est lu. La clé
+`instructions` de `opencode.json` ajoute d'autres fichiers (chemins, motifs
+ou adresses URL), ce qui évite de recopier `ARCHITECTURE.md` :
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": ["ARCHITECTURE.md"]
+}
+```
+
+L'`AGENTS.md` de la semaine 12 (@sec-s12) convient tel quel.
+
+### Permissions et bac à sable
+
+Les permissions se règlent sous la clé `permission` de `opencode.json`
+(à versionner à la racine du dépôt; le fichier global est
+`~/.config/opencode/opencode.json`, et les deux sont fusionnés). Chaque
+règle vaut `allow`, `ask` ou `deny`. Les clés sont des noms d'outils :
+`read`, `edit` (qui couvre aussi l'écriture et les correctifs), `bash`,
+`webfetch`, `websearch`, `task` (sous-agents), `skill`, etc. Pour `bash`, le
+motif porte sur la commande analysée; `*` remplace n'importe quelle suite de
+caractères. La dernière règle qui correspond l'emporte : on place donc la
+règle générale `"*"` en premier.
+
+Les réglages par défaut sont permissifs : presque tout est `allow`, sauf la
+lecture des fichiers `.env`, l'accès hors du répertoire de travail
+(`external_directory`) et la détection de boucles (`doom_loop`), qui sont
+à `ask`. Pour `indexeur`, on resserre :
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "permission": {
+    "*": "ask",
+    "read": { "*": "allow", "*.env": "deny", "*.env.*": "deny" },
+    "glob": "allow",
+    "grep": "allow",
+    "edit": { "*": "ask", "src/*": "allow", "tests/*": "allow" },
+    "bash": {
+      "*": "ask",
+      "uv run pytest": "allow",
+      "uv run pytest *": "allow",
+      "git status": "allow",
+      "git diff": "allow",
+      "git diff *": "allow",
+      "git commit *": "ask",
+      "git push": "deny",
+      "git push *": "deny",
+      "curl": "deny",
+      "curl *": "deny"
+    },
+    "webfetch": "deny"
+  }
+}
+```
+
+Le doublement `"git push"` / `"git push *"` n'est pas une coquetterie : la
+documentation précise qu'un motif sans `*` ne correspond qu'à la commande
+sans arguments. Les permissions peuvent aussi être redéfinies par agent
+(clé `agent`, ou en-tête d'un fichier d'agent).
+
+OpenCode 1 n'a pas de bac à sable : les commandes s'exécutent avec vos
+droits, sur votre machine. Les règles ci-dessus sont des garde-fous, pas une
+barrière (@sec-s11). Pour isoler vraiment, il faut un conteneur; l'image
+`ghcr.io/anomalyco/opencode` est fournie. L'option `--auto` approuve tout
+ce qui n'est pas explicitement interdit : les `deny` tiennent, mais les
+`ask`, dont `git commit`, deviennent des `allow`.
+
+Dans OpenCode 2, le format change : la clé devient `permissions`, une liste
+ordonnée de règles, et `bash` devient `shell`. La même idée s'écrit :
+
+```json
+{
+  "permissions": [
+    { "action": "shell", "resource": "*", "effect": "ask" },
+    { "action": "shell", "resource": "uv run pytest *", "effect": "allow" },
+    { "action": "shell", "resource": "git push *", "effect": "deny" }
+  ]
+}
+```
+
+### MCP et extensions
+
+Les serveurs MCP se déclarent sous la clé `mcp` de `opencode.json`, un
+serveur par nom. Un serveur local (stdio) donne la commande sous forme de
+liste; un serveur distant donne une adresse URL (et, au besoin, des en-têtes
+ou une configuration OAuth) :
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "git": {
+      "type": "local",
+      "command": ["uvx", "mcp-server-git", "--repository", "."],
+      "enabled": true
+    }
+  }
+}
+```
+
+`opencode mcp add` guide l'ajout d'un serveur, `opencode mcp list` les
+énumère et `opencode mcp auth` gère l'authentification OAuth. La
+documentation rappelle que chaque serveur ajoute ses outils au contexte. Dans
+OpenCode 2, les serveurs passent sous `mcp.servers`.
+
+OpenCode a aussi trois mécanismes d'extension en fichiers Markdown, chacun
+avec une version de projet et une version globale :
+
+- les commandes personnalisées, dans `.opencode/commands/` (ou
+  `~/.config/opencode/commands/`) : un fichier `verifier.md` devient
+  `/verifier`; le texte accepte `$ARGUMENTS`, des fichiers joints avec `@`
+  et la sortie d'une commande avec `` !`git diff --stat` ``;
+- les agents personnalisés, dans `.opencode/agents/` : un en-tête YAML fixe
+  la description, le mode (`primary` ou `subagent`), le modèle et les
+  permissions; `opencode agent create` en crée un de façon interactive;
+- les compétences, dans `.opencode/skills/<nom>/SKILL.md`, avec les champs
+  obligatoires `name` et `description`. OpenCode lit aussi
+  `.claude/skills/` et `.agents/skills/`, de sorte qu'une compétence écrite
+  pour un autre agent sert telle quelle.
+
+### Gérer le contexte et le coût
+
+`/new` (alias `/clear`) ouvre une session neuve; `/compact` (alias
+`/summarize`) résume la session courante. La compaction automatique est
+active par défaut quand le contexte est plein (clé `compaction.auto`), et
+l'option `compaction.prune` retire les anciennes sorties d'outils. Pour
+reprendre, `/sessions` liste les sessions dans l'interface, et
+`opencode --continue` (ou `--session ID`) rouvre la dernière, ou une autre,
+au lancement. `opencode export` produit la transcription d'une session, ce
+qui est utile pour le carnet.
+
+`opencode stats` affiche la consommation de jetons et le coût, par jour,
+par modèle (`--models`) ou pour le projet courant (`--project ""`).
+
+Deux sous-agents sont fournis : `general` (polyvalent) et `explore` (lecture
+seule, pour fouiller le code). On les invoque en les mentionnant
+(`@explore où est calculée la longueur moyenne?`), et l'agent principal peut
+les lancer lui-même par l'outil `task`, que la permission du même nom
+contrôle.
+
+### Sans interface : scripts et intégration continue
+
+`opencode run` exécute une demande sans l'interface, puis rend la main :
+
+```bash
+opencode run "Explique l'architecture d'indexeur. Ne modifie aucun fichier." \
+  --agent plan
+opencode run --format json "Lance uv run pytest -q et résume les échecs"
+```
+
+Avec `--format json`, la sortie est un flux d'évènements JSON bruts plutôt
+qu'un texte mis en forme. La documentation ne précise pas ce qui se passe
+lorsqu'une règle `ask` est atteinte sans terminal : en script, mieux vaut des
+permissions entièrement explicites (`allow` ou `deny`), éventuellement
+passées par la variable d'environnement `OPENCODE_PERMISSION`. Pour éviter
+de redémarrer les serveurs MCP à chaque appel, on peut lancer `opencode serve`
+une fois et y attacher les exécutions (`opencode run --attach
+http://localhost:4096 ...`).
+
+Pour GitHub, `opencode github install` installe l'application GitHub, crée
+le flux `.github/workflows/opencode.yml` (action
+`anomalyco/opencode/github@latest`) et configure les secrets. On déclenche
+ensuite l'agent en écrivant `/opencode` ou `/oc` dans un commentaire de
+billet ou de demande de tirage; il travaille sur une nouvelle branche et
+ouvre une demande de tirage. Une intégration GitLab est aussi documentée.
+
+### Travail en parallèle
+
+La documentation d'OpenCode 1 ne décrit pas de prise en charge intégrée des
+arbres de travail Git. La méthode de la
+semaine 14 (@sec-s14) s'applique sans changement : un `git worktree add` par
+tâche, et une instance d'`opencode` lancée dans chaque répertoire. Le mode
+serveur offre une autre possibilité : on lance `opencode serve` (ou
+`opencode web`), puis on s'y attache avec `opencode attach` ou
+`opencode run --attach`, l'option `--dir` désignant le répertoire de travail.
+
+### Pièges et particularités
+
+- Deux versions majeures coexistent, avec des formats de configuration
+  différents (`permission`/`bash` contre `permissions`/`shell`). Vérifiez
+  `opencode --version` avant de copier un exemple, y compris ceux de cette
+  fiche.
+- Sans configuration, presque tout est permis, y compris l'édition et le
+  shell. Versionnez un `opencode.json` restrictif avant la première session.
+- Avec un modèle local, une fenêtre de contexte trop petite fait échouer les
+  appels d'outils. Les petits modèles locaux suivent aussi moins bien les
+  instructions : comparez sur la même demande avant de conclure.
+- `CLAUDE.md` et `~/.claude/CLAUDE.md` sont lus à défaut d'`AGENTS.md`. Si
+  vous utilisez aussi Claude Code, des instructions personnelles peuvent
+  s'inviter sans que vous le sachiez (`OPENCODE_DISABLE_CLAUDE_CODE=1` coupe
+  cette compatibilité).
+- `/undo` annule par instantanés internes, pas par Git. Commitez vous-même
+  aux étapes qui comptent.
+
+Sources consultées (novembre 2026) :
+
+- [Documentation d'OpenCode : introduction et installation](https://opencode.ai/docs/)
+- [Permissions](https://opencode.ai/docs/permissions/)
+- [Règles (`AGENTS.md`)](https://opencode.ai/docs/rules/)
+- [Configuration](https://opencode.ai/docs/config/)
+- [Fournisseurs (dont Ollama, LM Studio, llama.cpp)](https://opencode.ai/docs/providers/)
+- [Serveurs MCP](https://opencode.ai/docs/mcp-servers/)
+- [Agents](https://opencode.ai/docs/agents/), [commandes](https://opencode.ai/docs/commands/) et [compétences](https://opencode.ai/docs/skills/)
+- [Interface en terminal](https://opencode.ai/docs/tui/) et [ligne de commande](https://opencode.ai/docs/cli/)
+- [Intégration GitHub](https://opencode.ai/docs/github/)
+- [OpenCode Console (tarifs à l'usage)](https://opencode.ai/docs/zen/)
+- [Documentation d'OpenCode 2 : installation](https://opencode.ai/v2/docs/), [permissions](https://opencode.ai/v2/docs/permissions/) et [configuration](https://opencode.ai/v2/docs/config/)
+- [Intégration OpenCode dans la documentation d'Ollama](https://docs.ollama.com/integrations/opencode)
+- [Dépôt `anomalyco/opencode` (licence, versions)](https://github.com/anomalyco/opencode)

@@ -1,0 +1,262 @@
+## Grok Build {#sec-grok}
+
+Grok Build est l'agent de codage en ligne de commande officiel de xAI. La
+société a été absorbée par SpaceX en 2026 et signe désormais « SpaceXAI ». Le
+programme s'installe sous le nom `grok`. Il fonctionne en interface plein écran
+dans le terminal, en mode sans interface pour les scripts, ou dans un éditeur
+compatible avec le protocole ACP (*Agent Client Protocol*). Il utilise les
+modèles Grok de xAI (série `grok-4.x` en novembre 2026; `/model` affiche ceux
+auxquels votre compte a droit). On peut aussi déclarer d'autres modèles dans
+la configuration. Le code est publié sous licence Apache 2.0 depuis juillet
+2026 (dépôt `xai-org/grok-build`), mais le projet n'accepte pas de
+contributions externes. Pour l'utiliser, il faut un abonnement SuperGrok ou
+X Premium+, avec connexion par le compte grok.com, ou une clé d'API xAI
+facturée au jeton. Le produit est encore présenté comme une version bêta.
+
+::: {.callout-warning}
+## Ne pas confondre avec les « grok-cli » communautaires
+
+Plusieurs projets indépendants portent un nom semblable. Le plus connu,
+`superagent-ai/grok-cli` (paquet npm `grok-dev`, licence MIT), précise
+lui-même qu'il n'est ni affilié à xAI ni approuvé par elle. Il se branche
+sur l'API Grok avec votre clé. Il installe lui aussi une commande `grok`.
+Cette section ne porte que sur l'outil officiel, installé depuis `x.ai`.
+Vérifiez avec `grok --version` et `which grok` lequel des deux est sur votre
+`PATH`.
+:::
+
+### Installer et lancer
+
+```bash
+curl -fsSL https://x.ai/cli/install.sh | bash   # macOS, Linux, WSL, Git Bash
+grok --version
+grok update                                     # mise à jour ultérieure
+
+cd indexeur
+grok                                            # ouvre le navigateur pour se connecter
+```
+
+Sous PowerShell, l'installateur est `irm https://x.ai/cli/install.ps1 | iex`.
+Au premier lancement, Grok ouvre le navigateur pour la connexion à grok.com
+et conserve les jetons dans `~/.grok/auth.json`. Sans navigateur (serveur,
+intégration continue), on définit plutôt la variable `XAI_API_KEY`.
+L'utilisation est alors facturée par l'API.
+
+### Une première session sur indexeur
+
+Depuis la racine du dépôt, on peut lancer l'interface et y taper la demande,
+ou la passer directement comme premier message :
+
+```bash
+grok "Ajoute une méthode Index.termes_frequents(n) dans index.py qui renvoie
+les n termes les plus fréquents du corpus, par fréquence décroissante puis
+par ordre alphabétique en cas d'égalité, et une commande
+'indexeur termes DOSSIER' dans cli.py qui affiche les dix premiers. Écris
+d'abord le test dans tests/test_index.py, puis lance uv run pytest -q.
+Ne modifie pas exemples/."
+```
+
+À titre d'illustration schématique, et non comme une transcription réelle,
+la session ressemble à ceci :
+
+```
+> Ajoute une méthode Index.termes_frequents(n) …
+  read_file  src/indexeur/index.py
+  read_file  src/indexeur/cli.py
+  search_replace  tests/test_index.py     (diff affiché en ligne)
+  ┌ Permission : modifier tests/test_index.py?
+  │ Allow once · Reject once · Allow all edits this session · …
+  run_terminal_command  uv run pytest -q
+  ┌ Permission : exécuter « uv run pytest -q »?
+  │ Allow once · Always allow « uv run pytest » · Reject once · …
+```
+
+Par défaut, Grok demande la permission avant toute modification de fichier
+et toute commande qui n'est pas en lecture seule. Chaque modification
+apparaît dans l'historique avec son diff. `Ctrl+C` interrompt le tour en
+cours. `Échap` deux fois, avec une invite vide, ouvre le retour en arrière
+(`/rewind`). Après la session, relisez avec `git diff` comme d'habitude.
+
+### Fichier d'instructions
+
+Grok lit `AGENTS.md` (et aussi `AGENT.md`, `CLAUDE.md`, `CLAUDE.local.md`
+par compatibilité). Tous les fichiers trouvés sont chargés et s'additionnent :
+
+- `~/.grok/AGENTS.md` : règles personnelles, pour tous les projets;
+- `AGENTS.md` dans chaque dossier, de la racine du dépôt jusqu'au dossier
+  courant. Le plus profond apparaît en dernier et l'emporte en cas de
+  conflit;
+- `.grok/rules/*.md` à chaque niveau, et `~/.grok/rules/` pour les règles
+  globales.
+
+Le `AGENTS.md` de la semaine 12 convient donc tel quel. La commande
+`grok inspect` liste les fichiers chargés et leur taille approximative en
+jetons. Pour ajouter une consigne le temps d'une seule session, il y a
+l'option `--rules "…"`. Un exemple minimal :
+
+```markdown
+# indexeur — instructions pour les agents
+- Tests : `uv run pytest -q`. Ils doivent passer avant de conclure.
+- Dépendances : cli → recherche → index → texte, jamais l'inverse.
+- Sortie déterministe : à égalité, trier par identifiant ou par terme.
+- Ne jamais modifier `exemples/` ni un test existant pour le faire passer.
+```
+
+Attention : les fichiers du projet (instructions, `.grok/config.toml`,
+compétences) ne sont chargés que si le dossier est marqué comme fiable. On
+accorde cette confiance au premier lancement ou avec `grok --trust`.
+
+### Permissions et bac à sable
+
+Grok propose plusieurs modes d'approbation. Le mode par défaut (*ask*)
+demande avant d'agir. `acceptEdits` accepte les modifications de fichiers
+sans demander. `auto` confie la décision à un classificateur, qui laisse
+passer le travail courant. `dontAsk` refuse tout ce qui n'est pas autorisé
+d'avance. *Always-approve*, alias `--yolo`, accepte tout sauf ce que les
+règles `deny` interdisent. On change de mode avec `Maj+Tab` ou `Ctrl+O`, ou
+avec `--permission-mode` au lancement.
+
+Les règles se déclarent dans `.grok/config.toml`, à versionner. La
+correspondance se fait par préfixe, caractère par caractère :
+
+```toml
+# .grok/config.toml — Grok Build, format vérifié en novembre 2026
+[permission]
+allow = ["Bash(uv run pytest)"]           # uv run pytest, uv run pytest -q, …
+ask   = ["Bash(git commit)"]
+deny  = ["Bash(git push)", "Bash(curl)", "Read(**/.env)"]
+```
+
+`deny` l'emporte toujours, quelle que soit la source de la règle. Grok
+découpe les commandes enchaînées (`&&`, `;`, `|`). Une règle `allow`
+n'approuve la chaîne que si chaque segment est autorisé, et une règle `deny`
+bloque la chaîne si un seul segment correspond. Les règles s'appliquent aussi
+au texte passé à `bash -c`. Elles restent un garde-fou, pas une barrière : un
+script écrit puis exécuté y échappe. Grok lit aussi les `permissions` d'un
+fichier `.claude/settings.json` éventuel.
+
+Le bac à sable du système d'exploitation (Seatbelt sous macOS, Landlock sous
+Linux) est désactivé par défaut. On l'active avec `grok --sandbox workspace`
+(écriture limitée au dossier courant, à `~/.grok/` et aux dossiers
+temporaires) ou `--sandbox strict`. Des profils personnalisés peuvent être
+décrits dans `.grok/sandbox.toml` :
+
+```toml
+[profiles.indexeur]
+extends = "workspace"
+restrict_network = true
+deny = ["**/.env", "**/*.pem"]
+```
+
+puis `grok --sandbox indexeur`. La coupure du réseau des processus enfants
+n'est appliquée que sous Linux : sous macOS, la documentation précise que
+cette option est sans effet.
+
+### MCP et extensions
+
+Les serveurs MCP se déclarent en TOML, dans `~/.grok/config.toml` ou, pour
+l'équipe, dans `.grok/config.toml`. La commande `grok mcp` gère cette
+liste :
+
+```bash
+grok mcp add --scope project git -- uvx mcp-server-git --repository .
+grok mcp list
+grok mcp doctor git
+```
+
+ce qui produit :
+
+```toml
+[mcp_servers.git]
+command = "uvx"
+args = ["mcp-server-git", "--repository", "."]
+```
+
+Dans l'interface, `/mcps` liste les serveurs et permet de les activer ou de
+les désactiver. Un fichier `.mcp.json` existant est aussi reconnu. Les
+compétences sont des dossiers contenant un `SKILL.md`, rangés dans
+`.grok/skills/` (projet) ou `~/.grok/skills/` (personnel). Grok lit aussi
+`.claude/skills/` et `.agents/skills/`. Une compétence marquée
+`user-invocable: true` devient une commande `/nom`. Les agents
+personnalisés se placent dans `.grok/agents/` et se gèrent avec `/agents`.
+Grok offre en plus des crochets (`.grok/hooks/`) et des greffons.
+
+### Gérer le contexte et le coût
+
+| Besoin | Commande |
+|--------|----------|
+| Nouvelle session | `/new` (alias `/clear`) ou `Ctrl+N` |
+| Compacter | `/compact`. Compaction automatique à 85 % de la fenêtre |
+| Voir l'occupation du contexte | `/context`, `/session-info` |
+| Reprendre | `grok -c` (la plus récente), `grok -r ID`, `/resume` |
+| Jetons et coût | `/usage` (alias `/cost`) pendant la session; `grok usage ID` après coup |
+
+Les sessions sont enregistrées dans `~/.grok/sessions/`. `grok usage`
+produit du JSON avec les jetons et le coût de chaque tour. Attention : le
+coût y est exprimé en *ticks* (10¹⁰ par dollar US). Grok délègue à des
+sous-agents (`explore`, `plan`, `general-purpose`, etc.), chacun avec sa
+propre fenêtre de contexte. On les désactive avec `--no-subagents`.
+
+### Sans interface : scripts et intégration continue
+
+```bash
+grok -p "Lance uv run pytest -q et résume les échecs" \
+     --output-format json --allow 'Bash(uv run pytest)' | jq -r '.text'
+```
+
+`-p` (ou `--single`) exécute une seule demande puis rend la main. Le format
+`json` renvoie un objet contenant `text`, `stopReason`, `sessionId` et
+`requestId`. `streaming-json` produit un flux NDJSON, et
+`streaming-messages-json` donne un résultat final avec `total_cost_usd`.
+Les options `--max-turns`, `--tools` et `--disallowed-tools` limitent ce que
+l'agent peut faire. Pour qu'un script s'exécute sans aucune question, la
+documentation recommande `--always-approve` accompagné de règles `deny`. Pour
+l'intégration continue, on s'authentifie avec `XAI_API_KEY`. En novembre
+2026, la documentation ne mentionne aucune action GitHub officielle : on
+appelle `grok -p` depuis une étape de flux de travail.
+
+### Travail en parallèle
+
+Les arbres de travail Git sont intégrés. Avec `grok -w correctif` ou
+`grok --worktree=termes "…"` (le signe `=` évite que la demande soit prise
+pour le nom), Grok crée un arbre de travail à partir de la copie courante,
+modifications non validées comprises. `--ref main` part plutôt d'une copie
+propre d'une branche. `grok worktree create NOM` crée l'arbre sans lancer de
+session et affiche son chemin. `/fork --worktree` dédouble la session en
+cours dans un nouvel arbre. Le tableau de bord (`/dashboard`) suit les
+sessions qui tournent en parallèle. `Ctrl+B` envoie la commande en cours en
+arrière-plan.
+
+### Pièges et particularités
+
+- Deux programmes s'appellent `grok` : l'outil officiel et le projet
+  communautaire `superagent-ai/grok-cli`. Vérifiez lequel vous lancez.
+- Sans confiance accordée au dossier (`grok --trust`), `AGENTS.md`,
+  `.grok/config.toml` et les compétences du projet ne sont pas chargés. Vos
+  règles versionnées sont alors ignorées sans erreur visible.
+- Grok lit aussi `CLAUDE.md`, `.claude/settings.json`, `.claude/skills/` et
+  `~/.claude/`. Sur une machine où Claude Code est déjà configuré, des
+  instructions ou des permissions d'un autre outil peuvent s'ajouter aux
+  vôtres. `grok inspect` montre ce qui est réellement chargé.
+- En mode `auto`, une commande qu'aucune règle ne mentionne peut être
+  approuvée par le classificateur. Les règles `allow` ne forment pas une
+  liste fermée : pour refuser par défaut, utilisez `dontAsk`.
+- Le bac à sable ne coupe pas le réseau sous macOS. Un `deny` sur `curl` ne
+  remplace pas un conteneur si l'exfiltration vous inquiète. Consultez aussi
+  `/privacy`, qui règle la conservation des données de code et leur
+  utilisation pour l'entraînement.
+
+Sources consultées (novembre 2026) :
+
+- <https://docs.x.ai/build/overview>
+- <https://x.ai/news/grok-build-cli> (annonce, accès SuperGrok et X Premium+)
+- <https://github.com/xai-org/grok-build> (code source, licence, `README.md`)
+- Guide de l'utilisateur dans le dépôt :
+  <https://github.com/xai-org/grok-build/tree/main/crates/codegen/xai-grok-pager/docs/user-guide>
+  (fichiers `01-getting-started.md`, `04-slash-commands.md`,
+  `07-mcp-servers.md`, `08-skills.md`, `12-project-rules.md`,
+  `14-headless-mode.md`, `16-subagents.md`, `17-sessions.md`,
+  `18-sandbox.md`, `20-background-tasks.md`,
+  `22-permissions-and-safety.md`)
+- <https://github.com/superagent-ai/grok-cli> (projet communautaire, pour la
+  distinction)

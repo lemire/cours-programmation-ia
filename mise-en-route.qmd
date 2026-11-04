@@ -33,19 +33,24 @@ exercice. Les critères qui comptent pour ce cours :
 4. Il permet de connaître la consommation de jetons ou le coût d'une
    session.
 
-| Agent | Forme | Documentation |
-|-------|-------|---------------|
-| Claude Code | ligne de commande, extensions d'éditeur | <https://docs.claude.com/en/docs/claude-code/overview> |
-| Codex CLI | ligne de commande | <https://developers.openai.com/codex/cli> |
-| GitHub Copilot (mode agent) | VS Code, JetBrains | <https://docs.github.com/fr/copilot> |
-| Cursor | éditeur | <https://docs.cursor.com> |
-| Grok | ligne de commande, Web | <https://docs.x.ai> |
+Les principaux agents (Claude Code, Codex CLI, Cursor, GitHub Copilot, Gemini
+CLI, Grok Build, OpenCode, Aider) sont décrits dans la page [Les agents de
+codage](agents.qmd) : installation, fichier d'instructions, permissions, MCP,
+gestion du contexte, mode sans interface, et la même tâche sur `indexeur`
+dans chacun. Commencez par son tableau récapitulatif.
 
 Suivez la documentation de l'agent choisi pour l'installer et vous
 authentifier. Vérifiez ensuite qu'il fonctionne dans un dossier vide, avec une
 demande sans risque : « Crée un fichier `bonjour.py` qui affiche la date du
 jour, puis exécute-le. » Observez avant d'accepter : l'agent vous
 demande-t-il la permission d'écrire le fichier? d'exécuter Python?
+
+Certains agents démarrent maintenant dans un mode où un classificateur
+approuve la plupart des actions à votre place (c'est le cas par défaut de
+Claude Code depuis l'automne 2026). Pour les premières semaines, réglez votre
+agent pour qu'il vous demande la permission : vous apprendrez davantage en
+voyant chaque action passer. La [fiche de votre agent](agents.qmd) indique
+comment.
 
 ::: {.callout-important}
 ## Ne travaillez jamais sans Git

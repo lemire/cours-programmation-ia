@@ -1,0 +1,289 @@
+## Claude Code {#sec-claude-code}
+
+Claude Code est l'agent de codage d'Anthropic. Sa forme principale est une
+application en ligne de commande (`claude`), mais le même moteur est offert
+dans une extension pour VS Code (et Cursor), un module pour les IDE JetBrains,
+une application de bureau et une version Web (claude.ai/code). Il utilise les
+modèles Claude d'Anthropic : en novembre 2026, les alias `opus` (Opus 5.5),
+`sonnet` (Sonnet 5.5), `haiku` (Haiku 5.5) et `fable` (Fable 5.1). Il peut
+aussi passer par Amazon Bedrock, Google Cloud ou Microsoft Foundry. Le
+logiciel n'est pas libre : le fichier de licence de son dépôt GitHub réserve
+tous les droits et renvoie aux conditions commerciales d'Anthropic. Il faut un
+abonnement payant (Pro à 20 $ US par mois, ou 17 $ en paiement annuel; Max à
+100 $; Ultra à 200 $; Team ou Enterprise) ou un compte de la Console
+facturé à l'usage de l'API. Le forfait gratuit de claude.ai ne donne pas
+accès à Claude Code.
+
+### Installer et lancer
+
+L'installateur recommandé (macOS, Linux, WSL) se met à jour tout seul :
+
+```bash
+curl -fsSL https://claude.ai/install.sh | bash
+claude --version        # vérifie l'installation
+claude doctor           # diagnostic de l'installation et des réglages
+```
+
+Il existe aussi `brew install --cask claude-code` (Homebrew, sans mise à jour
+automatique), `winget install Anthropic.ClaudeCode` (Windows) et
+`npm install -g @anthropic-ai/claude-code` (Node.js 22 ou plus récent, sans
+`sudo`). Sous Windows natif, le bac à sable n'est pas pris en charge : pour
+ce cours, travaillez sous WSL 2.
+
+Au premier lancement, `claude` ouvre le navigateur pour l'authentification.
+Si la variable `ANTHROPIC_API_KEY` est définie et que vous acceptez de
+l'utiliser, la facturation passe par l'API plutôt que par l'abonnement.
+Lancez toujours l'agent depuis la racine du dépôt, car c'est là qu'il
+cherche ses réglages de projet :
+
+```bash
+cd indexeur
+claude                          # session interactive
+claude "explique ARCHITECTURE.md en cinq points"   # avec une première demande
+```
+
+### Une première session sur indexeur
+
+Reprenons la demande de la semaine 1, cette fois écrite avec précision :
+
+> Ajoute une commande `indexeur termes DOSSIER` qui affiche les dix termes
+> les plus fréquents du corpus, un par ligne, au format `terme<TAB>total`.
+> Le calcul va dans une nouvelle méthode `Index.termes_frequents(n)`;
+> `cli.py` ne fait qu'afficher. À fréquence égale, trier par ordre
+> alphabétique du terme. Ajoute un test dans `tests/test_index.py` (avec un
+> cas d'égalité) et un dans `tests/test_cli.py`. Lance `uv run pytest`.
+> Ne fais pas de commit.
+
+Pour une tâche de cette taille, commencez en mode plan (`Maj+Tab` jusqu'à
+voir `plan mode on`, ou `claude --permission-mode plan`) : l'agent lit le
+code et propose une démarche sans rien modifier. Une fois le plan accepté,
+l'échange ressemble schématiquement à ceci (illustration, pas une
+transcription réelle) :
+
+```text
+● Lecture de src/indexeur/index.py, cli.py, tests/test_index.py
+● Modification de src/indexeur/index.py   (+14 lignes)
+  [le diff s'affiche; vous acceptez ou refusez]
+● Bash : uv run pytest -q
+  Do you want to proceed?
+  1. Yes
+  2. Yes, and don't ask again for: uv run pytest *
+  3. No
+```
+
+L'option 2 enregistre une règle d'autorisation dans
+`.claude/settings.local.json` (fichier personnel, gardé hors de Git). À la
+fin, `/diff` montre l'ensemble des modifications de l'arbre de travail; relisez
+aussi `git diff` dans votre éditeur avant de valider. `/rewind` revient à un
+point antérieur de la conversation ou du code.
+
+### Fichier d'instructions
+
+Claude Code lit `CLAUDE.md`, à plusieurs niveaux, du plus général au plus
+précis : la politique de l'organisation (par exemple
+`/etc/claude-code/CLAUDE.md` sous Linux), `~/.claude/CLAUDE.md` (personnel,
+tous les projets), `./CLAUDE.md` ou `./.claude/CLAUDE.md` (projet, versionné)
+et `./CLAUDE.local.md` (personnel, à ignorer dans Git). Les fichiers des
+sous-dossiers se chargent quand l'agent y travaille. Le dossier
+`.claude/rules/` accueille des règles par thème, éventuellement limitées à
+certains chemins. `/init` produit une première version, `/memory` ouvre les
+fichiers chargés, et `/context all` confirme ce qui a été lu.
+
+Depuis la version 2.1.277, Claude Code lit `AGENTS.md` directement, mais
+seulement s'il ne trouve aucun `CLAUDE.md` ni `CLAUDE.local.md` dans le
+dossier de travail ou au-dessus. Pour ce cours, gardez `AGENTS.md` comme
+fichier de référence (@sec-s12). La solution la plus robuste reste un
+`CLAUDE.md` d'une ligne qui l'importe, ce qui fonctionne aussi dans les
+sessions où la lecture directe n'est pas disponible :
+
+```markdown
+@AGENTS.md
+
+## Propre à Claude Code
+- Pour explorer le code, préférer le sous-agent Explore.
+```
+
+### Permissions et bac à sable
+
+Six modes règlent les demandes d'approbation : `default` (affiché
+« Manual » : demande à la première utilisation de chaque outil),
+`acceptEdits` (accepte les modifications de fichiers), `plan` (lecture
+seule), `auto` (un classificateur examine chaque action à votre place),
+`dontAsk` (refuse tout ce qui n'est pas préautorisé) et `bypassPermissions`
+(aucune demande; réservé à un conteneur isolé). `Maj+Tab` passe de l'un à
+l'autre en cours de session.
+
+Les règles `allow`, `ask` et `deny` sont évaluées dans cet ordre : `deny`
+d'abord, puis `ask`, puis `allow`, et la première qui correspond l'emporte.
+Elles vont dans `.claude/settings.json` (projet, versionné),
+`.claude/settings.local.json` (personnel) ou `~/.claude/settings.json`
+(tous vos projets). Voici une configuration de projet pour `indexeur` :
+
+```json
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "defaultMode": "default",
+    "allow": [
+      "Bash(uv run pytest *)",
+      "Bash(git diff *)",
+      "Bash(git log *)"
+    ],
+    "ask": [
+      "Bash(git commit *)"
+    ],
+    "deny": [
+      "Bash(git push *)",
+      "Bash(curl *)",
+      "Read(./.env)"
+    ]
+  }
+}
+```
+
+Une règle `Bash(uv run pytest *)` couvre aussi la commande nue
+`uv run pytest` : l'espace avant l'étoile fait partie du motif. La ligne
+`defaultMode` est importante (voir les pièges). `/permissions` affiche les
+règles en vigueur et le fichier d'où vient chacune.
+
+La documentation est explicite : une règle Bash compare le texte de la
+commande, et `Bash(curl *)` n'arrête ni `/usr/bin/curl` ni
+`sh -c 'curl …'`; `Bash(git push *)` n'arrête pas `git -C . push`. Pour
+une barrière réelle, activez le bac à sable du système (Seatbelt sous
+macOS, bubblewrap sous Linux et WSL 2, à installer avec
+`sudo apt-get install bubblewrap socat`), avec `/sandbox` ou dans vos
+réglages :
+
+```json
+{
+  "sandbox": {
+    "enabled": true,
+    "network": { "allowedDomains": [] }
+  }
+}
+```
+
+La liste `allowedDomains` part vide : les commandes du bac à sable n'ont
+aucun accès réseau, sauf vers les domaines que vous y ajoutez.
+
+### MCP et extensions
+
+Les serveurs MCP d'un projet se déclarent dans `.mcp.json` à la racine
+(@sec-s11). La commande `claude mcp add` écrit ce fichier pour vous avec la
+portée `project`; les portées `local` (par défaut) et `user` écrivent dans
+`~/.claude.json` :
+
+```bash
+claude mcp add --transport stdio --scope project git -- uvx mcp-server-git --repository .
+claude mcp list
+```
+
+Au premier usage, Claude Code demande d'approuver chaque serveur de
+`.mcp.json`. Dans une session, `/mcp` montre l'état des connexions.
+
+Une compétence (*skill*) est un dossier `.claude/skills/<nom>/SKILL.md`
+(projet) ou `~/.claude/skills/<nom>/SKILL.md` (personnel), dont l'en-tête
+YAML donne `name` et `description`. On l'invoque par `/<nom>`, ou l'agent la
+charge seul quand la demande correspond à la description. Les anciennes
+commandes `.claude/commands/<nom>.md` fonctionnent encore, mais la
+documentation recommande les compétences. Les sous-agents personnalisés sont
+des fichiers Markdown dans `.claude/agents/` (en-tête : `name`,
+`description`, et au besoin `tools` et `model`). Les crochets (`/hooks`) et
+les modules d'extension (`/plugin`) complètent l'ensemble.
+
+### Gérer le contexte et le coût
+
+- `/clear` (alias `/new`) repart d'un contexte vide; `/compact [consignes]`
+  résume la conversation pour libérer de la place.
+- `/resume` reprend une conversation; dans le terminal, `claude --continue`
+  reprend la plus récente du dossier et `claude --resume` ouvre la liste.
+- `/context` montre l'occupation de la fenêtre de contexte, poste par poste.
+- `/usage` (alias `/cost` et `/stats`) donne les jetons et un coût estimé
+  pour la session. Avec un abonnement, ce coût est indicatif : ce sont les
+  barres de limite d'utilisation qui comptent.
+- Trois sous-agents sont intégrés : Explore (recherche en lecture seule),
+  Plan (utilisé en mode plan) et general-purpose. Chacun travaille dans sa
+  propre fenêtre de contexte et ne renvoie qu'un résumé, ce qui garde la
+  conversation principale légère, mais consomme ses propres jetons.
+
+### Sans interface : scripts et intégration continue
+
+L'option `-p` exécute une demande sans interface et s'arrête :
+
+```bash
+claude -p "Lance uv run pytest et résume les échecs" \
+  --allowedTools "Bash(uv run pytest *),Read" \
+  --output-format json | jq -r '.result'
+```
+
+Les formats sont `text`, `json` (avec `result`, `session_id` et
+`total_cost_usd`) et `stream-json`. `--continue` et `--resume <id>` enchaînent
+plusieurs appels. En mode `-p`, une action qui demanderait une approbation
+est refusée, sauf si une règle l'autorise. L'option `--bare` ignore les
+réglages, crochets, serveurs MCP et `CLAUDE.md` de la machine; la
+documentation la recommande pour les scripts.
+
+Pour GitHub, l'action `anthropics/claude-code-action@v1` répond aux mentions
+`@claude` dans les tickets et les demandes de tirage, ou exécute une consigne
+fixe (`prompt`). `/install-github-app` l'installe depuis une session; sinon,
+ajoutez le secret `ANTHROPIC_API_KEY` (ou `CLAUDE_CODE_OAUTH_TOKEN`, produit
+par `claude setup-token`) et un fichier de flux de travail.
+
+### Travail en parallèle
+
+`claude --worktree termes` (ou `-w`) crée un arbre de travail dans
+`.claude/worktrees/termes/`, sur une nouvelle branche `worktree-termes`, et y
+lance la session (@sec-s14). Ajoutez `.claude/worktrees/` à `.gitignore`. À
+la sortie, un arbre sans modification peut être supprimé automatiquement;
+s'il contient du travail, l'agent demande s'il faut le garder. Un arbre neuf n'a ni `.venv` ni fichiers ignorés :
+`uv run` recrée l'environnement, et `.worktreeinclude` copie les fichiers
+ignorés dont vous avez besoin.
+
+Les sessions d'arrière-plan (`claude --bg "demande"`, ou `/bg` dans une
+session) passent dans leur propre arbre de travail avant de modifier des
+fichiers; `claude agents` les liste. Un sous-agent personnalisé peut aussi
+recevoir `isolation: worktree` dans son en-tête.
+
+### Pièges et particularités
+
+- En session interactive, le mode de départ est `auto` depuis la version
+  2.1.283 : un classificateur approuve la plupart des actions et vous ne
+  voyez presque plus de demandes. Pour ce cours, où l'on veut observer ce
+  que fait l'agent, mettez `"defaultMode": "default"` dans le
+  `.claude/settings.json` du projet (la valeur `auto`, elle, n'est pas
+  acceptée dans un fichier de projet).
+- Les règles `allow` d'un `.claude/settings.json` versionné ne s'appliquent
+  qu'après que chacun a accordé sa confiance au dossier; les règles `deny`
+  et `ask` s'appliquent tout de suite.
+- Les fichiers de réglages sont du JSON strict : un commentaire `//` est une
+  erreur. Datez votre configuration dans le message de commit ou dans
+  `README.md`, pas dans le fichier.
+- Un `CLAUDE.local.md` ajouté pour vos préférences personnelles empêche la
+  lecture directe d'`AGENTS.md`. C'est une raison de plus pour importer
+  `@AGENTS.md` depuis `CLAUDE.md`.
+- Sans `--bare`, une exécution `claude -p` charge les crochets du projet et
+  les serveurs de `.mcp.json` sans demander de confirmation, même dans un
+  dossier jamais approuvé. Prudence avec un dépôt qui n'est pas le vôtre.
+
+Sources consultées (novembre 2026) :
+
+- <https://code.claude.com/docs/en/overview>
+- <https://code.claude.com/docs/en/setup>
+- <https://code.claude.com/docs/en/memory>
+- <https://code.claude.com/docs/en/permissions>
+- <https://code.claude.com/docs/en/permission-modes>
+- <https://code.claude.com/docs/en/settings>
+- <https://code.claude.com/docs/en/sandboxing>
+- <https://code.claude.com/docs/en/mcp>
+- <https://code.claude.com/docs/en/skills>
+- <https://code.claude.com/docs/en/sub-agents>
+- <https://code.claude.com/docs/en/commands>
+- <https://code.claude.com/docs/en/costs>
+- <https://code.claude.com/docs/en/headless>
+- <https://code.claude.com/docs/en/github-actions>
+- <https://code.claude.com/docs/en/common-workflows>
+- <https://code.claude.com/docs/en/worktrees>
+- <https://code.claude.com/docs/en/agent-view>
+- <https://code.claude.com/docs/en/model-config>
+- <https://claude.com/pricing>
+- <https://github.com/anthropics/claude-code/blob/main/LICENSE.md>

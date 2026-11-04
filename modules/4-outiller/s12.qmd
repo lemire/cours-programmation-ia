@@ -44,8 +44,9 @@ Chaque outil a d'abord inventé son propre nom :
 
 | Fichier | Lu par |
 |---------|--------|
-| `AGENTS.md` | Codex, Cursor, GitHub Copilot, et un nombre croissant d'autres agents |
-| `CLAUDE.md` | Claude Code |
+| `AGENTS.md` | Codex, Cursor, GitHub Copilot, Grok Build, OpenCode, et un nombre croissant d'autres agents |
+| `CLAUDE.md` | Claude Code (qui lit `AGENTS.md` seulement en l'absence de `CLAUDE.md`) |
+| `GEMINI.md` | Gemini CLI |
 | `.github/copilot-instructions.md` | GitHub Copilot |
 | `.cursor/rules/*.mdc` | Cursor (règles, éventuellement limitées à certains fichiers) |
 
@@ -60,6 +61,21 @@ symbolique.
 
 La liste exacte des outils qui lisent chaque fichier change vite. Vérifiez
 dans la documentation de votre agent, en date du jour.
+
+::: {.callout-note collapse="true"}
+## Dans votre agent
+
+| Agent | Fichier d'instructions | `AGENTS.md` | Compétences et extensions |
+|-------|------------------------|-------------|---------------------------|
+| [Claude Code](../../agents.qmd#sec-claude-code) | `CLAUDE.md` (racine ou `.claude/`), `CLAUDE.local.md`, `~/.claude/CLAUDE.md`, `.claude/rules/` | lu seulement en l'absence de `CLAUDE.md`; sinon `@AGENTS.md` dans `CLAUDE.md` | `.claude/skills/<nom>/SKILL.md`; sous-agents dans `.claude/agents/` |
+| [Codex CLI](../../agents.qmd#sec-codex) | `AGENTS.md` (ou `AGENTS.override.md`), `~/.codex/AGENTS.md`; 32 Kio au plus par défaut | natif | `.agents/skills/`; agents en TOML dans `.codex/agents/` |
+| [Cursor](../../agents.qmd#sec-cursor) | `AGENTS.md`, `.cursor/rules/*.mdc`; la CLI lit aussi `CLAUDE.md` | natif | `.cursor/skills/` ou `.agents/skills/`; sous-agents dans `.cursor/agents/` |
+| [GitHub Copilot](../../agents.qmd#sec-copilot) | `.github/copilot-instructions.md`, `.github/instructions/**/*.instructions.md`, `~/.copilot/copilot-instructions.md` | lu par la CLI, VS Code et l'agent infonuagique | `.github/skills/` ou `.agents/skills/`; agents `.github/agents/*.agent.md` |
+| [Gemini CLI](../../agents.qmd#sec-gemini) | `GEMINI.md`, `~/.gemini/GEMINI.md` | sur configuration (`context.fileName`) ou par `@./AGENTS.md` | `.gemini/skills/` ou `.agents/skills/`; commandes `.gemini/commands/*.toml`; `.gemini/agents/` |
+| [Grok Build](../../agents.qmd#sec-grok) | `AGENTS.md`, `~/.grok/AGENTS.md`, `.grok/rules/*.md` (dossier marqué fiable) | natif (lit aussi `CLAUDE.md`) | `.grok/skills/` (lit aussi `.claude/skills/` et `.agents/skills/`); `.grok/agents/` |
+| [OpenCode](../../agents.qmd#sec-opencode) | `AGENTS.md`, `~/.config/opencode/AGENTS.md`; clé `instructions` d'`opencode.json` | natif (`CLAUDE.md` à défaut) | `.opencode/skills/` (lit aussi `.claude/skills/` et `.agents/skills/`); `.opencode/commands/`, `.opencode/agents/` |
+| [Aider](../../agents.qmd#sec-aider) | aucun fichier chargé automatiquement; `read:` dans `.aider.conf.yml` ou `--read` | non documenté; se charge comme tout fichier avec `--read` | aucune; `--load` exécute une suite de commandes |
+:::
 
 ## Ce qui va dans le fichier
 
@@ -184,7 +200,8 @@ Les agents offrent deux mécanismes pour cela, qui se recoupent :
 
 - *Les commandes personnalisées* : un fichier Markdown contenant une
   invite, qu'on déclenche par son nom (`/mesurer`, par exemple). Claude Code
-  les lit dans `.claude/commands/`. D'autres agents ont l'équivalent sous
+  les lit dans `.claude/commands/`, mais sa documentation recommande
+  désormais les compétences. D'autres agents ont l'équivalent sous
   d'autres noms (*prompt files* dans Copilot, par exemple). C'est vous qui
   décidez quand l'invoquer.
 - *Les compétences* (*Agent Skills*) [@agentskills2025] : un dossier

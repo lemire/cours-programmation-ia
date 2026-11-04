@@ -144,6 +144,19 @@ parallèles (une option `--worktree`, ou une interface qui le fait pour vous).
 C'est commode. Vérifiez seulement où ils les placent et quand ils les
 retirent, avec `git worktree list`.
 
+::: {.callout-note collapse="true"}
+## Dans votre agent
+
+- [Claude Code](../../agents.qmd#sec-claude-code) : `claude --worktree NOM` (arbre dans `.claude/worktrees/`, à ignorer dans Git); sessions d'arrière-plan avec `claude --bg`, listées par `claude agents`.
+- [Codex CLI](../../agents.qmd#sec-codex) : `/worktree` dans le terminal; l'application de bureau transfère une conversation dans un arbre, et Codex Cloud exécute des tâches à distance.
+- [Cursor](../../agents.qmd#sec-cursor) : `agent --worktree NOM` (arbre dans `~/.cursor/worktrees/`); dans l'éditeur, `/worktree`, `/apply-worktree` et `/best-of-n`; `.cursor/worktrees.json` pour initialiser un arbre; agents infonuagiques.
+- [GitHub Copilot](../../agents.qmd#sec-copilot) : `copilot --worktree NOM` (arbre sous `<dépôt>.worktrees/`); `/delegate` confie la tâche à l'agent infonuagique; dans VS Code, *New Worktree*.
+- [Gemini CLI](../../agents.qmd#sec-gemini) : expérimental; `"experimental": {"worktrees": true}`, puis `gemini --worktree NOM` (arbre dans `.gemini/worktrees/`); le nettoyage est à votre charge.
+- [Grok Build](../../agents.qmd#sec-grok) : `grok -w NOM`, `grok worktree create NOM`, `/fork --worktree`; `/dashboard` suit les sessions parallèles.
+- [OpenCode](../../agents.qmd#sec-opencode) : rien d'intégré dans la documentation de la version 1; un `git worktree add` et une instance par arbre, ou `opencode serve` puis `opencode attach`.
+- [Aider](../../agents.qmd#sec-aider) : aucun; une instance par arbre créé avec `git worktree add`.
+:::
+
 ## Les collisions que Git ne voit pas
 
 Les arbres de travail isolent les fichiers suivis par Git. Tout le reste

@@ -88,8 +88,10 @@ même si les noms varient :
 | demander | l'agent s'arrête et attend votre accord | modifier un fichier hors de `src/` et `tests/`, `git commit`, `uv add` |
 | interdire | l'action est refusée, et le modèle en est informé | lire `.env`, `git push`, `rm -rf`, `curl` |
 
-Le réglage par défaut de la plupart des agents est prudent : il demande
-presque tout. C'est sûr, mais vite épuisant. Au bout de cinquante
+Le réglage par défaut varie d'un agent à l'autre. Certains demandent
+presque tout; d'autres laissent passer la plupart des actions, ou confient la
+décision à un classificateur (c'est le cas de Cursor, d'OpenCode et, depuis
+l'automne 2026, de Claude Code). Tout demander est sûr, mais vite épuisant. Au bout de cinquante
 demandes d'approbation, on finit par tout approuver sans lire, ou par passer
 en mode « tout autoriser ». Un mauvais réglage par défaut produit donc un
 comportement dangereux. Le bon réglage est explicite et versionné :
@@ -141,9 +143,9 @@ peuvent techniquement toucher, et `approval_policy` règle quand
 l'agent doit vous demander la permission :
 
 ```toml
-# ~/.codex/config.toml (ou la configuration de projet, selon la version)
+# .codex/config.toml (projet) ou ~/.codex/config.toml (personnel)
 sandbox_mode = "workspace-write"   # read-only | workspace-write | danger-full-access
-approval_policy = "on-request"     # untrusted | on-request | never
+approval_policy = "on-request"     # on-request | never
 
 [sandbox_workspace_write]
 network_access = false
@@ -161,6 +163,21 @@ l'autre. Vérifiez la documentation de votre version avant de copier une
 configuration, et datez celle que vous versionnez (un commentaire suffit).
 Les principes, eux, ne changent pas : autoriser peu, interdire ce qui est
 irréversible ou qui sort de la machine, et demander pour le reste.
+:::
+
+::: {.callout-note collapse="true"}
+## Dans votre agent
+
+| Agent | Permissions et bac à sable | MCP |
+|-------|----------------------------|-----|
+| [Claude Code](../../agents.qmd#sec-claude-code) | `.claude/settings.json` : `permissions` (`allow`, `ask`, `deny`) et `defaultMode`; bac à sable avec `/sandbox` ou `sandbox.enabled` (réglage personnel) | `.mcp.json`; `claude mcp add --scope project` |
+| [Codex CLI](../../agents.qmd#sec-codex) | `.codex/config.toml` : `sandbox_mode`, `approval_policy`; règles `prefix_rule` (`allow`, `prompt`, `forbidden`) dans `.codex/rules/*.rules` | `[mcp_servers.<nom>]` dans `.codex/config.toml` ou `~/.codex/config.toml`; `codex mcp add` |
+| [Cursor](../../agents.qmd#sec-cursor) | éditeur : `.cursor/permissions.json` (`terminalAllowlist`, sans liste d'interdiction); CLI : `.cursor/cli.json` (`allow`, `deny`); bac à sable : `.cursor/sandbox.json` | `.cursor/mcp.json` (`mcpServers`); `agent mcp list` |
+| [GitHub Copilot](../../agents.qmd#sec-copilot) | CLI : options `--allow-tool` et `--deny-tool`, sans politique partagée au niveau du dépôt; VS Code : `chat.tools.terminal.autoApprove` (réglage d'utilisateur); bac à sable : `/sandbox enable` | `.mcp.json` (`mcpServers`) ou `.vscode/mcp.json` (`servers`); `copilot mcp add` |
+| [Gemini CLI](../../agents.qmd#sec-gemini) | `--approval-mode`; `tools.allowed` dans `.gemini/settings.json`; politiques TOML dans `~/.gemini/policies/` (celles du projet sont sans effet en novembre 2026); bac à sable : `-s` | `mcpServers` dans `.gemini/settings.json`; `gemini mcp add` |
+| [Grok Build](../../agents.qmd#sec-grok) | `[permission]` (`allow`, `ask`, `deny`) dans `.grok/config.toml`; bac à sable : `--sandbox workspace` | `[mcp_servers.<nom>]` dans `.grok/config.toml`; `grok mcp add --scope project` |
+| [OpenCode](../../agents.qmd#sec-opencode) | clé `permission` d'`opencode.json` (`allow`, `ask`, `deny`; réglages par défaut permissifs); pas de bac à sable en version 1 | clé `mcp` d'`opencode.json`; `opencode mcp add` |
+| [Aider](../../agents.qmd#sec-aider) | pas de permissions d'outils : `.aider.conf.yml` (`suggest-shell-commands`, `auto-commits`); pas de bac à sable (image Docker) | non pris en charge |
 :::
 
 ## Le bac à sable

@@ -1,0 +1,266 @@
+## Cursor {#sec-cursor}
+
+Cursor se présente sous trois formes qui partagent le même compte, les mêmes
+règles et la même configuration MCP : un éditeur de code (l'interface
+classique, compatible avec les extensions de VS Code, et une « fenêtre
+Agents » pensée pour piloter plusieurs agents), une interface en ligne de
+commande qui s'appelle simplement `agent`, et des agents infonuagiques
+(*Cloud Agents*, le nom que Cursor donne à ses agents d'arrière-plan) qui travaillent dans
+une machine virtuelle et ouvrent une demande de tirage. Le logiciel est
+propriétaire. En novembre 2026, Cursor est vendu dans « The X Subscription »,
+un abonnement qui regroupe Grok, Cursor et X. Le forfait gratuit offre un
+usage limité. Plus (8 $ US par mois) donne accès aux seuls modèles maison
+(Grok 4.x, Composer 2.5), sans agents infonuagiques. Premium (30 $ US),
+Super (100 $ US) et Ultra (200 $ US) ajoutent les agents infonuagiques et les
+modèles de tiers (Claude, GPT, Gemini), facturés au prix de liste de l'API
+sur un crédit prépayé. L'usage inclus se renouvelle chaque semaine.
+
+### Installer et lancer
+
+L'éditeur s'installe à partir de [cursor.com/downloads](https://cursor.com/downloads)
+(paquets `.dmg`, `.exe`, dépôts `apt` et `dnf`, AppImage). On ouvre ensuite
+le dossier `indexeur` (*File > Open Folder*), on se connecte, puis on ouvre
+le panneau Agent avec Cmd+I (Ctrl+I sous Windows et Linux).
+
+L'interface en ligne de commande s'installe séparément :
+
+```bash
+curl https://cursor.com/install -fsS | bash   # macOS, Linux, WSL
+agent --version
+agent login          # authentification par le navigateur
+agent status         # vérifier le compte
+cd indexeur
+agent                # session interactive à la racine du dépôt
+```
+
+L'installateur place l'exécutable dans `~/.local/bin`, qu'il faut ajouter au
+`PATH` au besoin. Pour les scripts, on remplace `agent login` par une clé
+d'API créée dans le tableau de bord et placée dans `CURSOR_API_KEY`.
+
+### Une première session sur indexeur
+
+Voici la demande de la semaine 1, sous sa forme précise :
+
+> Ajoute une méthode `Index.termes_frequents(n)` dans `index.py`, qui
+> renvoie les `n` termes dont la fréquence totale dans le corpus est la plus
+> élevée, et une sous-commande `indexeur termes DOSSIER` dans `cli.py` qui
+> affiche les dix premiers, un par ligne. À fréquence égale, trier par ordre
+> alphabétique. Ajoute dans `tests/test_index.py` un test avec deux termes à
+> égalité. Ne modifie ni `exemples/` ni les tests existants. Termine par
+> `uv run pytest -q`.
+
+Dans l'éditeur, on colle cette demande dans le panneau Agent, en mode Agent
+(Maj+Tab alterne entre les modes Agent, Plan et Ask). Les modifications
+apparaissent dans la vue des différences, fichier par fichier. Avant chaque
+commande qui n'est pas dans la liste d'autorisation, une carte d'approbation
+s'affiche dans la conversation. Cursor crée aussi des points de restauration
+(*checkpoints*) avant les modifications importantes, ce qui permet de revenir
+en arrière sans passer par Git.
+
+Dans le terminal, on peut lancer la session directement avec la demande
+(`agent "Ajoute une méthode…"`). L'échange ressemble schématiquement à
+ceci :
+
+```text
+(illustration schématique, pas une transcription réelle)
+> Ajoute une méthode Index.termes_frequents(n)…
+  Lecture : src/indexeur/index.py, src/indexeur/cli.py, tests/test_index.py
+  Modification : src/indexeur/index.py (+14), src/indexeur/cli.py (+9),
+                 tests/test_index.py (+18)
+  Commande : uv run pytest -q      Exécuter? (y/n)
+```
+
+Ctrl+R ouvre la revue des modifications. Les flèches gauche et droite passent
+d'un fichier à l'autre, et `i` ajoute une consigne de suivi.
+
+### Fichier d'instructions
+
+Cursor reconnaît plusieurs sources :
+
+- `AGENTS.md` à la racine du projet et dans les sous-dossiers. Les fichiers
+  imbriqués s'ajoutent à ceux des dossiers parents, et le plus précis
+  l'emporte en cas de conflit.
+- Les règles de projet, `.cursor/rules/*.mdc`, avec un en-tête qui précise
+  quand la règle s'applique (`alwaysApply`, `globs`, `description`). Un
+  fichier `.md` ordinaire dans ce dossier est ignoré.
+- Les règles d'utilisateur (*Customize > Rules*), globales, et les règles
+  d'équipe, gérées dans le tableau de bord et prioritaires.
+
+L'interface en ligne de commande lit aussi `AGENTS.md` et `CLAUDE.md` à la
+racine du projet. Pour `indexeur`, le fichier `AGENTS.md` de la
+semaine 12 (@sec-s12) convient tel quel. Une règle
+`.mdc` sert surtout à cibler des fichiers, par exemple :
+
+```markdown
+---
+globs: tests/**/*.py
+alwaysApply: false
+---
+
+- Un fichier de tests par module : tests/test_<module>.py.
+- Les tests ne lisent que exemples/ et n'utilisent ni le réseau ni l'horloge.
+```
+
+### Permissions et bac à sable
+
+L'éditeur et l'interface en ligne de commande ont deux systèmes distincts.
+
+Dans l'éditeur, le mode d'exécution se règle dans *Settings > Agents >
+Approvals & Execution*. Trois modes existent : Allowlist (seules les
+commandes de la liste passent sans approbation), Auto-review (le mode par
+défaut, où un modèle classificateur juge les appels qui ne sont ni autorisés
+ni exécutables dans le bac à sable) et Run Everything (aucune approbation). La
+liste versionnée se place dans `.cursor/permissions.json`. Ce fichier n'a pas
+de liste d'interdiction : en mode Allowlist, tout ce qui n'est pas autorisé
+exige votre accord. Les consignes `block_instructions` orientent le
+classificateur d'Auto-review, sans rien garantir.
+
+```jsonc
+// .cursor/permissions.json (vérifié en novembre 2026)
+{
+  "terminalAllowlist": ["uv run pytest", "git status", "git diff"],
+  "autoRun": {
+    "block_instructions": [
+      "Toute commande git push, git commit ou curl doit passer par mon approbation."
+    ]
+  }
+}
+```
+
+L'interface en ligne de commande lit `.cursor/cli.json` (projet) et
+`~/.cursor/cli-config.json` (global). Elle a une liste `deny`, prioritaire
+sur `allow`. La forme `commande:arguments` filtre les arguments par motif :
+
+```json
+{
+  "permissions": {
+    "allow": ["Shell(uv:run pytest*)", "Shell(git:status*)", "Shell(git:diff*)"],
+    "deny":  ["Shell(git:push*)", "Shell(curl)", "Read(.env*)"]
+  }
+}
+```
+
+`git commit` n'y figure pas : la CLI demande donc votre accord avant de
+l'exécuter en mode interactif.
+
+Le bac à sable utilise Seatbelt sous macOS et Landlock avec seccomp sous
+Linux (noyau 6.2 ou plus récent). Les commandes peuvent écrire dans le
+dossier de travail, et le réseau est filtré par une liste de domaines.
+`.cursor/sandbox.json` permet de le resserrer, par exemple avec
+`"networkPolicy": {"default": "deny"}`. Dans la CLI, on règle le bac à sable
+avec `/sandbox` ou `--sandbox enabled`. Les fichiers `.cursor/*.json` sont
+protégés en écriture dans le bac à sable : l'agent ne peut pas élargir ses
+propres permissions.
+
+### MCP et extensions
+
+Les serveurs MCP se déclarent dans `.cursor/mcp.json` (projet) ou
+`~/.cursor/mcp.json` (global), sous la clé `mcpServers` :
+
+```json
+{
+  "mcpServers": {
+    "fichiers": { "command": "npx", "args": ["-y", "mcp-server"] }
+  }
+}
+```
+
+La CLI utilise la même configuration. `agent mcp list` affiche l'état des
+serveurs, `agent mcp list-tools NOM` leurs outils, et `Mcp(serveur:outil)`
+dans `cli.json` règle leurs permissions. Les compétences (`SKILL.md`) se
+rangent dans `.cursor/skills/` ou `.agents/skills/` (Cursor lit aussi
+`.claude/skills/` et `.codex/skills/`) et s'invoquent avec `/nom`. Les
+sous-agents personnalisés sont des fichiers Markdown dans `.cursor/agents/`,
+avec un en-tête (`name`, `description`, `model`, `readonly`).
+
+### Gérer le contexte et le coût
+
+Dans la CLI, `/clear` (ou `/new`) ouvre une nouvelle conversation et
+`/summarize` (alias `/compress`) compacte la conversation en cours.
+`/resume`, `agent resume`, `agent --continue` et `agent ls` reprennent une
+session. Le journal des modifications de la CLI documente aussi `/context`,
+qui montre ce qui occupe la fenêtre de contexte, et `/usage`, qui affiche
+l'usage du forfait. Dans l'éditeur, l'usage restant figure dans les
+réglages et sous *Usage* dans le tableau de bord du compte. Cursor fournit
+deux sous-agents intégrés : Explore, qui fouille le code avec un modèle plus
+rapide sans encombrer le contexte principal, et Browser.
+
+### Sans interface : scripts et intégration continue
+
+Le mode non interactif s'obtient avec `-p` (ou `--print`). Sans `--force`,
+les modifications sont seulement proposées. Avec `--force`, toute commande
+qui n'est pas explicitement interdite s'exécute :
+
+```bash
+agent -p --force --output-format json \
+  "Ajoute un test pour Index.termes_frequents et lance uv run pytest -q"
+```
+
+`--output-format` accepte `text`, `json` (un objet final avec `result`,
+`session_id` et `duration_ms`) et `stream-json` (un événement par ligne, avec
+les totaux de jetons par tour). Cursor ne publie pas d'action GitHub dédiée :
+la documentation montre une étape qui installe la CLI et lance `agent -p`
+avec `CURSOR_API_KEY` en secret. Elle recommande de laisser l'agent modifier
+les fichiers et de confier le commit et la poussée à des étapes
+déterministes du flux de travail.
+
+### Travail en parallèle
+
+La CLI crée un arbre de travail Git avec `agent --worktree NOM` (ou `-w`),
+sous `~/.cursor/worktrees/<dépôt>/<nom>`. Dans l'éditeur, `/worktree` lance
+la suite de la conversation dans un arbre séparé, `/apply-worktree` ramène
+les changements et `/delete-worktree` supprime l'arbre. `/best-of-n` lance la
+même tâche dans plusieurs arbres. La fenêtre Agents gère ces arbres
+directement. `.cursor/worktrees.json` décrit les commandes d'initialisation
+d'un nouvel arbre (pour `indexeur` : `"setup-worktree": ["uv sync"]`). Les
+agents infonuagiques, eux, travaillent sur leur propre branche, dans une
+machine virtuelle. On les lance depuis l'éditeur, depuis
+[cursor.com/agents](https://cursor.com/agents), en mentionnant `@cursor` dans
+un ticket GitHub ou, dans la CLI, en préfixant un message de `&`.
+
+### Pièges et particularités
+
+- Par défaut, la CLI ajoute « Made with Cursor » aux commits et aux demandes
+  de tirage de l'agent. On le désactive dans `~/.cursor/cli-config.json`
+  (`attribution.attributeCommitsToAgent` et `attribution.attributePRsToAgent`).
+- Les permissions de l'éditeur (`permissions.json`) et celles de la CLI
+  (`cli.json`) sont deux systèmes séparés, avec des syntaxes différentes. Une
+  règle écrite pour l'un ne protège pas l'autre.
+- Auto-review, le mode recommandé, repose sur un modèle classificateur. La
+  documentation précise qu'il n'est pas une frontière de sécurité.
+- Le nettoyage automatique conserve au plus 25 arbres de travail par machine
+  (`cursor.worktreeMaxCount`). Selon la documentation, des arbres créés hors
+  de Cursor, avec `git worktree add` par exemple, peuvent aussi être
+  supprimés.
+- En mode `-p --force`, l'agent a un accès complet en écriture. Les
+  interdictions de `cli.json` sont alors la seule limite, d'où l'intérêt
+  de les écrire avant le premier script.
+
+### Sources consultées (novembre 2026)
+
+- [Cursor CLI : vue d'ensemble](https://cursor.com/docs/cli/overview),
+  [installation](https://cursor.com/docs/cli/installation),
+  [authentification](https://cursor.com/docs/cli/reference/authentication),
+  [utilisation](https://cursor.com/docs/cli/using),
+  [paramètres](https://cursor.com/docs/cli/reference/parameters),
+  [commandes à barre oblique](https://cursor.com/docs/cli/reference/slash-commands),
+  [journal des modifications](https://cursor.com/docs/cli/changelog)
+- [Permissions de la CLI](https://cursor.com/docs/cli/reference/permissions),
+  [configuration de la CLI](https://cursor.com/docs/cli/reference/configuration)
+- [Mode sans interface](https://cursor.com/docs/cli/headless),
+  [format de sortie](https://cursor.com/docs/cli/reference/output-format),
+  [GitHub Actions](https://cursor.com/docs/cli/github-actions)
+- [Run Modes et bac à sable](https://cursor.com/docs/agent/security/run-modes),
+  [référence de `permissions.json`](https://cursor.com/docs/reference/permissions),
+  [référence de `sandbox.json`](https://cursor.com/docs/reference/sandbox)
+- [Règles et `AGENTS.md`](https://cursor.com/docs/rules),
+  [compétences](https://cursor.com/docs/skills),
+  [sous-agents](https://cursor.com/docs/subagents),
+  [MCP](https://cursor.com/docs/mcp), [MCP dans la CLI](https://cursor.com/docs/cli/mcp)
+- [Agent](https://cursor.com/docs/agent/overview),
+  [fenêtre Agents](https://cursor.com/docs/agent/agents-window),
+  [arbres de travail](https://cursor.com/docs/configuration/worktrees),
+  [agents infonuagiques](https://cursor.com/docs/cloud-agent)
+- [Démarrage rapide](https://cursor.com/docs/get-started/quickstart),
+  [modèles et prix](https://cursor.com/docs/models-and-pricing),
+  [The X Subscription](https://cursor.com/help/the-x-subscription/overview)

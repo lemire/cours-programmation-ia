@@ -1,0 +1,81 @@
+---
+toc-depth: 2
+---
+
+# Les agents de codage {.unnumbered}
+
+Le cours ne dépend d'aucun produit. Les habitudes qu'il enseigne (borner,
+tester, mesurer, outiller, isoler) valent pour tous les agents. Les détails
+pratiques, eux, changent d'un outil à l'autre : le nom du fichier
+d'instructions, la façon d'accorder une permission, la commande qui compacte
+le contexte. Cette page rassemble ces détails pour les principaux agents, en
+date de novembre 2026, avec la même tâche sur `indexeur` dans chacun.
+
+::: {.callout-warning}
+## Ces outils changent tous les mois
+
+Chaque fiche a été vérifiée dans la documentation officielle en novembre 2026,
+et chacune se termine par ses sources. Les noms d'options, les formats de
+configuration et les prix changent souvent. En cas de doute, la documentation
+de l'outil fait foi, pas cette page. Si vous trouvez une erreur, signalez-la à
+la personne qui vous encadre.
+:::
+
+## En un coup d'œil
+
+| Agent | Forme | Fichier d'instructions | MCP | Sans interface |
+|-------|-------|------------------------|-----|----------------|
+| [Claude Code](#sec-claude-code) (Anthropic) | ligne de commande, extensions d'éditeur, bureau, Web; propriétaire | `CLAUDE.md`; lit `AGENTS.md` en l'absence de `CLAUDE.md` | oui, `.mcp.json` | `claude -p "…"` |
+| [Codex CLI](#sec-codex) (OpenAI) | ligne de commande, extensions, bureau; libre (Apache 2.0) | `AGENTS.md` | oui, `[mcp_servers]` dans `config.toml` | `codex exec "…"` |
+| [Cursor](#sec-cursor) | éditeur, ligne de commande `agent`, agents infonuagiques; propriétaire | `AGENTS.md` et `.cursor/rules/*.mdc` | oui, `.cursor/mcp.json` | `agent -p "…"` |
+| [GitHub Copilot](#sec-copilot) (GitHub) | mode agent de VS Code, Copilot CLI, agent infonuagique sur tickets; propriétaire | `.github/copilot-instructions.md`, `AGENTS.md` (et d'autres pour la CLI) | oui, `.mcp.json` ou `.vscode/mcp.json` | `copilot -p "…"` |
+| [Gemini CLI](#sec-gemini) (Google) | ligne de commande; libre (Apache 2.0); comptes payants seulement depuis juin 2026 | `GEMINI.md`; `AGENTS.md` sur configuration | oui, `.gemini/settings.json` | `gemini -p "…"` |
+| [Grok Build](#sec-grok) (xAI) | ligne de commande plein écran; libre (Apache 2.0) | `AGENTS.md` (aussi `CLAUDE.md`) | oui, `.grok/config.toml` | `grok -p "…"` |
+| [OpenCode](#sec-opencode) (Anomaly) | terminal, bureau, Web; libre (MIT); tout fournisseur, y compris des modèles locaux | `AGENTS.md` (sinon `CLAUDE.md`) | oui, `opencode.json` | `opencode run "…"` |
+| [Aider](#sec-aider) | terminal, centré sur Git; libre (Apache 2.0); tout fournisseur | aucun par défaut; `--read CONVENTIONS.md` | non | `aider --message "…"` |
+
+## Comment choisir
+
+- Pour suivre le cours, n'importe lequel convient, pourvu qu'il puisse lire et
+  modifier le dépôt, exécuter des commandes avec votre permission, et vous
+  montrer ce qu'il fait (voir la [mise en route](mise-en-route.qmd)).
+- `AGENTS.md` est devenu le format commun [@agentsmd2025] : Codex, Grok Build
+  et OpenCode le lisent tel quel, Claude Code le lit à défaut de `CLAUDE.md`,
+  Gemini CLI le lit si on le configure. Écrire un seul `AGENTS.md` à la
+  [semaine 12](modules/4-outiller/s12.qmd) vous garde libre de changer d'outil.
+- Si le coût est un obstacle, OpenCode et Aider fonctionnent avec un modèle
+  local (moins capable, mais gratuit à l'usage), et Codex est inclus dans la
+  plupart des forfaits ChatGPT, y compris certains forfaits d'entrée de gamme.
+- Les agents à interface graphique (Cursor, Copilot dans VS Code) sont plus
+  confortables. Les agents en ligne de commande rendent tout visible : les
+  commandes, les fichiers lus, les jetons. Pour apprendre, la visibilité
+  compte.
+- Essayer deux agents sur la même fiche de tâche est un excellent exercice. Le
+  carnet de bord vous dira lequel vous convient, sur vos données.
+
+::: {.callout-note}
+## Et les autres?
+
+Il existe bien d'autres agents, et de nouveaux paraissent chaque mois. Depuis
+juin 2026, Google oriente les comptes individuels vers Antigravity CLI
+(commande `agy`) plutôt que vers Gemini CLI : voir la [fiche
+Gemini](#sec-gemini). La grille d'analyse de cette page (instructions,
+permissions, MCP, contexte, mode sans interface, parallélisme) s'applique à
+tout nouvel outil : remplissez-la vous-même avant de lui confier votre dépôt.
+:::
+
+{{< include _agents/claude-code.qmd >}}
+
+{{< include _agents/codex.qmd >}}
+
+{{< include _agents/cursor.qmd >}}
+
+{{< include _agents/copilot.qmd >}}
+
+{{< include _agents/gemini.qmd >}}
+
+{{< include _agents/grok.qmd >}}
+
+{{< include _agents/opencode.qmd >}}
+
+{{< include _agents/aider.qmd >}}

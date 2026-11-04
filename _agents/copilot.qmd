@@ -1,0 +1,288 @@
+## GitHub Copilot {#sec-copilot}
+
+GitHub Copilot, publié par GitHub (Microsoft), se présente sous trois formes
+qui partagent le même abonnement : le mode agent de VS Code (et d'autres
+éditeurs), Copilot CLI, un agent en ligne de commande, et Copilot cloud
+agent, qui travaille sur GitHub à partir d'un ticket et répond par une
+demande de tirage (l'ancien *coding agent*). Dans VS Code, le harnais
+Copilot partage son moteur d'exécution avec Copilot CLI. L'extension Copilot
+Chat de VS Code est publiée sous licence MIT. Copilot CLI est distribué sous
+une licence propriétaire, et le service lui-même est payant au-delà des
+quotas gratuits. Plusieurs familles de modèles sont offertes : Claude
+(`claude-sonnet-5.5` par défaut dans la CLI), GPT, Gemini. En novembre 2026, la
+facturation se fait en crédits IA (1 crédit = 0,01 $ US), calculés selon le
+modèle et le nombre de jetons. Pro (10 $ US par mois) inclut 1 500 crédits,
+Pro+ (39 $ US) 7 000 et Max (100 $ US) 20 000. Copilot Free et Copilot
+Student (gratuit pour les étudiantes et étudiants dont le statut est
+vérifié) offrent une allocation de crédits, avec le choix automatique du
+modèle seulement. Copilot Student inclut l'agent infonuagique, mais pas
+Copilot Free.
+
+### Installer et lancer
+
+Dans VS Code : installez l'éditeur, survolez l'icône Copilot dans la barre
+d'état, choisissez *Use AI Features* et connectez-vous avec votre compte
+GitHub. Ouvrez le dossier `indexeur` (*File > Open Folder*), acceptez de lui
+faire confiance, puis ouvrez la vue Chat. Dans la barre de saisie, réglez
+*Session Target* sur Copilot, l'agent sur Agent et les permissions sur
+*Manual permissions*.
+
+Copilot CLI s'installe avec npm (Node.js 22 ou plus récent), Homebrew,
+WinGet ou un script :
+
+```bash
+npm install -g @github/copilot        # ou : brew install --cask copilot-cli
+cd indexeur
+copilot                               # session interactive (/login au premier lancement)
+```
+
+Au premier lancement dans un dossier, la CLI demande si vous faites
+confiance à son contenu. Pour les scripts, elle lit un jeton dans
+`COPILOT_GITHUB_TOKEN`, `GH_TOKEN` ou `GITHUB_TOKEN`, dans cet ordre (jeton
+à granularité fine avec la permission *Copilot Requests*; les jetons
+classiques `ghp_` sont refusés).
+
+### Une première session sur indexeur
+
+Voici la demande de la semaine 1, sous sa forme précise :
+
+> Ajoute une méthode `Index.termes_frequents(n)` dans `index.py`, qui
+> renvoie les `n` termes dont la fréquence totale dans le corpus est la plus
+> élevée, et une sous-commande `indexeur termes DOSSIER` dans `cli.py` qui
+> affiche les dix premiers, un par ligne. À fréquence égale, trier par ordre
+> alphabétique. Ajoute dans `tests/test_index.py` un test avec deux termes à
+> égalité. Ne modifie ni `exemples/` ni les tests existants. Termine par
+> `uv run pytest -q`.
+
+Dans VS Code, l'agent enregistre ses modifications sur le disque au fur et
+à mesure et les marque comme « en attente de revue ». On les accepte ou on
+les annule (*Keep*, *Undo*) changement par changement, fichier par fichier
+ou en bloc. Avant chaque commande qui n'est pas approuvée d'avance, une
+boîte de confirmation montre la commande et propose de l'autoriser une fois,
+pour la session ou de façon permanente.
+
+Dans la CLI, on tape la demande au clavier (Maj+Tab passe en mode plan, qui
+propose un plan avant d'écrire du code). L'échange ressemble
+schématiquement à ceci :
+
+```text
+(illustration schématique, pas une transcription réelle)
+> Ajoute une méthode Index.termes_frequents(n)…
+  Lecture de src/indexeur/index.py, src/indexeur/cli.py
+  Modification de src/indexeur/index.py, src/indexeur/cli.py, tests/test_index.py
+  Exécuter « uv run pytest -q »?
+    1. Oui
+    2. Oui, et approuver cette commande pour le reste de la session
+    3. Non, et dire à Copilot quoi faire autrement (Échap)
+```
+
+`/diff` affiche ensuite les modifications. `/undo` (ou `/rewind`) ramène la
+session à un tour précédent, avec ou sans les fichiers.
+
+### Fichier d'instructions
+
+Copilot reconnaît `AGENTS.md`, mais la prise en charge varie selon la
+forme :
+
+- Copilot CLI fusionne `AGENTS.md`, `CLAUDE.md`, `GEMINI.md` et
+  `.github/copilot-instructions.md` (à la racine Git et dans le dossier
+  courant), les fichiers `.github/instructions/**/*.instructions.md` (qu'un
+  en-tête `applyTo` limite à certains fichiers) et, pour l'utilisateur,
+  `~/.copilot/copilot-instructions.md`. Une ligne `@chemin` importe un autre
+  fichier.
+- Dans VS Code, le harnais Copilot lit `.github/copilot-instructions.md` ou
+  `AGENTS.md`.
+- L'agent infonuagique lit `.github/copilot-instructions.md`, les fichiers
+  `.instructions.md`, `AGENTS.md`, `CLAUDE.md` et `GEMINI.md`.
+
+Pour `indexeur`, le fichier `AGENTS.md` de la semaine 12 (@sec-s12) suffit.
+`/init` (ou `copilot init`) en propose un, et `copilot instruction` liste
+les fichiers d'instructions trouvés dans le dossier courant. Si vous voulez
+tout de même cibler des fichiers :
+
+```markdown
+---
+applyTo: "tests/**/*.py"
+---
+
+Un fichier de tests par module : tests/test_<module>.py. Les tests ne lisent
+que exemples/ et n'utilisent ni le réseau ni l'horloge.
+```
+
+### Permissions et bac à sable
+
+Dans Copilot CLI, les permissions se donnent au lancement :
+`--allow-tool` et `--deny-tool` acceptent des motifs `Kind(argument)`
+(`shell`, `read`, `write`, `url`, `memory` ou le nom d'un serveur MCP). Le
+suffixe `:*` couvre la commande suivie de n'importe quels arguments, et les
+interdictions l'emportent toujours, même avec `--allow-all`. La
+documentation précise qu'il n'existe pas de politique de permissions
+partagée au niveau du dépôt. Les approbations enregistrées vont dans
+`~/.copilot/permissions-config.json`, qui est personnel et n'accepte pas
+d'interdictions. Pour une configuration versionnée, on met donc les options
+dans un petit script :
+
+```sh
+#!/bin/sh
+# copilot.sh : Copilot CLI avec les permissions d'indexeur (vérifié en novembre 2026).
+exec copilot \
+  --allow-tool='shell(uv run pytest:*), shell(git status:*), shell(git diff:*)' \
+  --deny-tool='shell(git push:*), shell(curl:*), read(.env)' \
+  "$@"
+```
+
+`git commit` n'est ni permis ni interdit : la CLI demande donc votre accord
+en session interactive. Le fichier `.github/copilot/settings.json`, lui, se
+versionne, mais il n'accepte qu'une courte liste de clés (`model`,
+`deniedUrls`, `hooks`, `includeCoAuthoredBy`…). Des crochets
+(*hooks*) `preToolUse` dans `.github/hooks/` peuvent aussi bloquer un appel
+d'outil. `/permissions assisted` confie les approbations à un modèle juge,
+et `/yolo` (ou `--allow-all`) supprime toutes les demandes.
+
+Le bac à sable local (`/sandbox enable` ou `--sandbox`) utilise Seatbelt
+sous macOS, Bubblewrap sous Linux et ProcessContainer sous Windows. Les
+commandes peuvent écrire dans le dossier courant, les dossiers temporaires et
+les métadonnées Git. L'accès Internet reste ouvert par défaut, alors que le
+réseau local est coupé. `/sandbox policy` affiche la politique effective.
+Ces réglages sont personnels et ne se règlent pas par dépôt.
+
+Dans VS Code, `chat.tools.terminal.autoApprove` associe des commandes (ou
+des expressions régulières entre `/`) à `true` (exécuter sans demander) ou à
+`false` (toujours demander). Une valeur `false` ne bloque pas la commande :
+elle impose une approbation. La documentation indique que ces règles sont synchronisées avec les
+réglages d'utilisateur et que les réglages d'espace de travail ne sont pas
+copiés vers l'hôte des sessions Copilot. On ne peut donc pas compter sur un
+`.vscode/settings.json` versionné.
+
+```jsonc
+// Réglages d'utilisateur de VS Code
+"chat.tools.terminal.autoApprove": {
+  "/^uv run pytest\\b/": true,
+  "/^git (commit|push)\\b/": false,
+  "curl": false
+}
+```
+
+Le bac à sable de VS Code (`chat.agent.sandbox.enabled`, en préversion sous
+macOS, Linux et WSL2) s'applique même en mode *Allow all*.
+
+### MCP et extensions
+
+Le fichier portable `.mcp.json`, à la racine du dépôt, est lu à la fois par
+Copilot CLI et par le harnais Copilot de VS Code (clé `mcpServers`). VS Code
+a aussi son propre format, `.vscode/mcp.json` (clé `servers`). Côté
+utilisateur, la CLI utilise `~/.copilot/mcp-config.json`, que gère
+`copilot mcp add NOM -- COMMANDE`.
+
+```json
+{
+  "mcpServers": {
+    "fichiers": { "command": "npx", "args": ["-y", "mcp-server"] }
+  }
+}
+```
+
+Les compétences (`SKILL.md`) se rangent dans `.github/skills/`,
+`.agents/skills/` ou `.claude/skills/`, et on les invoque en écrivant
+`/nom` dans la demande. Les agents personnalisés sont des fichiers
+`.agent.md` dans `.github/agents/` (ou `~/.copilot/agents/`) qu'on choisit
+avec `/agent` ou `--agent`.
+
+### Gérer le contexte et le coût
+
+Dans la CLI, `/clear` (alias `/new`) repart à zéro, `/compact` résume la
+conversation (on peut orienter le résumé : `/compact garde les décisions sur
+le format JSON`), `/context` montre l'occupation de la fenêtre de contexte,
+`/resume` et `copilot --continue` reprennent une session. `/usage` donne les
+jetons par modèle et les crédits consommés, et `--max-ai-credits` fixe un
+plafond indicatif par réponse. Dans VS Code, `/compact` existe aussi. La
+commande de fenêtre de contexte, dans la barre de saisie, affiche le coût
+cumulé de la session, et le tableau de bord Copilot de la barre d'état
+montre la consommation du mois. Les deux formes savent déléguer à des
+sous-agents. Dans la CLI, `/fleet` exécute en parallèle des parties d'une
+tâche, et `/tasks` les surveille.
+
+### Sans interface : scripts et intégration continue
+
+```bash
+copilot -p "Ajoute un test pour Index.termes_frequents et lance uv run pytest -q" \
+  -s --no-ask-user --allow-tool='write, shell(uv run pytest:*)'
+```
+
+En mode `-p`, toute action qui n'est pas autorisée d'avance est refusée
+automatiquement, puisque personne ne peut répondre. `-s` ne garde que la
+réponse, sans statistiques d'usage, et `--output-format=json` produit du
+JSONL (un objet par ligne). GitHub ne publie pas d'action dédiée : on
+installe la CLI avec `npm install -g @github/copilot` dans une étape du flux
+de travail. Une organisation peut utiliser le `GITHUB_TOKEN` du flux avec la
+permission `copilot-requests: write`. La documentation recommande plutôt
+GitHub Agentic Workflows (`gh-aw`), qui ajoute des garde-fous.
+
+L'agent infonuagique se passe du terminal. Sur GitHub, ouvrez le ticket,
+choisissez *Assignees*, puis *Copilot*, et ajoutez au besoin des consignes
+dans *Optional prompt*. L'agent travaille sur une branche et demande votre
+revue de la demande de tirage. Ses outils (Python, uv) s'installent dans
+`.github/workflows/copilot-setup-steps.yml`, un flux de travail dont l'unique
+tâche doit s'appeler `copilot-setup-steps`. Depuis le terminal :
+`gh agent-task create "…"` (GitHub CLI 2.80 ou plus récent, en préversion).
+
+### Travail en parallèle
+
+`copilot --worktree NOM` (ou `-w`) ouvre la session dans un nouvel arbre de
+travail, sous `<dépôt>.worktrees/` par défaut. `/new worktree` fait de même
+en cours de session. Plusieurs sessions locales peuvent tourner côte à côte :
+la barre latérale des sessions (flèche gauche quand la saisie est vide)
+passe de l'une à l'autre. `/delegate` envoie une tâche à l'agent
+infonuagique, qui ouvre une demande de tirage. Dans VS Code, la fenêtre
+Agents propose, pour chaque session, *Branch* (le dossier courant) ou *New
+Worktree*.
+
+### Pièges et particularités
+
+- Par défaut (`includeCoAuthoredBy`), la CLI ajoute une ligne
+  `Co-authored-by` aux commits de l'agent. On la retire en mettant
+  `"includeCoAuthoredBy": false` dans `.github/copilot/settings.json`.
+- Dans VS Code, les sessions en arbre de travail utilisent toujours le
+  niveau *Allow all* : le bac à sable est alors la seule limite.
+- Une variable `GH_TOKEN` ou `GITHUB_TOKEN` exportée pour un autre outil
+  remplace sans avertissement le compte connecté avec `/login`.
+- L'agent infonuagique reçoit le ticket et ses commentaires au moment de
+  l'assignation. Les commentaires ajoutés ensuite ne lui parviennent pas : il
+  faut commenter la demande de tirage.
+- Les noms de fichiers d'instructions reconnus diffèrent entre la CLI,
+  VS Code et l'agent infonuagique. `AGENTS.md` à la racine est le seul
+  dénominateur commun.
+
+### Sources consultées (novembre 2026)
+
+- [Installer Copilot CLI](https://docs.github.com/en/copilot/how-tos/copilot-cli/set-up-copilot-cli/install-copilot-cli),
+  [authentification](https://docs.github.com/en/copilot/how-tos/copilot-cli/set-up-copilot-cli/authenticate-copilot-cli),
+  [utiliser Copilot CLI](https://docs.github.com/en/copilot/how-tos/copilot-cli/use-copilot-cli/overview)
+- [Référence des commandes de Copilot CLI](https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-command-reference),
+  [dossier de configuration](https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-config-dir-reference),
+  [référence programmatique](https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-programmatic-reference)
+- [Autoriser et refuser des outils](https://docs.github.com/en/copilot/how-tos/copilot-cli/use-copilot-cli/allowing-tools),
+  [bac à sable local](https://docs.github.com/en/copilot/how-tos/cloud-and-local-sandboxes/using-local-sandboxing),
+  [politique du système de fichiers](https://docs.github.com/en/copilot/concepts/security-governance-and-network-settings/understanding-local-sandboxing)
+- [Instructions personnalisées (CLI)](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-custom-instructions),
+  [prise en charge selon l'environnement](https://docs.github.com/en/copilot/reference/custom-instructions-support),
+  [compétences](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-skills),
+  [agents personnalisés](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/create-custom-agents-for-cli)
+- [Sessions multiples](https://docs.github.com/en/copilot/how-tos/copilot-cli/use-copilot-cli/work-with-multiple-sessions),
+  [exécution programmatique](https://docs.github.com/en/copilot/how-tos/copilot-cli/automate-copilot-cli/run-cli-programmatically),
+  [Copilot CLI dans GitHub Actions](https://docs.github.com/en/copilot/how-tos/copilot-cli/use-copilot-cli-in-actions)
+- [Copilot cloud agent sur GitHub](https://docs.github.com/en/copilot/how-tos/use-copilot-agents/cloud-agent/use-cloud-agent-on-github),
+  [environnement de l'agent](https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/customize-cloud-agent/customize-the-agent-environment),
+  [depuis GitHub CLI](https://docs.github.com/en/copilot/how-tos/use-copilot-agents/cloud-agent/use-cloud-agent-from-cli)
+- [Forfaits](https://docs.github.com/en/copilot/get-started/plans),
+  [facturation à l'usage](https://docs.github.com/en/copilot/concepts/billing-and-usage/individuals/billing),
+  [licence de Copilot CLI](https://github.com/github/copilot-cli/blob/main/LICENSE.md)
+- VS Code : [configurer Copilot](https://code.visualstudio.com/docs/setup/copilot),
+  [démarrage rapide](https://code.visualstudio.com/docs/agents/quickstart),
+  [harnais d'agent](https://code.visualstudio.com/docs/agents/concepts/agent-harnesses),
+  [approbations et permissions](https://code.visualstudio.com/docs/agents/run/approvals),
+  [revue des modifications](https://code.visualstudio.com/docs/agents/run/review-code-edits),
+  [instructions personnalisées](https://code.visualstudio.com/docs/agent-customization/custom-instructions),
+  [configuration MCP](https://code.visualstudio.com/docs/agents/reference/mcp-configuration),
+  [optimiser l'usage](https://code.visualstudio.com/docs/agents/guides/optimize-usage),
+  [fenêtre Agents](https://code.visualstudio.com/docs/agents/run/agents-window)

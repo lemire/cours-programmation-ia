@@ -157,6 +157,21 @@ l'historique. Certains le font automatiquement, d'autres sur commande
 Plusieurs permettent aussi de vider le contexte sans quitter l'outil
 (`/clear` ou `/new`, selon l'agent).
 
+::: {.callout-note collapse="true"}
+## Dans votre agent
+
+| Agent | Vider | Compacter | Reprendre | Jetons et coût | Sous-agents |
+|-------|-------|-----------|-----------|----------------|-------------|
+| [Claude Code](../../agents.qmd#sec-claude-code) | `/clear` (`/new`) | `/compact` | `/resume`, `claude --continue` | `/usage` (`/cost`), `/context` | Explore, Plan, general-purpose |
+| [Codex CLI](../../agents.qmd#sec-codex) | `/new` (`/clear` efface aussi l'écran) | `/compact` | `/resume`, `codex resume --last` | `/status`, `/usage` | sur demande; `/subagents` |
+| [Cursor](../../agents.qmd#sec-cursor) (CLI) | `/clear` (`/new`) | `/summarize` (`/compress`) | `/resume`, `agent --continue` | `/usage`, `/context`; tableau de bord du compte | Explore, Browser |
+| [GitHub Copilot](../../agents.qmd#sec-copilot) (CLI) | `/clear` (`/new`) | `/compact` | `/resume`, `copilot --continue` | `/usage`, `/context` | oui; `/fleet` |
+| [Gemini CLI](../../agents.qmd#sec-gemini) | `/clear` | `/compress`; automatique à 50 % de la fenêtre | `/resume`, `gemini -r latest` | `/stats model`; pas de coût en dollars | oui, `.gemini/agents/` |
+| [Grok Build](../../agents.qmd#sec-grok) | `/new` (`/clear`) | `/compact`; automatique à 85 % | `/resume`, `grok -c` | `/usage` (`/cost`), `grok usage ID` | explore, plan, general-purpose |
+| [OpenCode](../../agents.qmd#sec-opencode) | `/new` (`/clear`) | `/compact` (`/summarize`); automatique | `/sessions`, `opencode --continue` | `opencode stats` | general, explore |
+| [Aider](../../agents.qmd#sec-aider) | `/clear`, `/drop`, `/reset` | automatique, sans commande | `--restore-chat-history` | affichés après chaque réponse; `/tokens` | aucun (mode `architect`) |
+:::
+
 La compaction est utile, mais elle perd de l'information, et c'est le modèle
 qui choisit ce qu'il garde. Une contrainte donnée au début (« ne touche pas à
 `exemples/` ») peut disparaître du résumé. Préférez une session courte à une

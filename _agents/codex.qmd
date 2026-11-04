@@ -1,0 +1,278 @@
+## Codex CLI {#sec-codex}
+
+Codex est l'agent de codage d'OpenAI. Codex CLI en est la forme en ligne de
+commande (`codex`); le même agent existe dans une extension pour VS Code et
+les éditeurs compatibles (Cursor, Windsurf), dans l'application de bureau
+ChatGPT et en infonuagique (Codex Cloud). La documentation, maintenant
+hébergée sous learn.chatgpt.com, présente ces formes ensemble. Le code de
+Codex CLI est libre, sous licence Apache 2.0. Les modèles recommandés en
+novembre 2026 sont ceux d'OpenAI (par exemple `gpt-6.1-sol`, `gpt-6.1-terra`,
+`gpt-6-luna`); un fournisseur tiers est possible s'il offre un point d'accès
+compatible avec l'API Responses. Codex est inclus dans les forfaits ChatGPT
+Free, Go (8 $ US par mois), Plus (20 $), Pro (à partir de 100 $), Business,
+Edu et Enterprise, avec des limites d'utilisation qui varient selon le
+forfait et le modèle. On peut aussi se connecter avec une clé d'API, facturée
+au tarif de l'API.
+
+### Installer et lancer
+
+```bash
+curl -fsSL https://chatgpt.com/codex/install.sh | sh   # macOS, Linux (et mise à jour)
+npm install -g @openai/codex                           # ou par npm
+brew install --cask codex                              # ou par Homebrew
+```
+
+Sous Windows, le dépôt donne un installateur PowerShell
+(`powershell -ExecutionPolicy ByPass -c "irm https://chatgpt.com/codex/install.ps1 | iex"`);
+la documentation décrit aussi l'usage sous WSL. Pour l'authentification, `codex login` ouvre le
+navigateur (« Sign in with ChatGPT »). Avec une clé d'API, passez-la par
+l'entrée standard plutôt qu'en argument :
+
+```bash
+printenv OPENAI_API_KEY | codex login --with-api-key
+```
+
+Les identifiants sont gardés dans `~/.codex/auth.json` (en clair) ou dans le
+trousseau du système. Lancez ensuite l'agent à la racine du dépôt :
+
+```bash
+cd indexeur
+codex                                   # session interactive
+codex "explique ARCHITECTURE.md en cinq points"   # avec une première demande
+```
+
+### Une première session sur indexeur
+
+La demande de la semaine 1, écrite avec précision :
+
+> Ajoute une commande `indexeur termes DOSSIER` qui affiche les dix termes
+> les plus fréquents du corpus, un par ligne, au format `terme<TAB>total`.
+> Le calcul va dans une nouvelle méthode `Index.termes_frequents(n)`;
+> `cli.py` ne fait qu'afficher. À fréquence égale, trier par ordre
+> alphabétique du terme. Ajoute un test dans `tests/test_index.py` (avec un
+> cas d'égalité) et un dans `tests/test_cli.py`. Lance `uv run pytest`.
+> Ne fais pas de commit.
+
+Pour une tâche de cette taille, `/plan` fait d'abord proposer une démarche.
+Dans un dépôt Git, le réglage recommandé est « Auto » : bac à sable
+`workspace-write` et approbation `on-request`. Codex lit, modifie et exécute
+dans le dossier de travail sans rien demander; il demande avant d'écrire
+ailleurs ou d'utiliser le réseau. Schématiquement (illustration, pas une
+transcription réelle) :
+
+```text
+• Lecture de src/indexeur/index.py, cli.py, tests/test_index.py
+• Modification de src/indexeur/index.py, tests/test_index.py
+• Exécution : uv run pytest -q          (dans le bac à sable, sans demande)
+• Demande d'approbation : une commande veut sortir du bac à sable
+  [approuver / refuser]
+```
+
+Il y a donc peu d'interruptions : c'est à vous de relire. `/diff` affiche le
+diff Git, y compris les fichiers non suivis, et `/review` demande à Codex une
+revue de l'arbre de travail. Relisez quand même `git diff` dans votre éditeur.
+
+### Fichier d'instructions
+
+Codex lit `AGENTS.md` (c'est son format natif). Il charge d'abord le fichier
+global de son dossier personnel (`~/.codex/AGENTS.md`, ou `$CODEX_HOME`),
+puis descend de la racine du projet (en général la racine Git) jusqu'au
+dossier courant. Dans chaque dossier, il prend `AGENTS.override.md` s'il
+existe, sinon `AGENTS.md`. Les fichiers sont concaténés, et le plus proche
+du dossier courant a le dernier mot. Le total est tronqué à
+`project_doc_max_bytes` (32 Kio par défaut). La clé
+`project_doc_fallback_filenames` ajoute d'autres noms (par exemple
+`CLAUDE.md`) quand `AGENTS.md` manque. `/init` produit une ébauche.
+
+Le fichier d'`indexeur` de la semaine 12 (@sec-s12) convient tel quel. Une
+section propre à Codex peut s'y ajouter :
+
+```markdown
+## Pour Codex
+- Le dossier .git est en lecture seule dans le bac à sable : ne tente
+  pas de commit, je les fais moi-même.
+- Après chaque modification : `uv run pytest -q`.
+```
+
+### Permissions et bac à sable
+
+Codex sépare deux réglages (@sec-s11). `sandbox_mode` fixe ce que les
+commandes peuvent toucher : `read-only`, `workspace-write` ou
+`danger-full-access`. `approval_policy` fixe quand l'agent vous consulte :
+`on-request` en interactif, `never` pour les scripts. Le bac à sable est
+appliqué par le système : Seatbelt sous macOS, `bwrap` et `seccomp` sous
+Linux. En `workspace-write`, le réseau est coupé par défaut, et `.git`,
+`.codex` et `.agents` restent en lecture seule même à l'intérieur du
+dossier de travail. `/permissions` change de mode en cours de session.
+
+Le réglage du projet va dans `.codex/config.toml`, qui accepte les
+commentaires :
+
+```toml
+# .codex/config.toml — vérifié en novembre 2026
+sandbox_mode = "workspace-write"
+approval_policy = "on-request"
+
+[sandbox_workspace_write]
+network_access = false
+```
+
+Les règles sur les commandes vont dans un fichier `.rules` d'un dossier
+`rules/`, par exemple `.codex/rules/indexeur.rules`. Chaque règle donne un
+préfixe de commande et une décision : `allow`, `prompt` ou `forbidden`.
+Quand plusieurs règles correspondent, la plus restrictive l'emporte. Les
+listes `match` et `not_match` servent de tests, vérifiés au chargement :
+
+```python
+prefix_rule(
+    pattern = ["uv", "run", "pytest"],
+    decision = "allow",
+    justification = "Tests du projet",
+)
+prefix_rule(
+    pattern = ["git", "commit"],
+    decision = "prompt",
+    justification = "Relire le diff avant chaque commit",
+)
+prefix_rule(
+    pattern = ["git", "push"],
+    decision = "forbidden",
+    justification = "La publication se fait à la main",
+    match = ["git push origin main"],
+)
+prefix_rule(
+    pattern = ["curl"],
+    decision = "forbidden",
+    justification = "Aucun accès réseau depuis l'agent",
+)
+```
+
+Attention au sens de `allow` : une commande autorisée ainsi s'exécute hors
+du bac à sable sans demande. Dans le bac à sable, `uv run pytest` passe déjà
+sans demande. La règle ne sert donc que si la commande doit en sortir, par
+exemple pour écrire dans le cache de `uv`, situé hors du dépôt. Retirez-la
+si vous préférez que les tests restent confinés. Pour `git commit`, le
+blocage de `.git` impose de toute façon une approbation. Une règle se teste
+avant usage :
+
+```bash
+codex execpolicy check --pretty --rules .codex/rules/indexeur.rules -- git push origin main
+```
+
+### MCP et extensions
+
+Chaque serveur MCP est une table `[mcp_servers.<nom>]`, dans
+`~/.codex/config.toml` ou dans le `.codex/config.toml` du projet :
+
+```toml
+[mcp_servers.git]
+command = "uvx"
+args = ["mcp-server-git", "--repository", "."]
+```
+
+Les clés `enabled_tools` et `disabled_tools` restreignent les outils exposés,
+et `enabled = false` désactive un serveur sans l'effacer. La commande
+`codex mcp add git -- uvx mcp-server-git --repository .` écrit dans la
+configuration personnelle. `codex mcp list` et `/mcp` affichent les serveurs.
+
+Une compétence est un dossier contenant un fichier `SKILL.md`, dont l'en-tête donne obligatoirement `name` et
+`description`. Codex les cherche dans `.agents/skills/`, du dossier courant
+jusqu'à la racine du dépôt, et dans `$HOME/.agents/skills`. On les invoque
+par `$nom` ou par `/skills`, ou Codex les choisit seul selon la description.
+Les agents personnalisés sont des fichiers TOML dans `.codex/agents/`
+(projet) ou `~/.codex/agents/` (personnel), avec `name`, `description` et
+`developer_instructions`. Ils héritent du bac à sable et de la politique
+d'approbation de la session. Les crochets (`/hooks`) et les modules
+d'extension (`/plugins`) complètent l'ensemble.
+
+### Gérer le contexte et le coût
+
+- `/new` démarre une nouvelle conversation dans la même session, `/clear`
+  efface aussi le terminal, et `/compact` résume la conversation pour
+  libérer des jetons.
+- `/resume` reprend une conversation enregistrée. Dans le terminal,
+  `codex resume --last` reprend la plus récente du dossier courant (`--all`
+  pour tous les dossiers). `/fork` copie la conversation dans une nouvelle.
+- `/status` affiche la configuration de la session et les jetons utilisés;
+  `/usage` montre la consommation du compte et les limites.
+- Codex peut lancer des sous-agents en parallèle quand on le lui demande.
+  Chacun a son propre contexte et renvoie un résumé, ce qui consomme plus de
+  jetons au total. `/subagents` passe d'un fil à l'autre.
+
+### Sans interface : scripts et intégration continue
+
+`codex exec` exécute une demande sans interface. La progression va sur la
+sortie d'erreur, et seul le message final va sur la sortie standard. Par
+défaut, le bac à sable est en lecture seule; il faut le demander
+explicitement pour permettre des modifications :
+
+```bash
+codex exec --sandbox workspace-write "Lance uv run pytest et corrige les échecs"
+codex exec --json "Résume les échecs de uv run pytest" > trace.jsonl
+codex exec resume --last "Ajoute maintenant un test pour le cas vide"
+```
+
+`--json` produit un flux d'événements JSON Lines; l'événement
+`turn.completed` contient le décompte des jetons (`usage`). `-o` écrit le
+message final dans un fichier, et `--output-schema` impose un schéma JSON à
+la réponse. `codex exec` exige un dépôt Git, sauf avec
+`--skip-git-repo-check`. En intégration continue, `CODEX_API_KEY` peut
+fournir une clé pour un seul appel.
+
+Pour GitHub, l'action `openai/codex-action@v1` prend `openai-api-key`
+(depuis un secret), `prompt` ou `prompt-file`, `sandbox`, et `output-file`
+pour récupérer le message final. Elle retire par défaut les droits `sudo`
+avant d'exécuter Codex (`safety-strategy: drop-sudo`).
+
+### Travail en parallèle
+
+Dans le terminal, `/worktree` démarre ou reprend une conversation dans un
+arbre de travail Git géré par Codex. L'application de bureau va plus loin :
+une conversation peut s'ouvrir directement dans un arbre de travail, ou y
+être transférée (« Hand off ») pour continuer en arrière-plan. Les arbres
+de l'application sont créés sous `$CODEX_HOME/worktrees`, et les quinze plus
+récents sont conservés par défaut. Lors d'un transfert, les fichiers ignorés
+par Git ne suivent que s'ils sont listés dans `.worktreeinclude`. Vous pouvez aussi créer
+vos arbres vous-même avec `git worktree add` (@sec-s14) et lancer un `codex`
+dans chacun. Codex Cloud, enfin, exécute des tâches en parallèle dans des
+environnements distants; il exige une connexion par compte ChatGPT.
+
+### Pièges et particularités
+
+- Les couches de projet (`.codex/config.toml`, `.codex/rules/`) ne sont
+  chargées que si vous avez accordé votre confiance au projet. Sinon, elles
+  sont ignorées sans bruit, et Codex peut démarrer en lecture seule.
+- Le réseau est coupé dans le bac à sable. Si `uv run` doit d'abord
+  télécharger `pytest`, la commande échoue ou demande une approbation. Lancez
+  `uv sync` vous-même avant la session.
+- Les valeurs ont changé récemment : `approval_policy = "untrusted"` n'est
+  plus prise en charge, `on-failure` est déconseillée, et l'option
+  `--full-auto` de `codex exec` a disparu (on utilise
+  `--sandbox workspace-write`). Beaucoup de tutoriels en ligne sont périmés.
+- Une règle `prefix_rule` compare un préfixe exact : `["git", "push"]` ne
+  reconnaît pas `git -C . push`. La vraie protection reste le bac à sable;
+  ne passez jamais à `danger-full-access` ou `--yolo` hors d'un conteneur.
+- La documentation des commandes mélange souvent l'application de bureau et
+  le terminal : vérifiez que la commande décrite existe bien dans le CLI
+  (`/` dans la session en affiche la liste).
+
+Sources consultées (novembre 2026) :
+
+- <https://learn.chatgpt.com/docs/codex/cli>
+- <https://github.com/openai/codex>
+- <https://learn.chatgpt.com/docs/auth>
+- <https://learn.chatgpt.com/docs/pricing>
+- <https://learn.chatgpt.com/docs/models>
+- <https://learn.chatgpt.com/docs/ide>
+- <https://learn.chatgpt.com/docs/agent-configuration/agents-md>
+- <https://learn.chatgpt.com/docs/agent-approvals-security>
+- <https://learn.chatgpt.com/docs/agent-configuration/rules>
+- <https://learn.chatgpt.com/docs/config-file/config-basic>
+- <https://learn.chatgpt.com/docs/config-file/config-reference>
+- <https://learn.chatgpt.com/docs/extend/mcp?surface=cli>
+- <https://learn.chatgpt.com/docs/build-skills>
+- <https://learn.chatgpt.com/docs/agent-configuration/subagents>
+- <https://learn.chatgpt.com/docs/developer-commands?surface=cli>
+- <https://learn.chatgpt.com/docs/non-interactive-mode>
+- <https://learn.chatgpt.com/docs/github-action>
+- <https://learn.chatgpt.com/docs/environments/git-worktrees>

@@ -1,0 +1,271 @@
+## Gemini CLI {#sec-gemini}
+
+Gemini CLI est l'agent de codage en ligne de commande de Google, publié sous
+licence Apache 2.0 (dépôt `google-gemini/gemini-cli`, commande `gemini`). Il
+est écrit en TypeScript et exige Node.js 20 ou plus récent. Il fonctionne
+dans le terminal, peut s'intégrer à un éditeur, et il a un mode sans
+interface. Il utilise les modèles Gemini : l'alias `auto`, valeur par
+défaut, choisit entre un modèle Pro et un modèle Flash, et `/model` permet
+d'en fixer un. Sa situation a changé en 2026. Depuis le 18 juin 2026, l'accès
+gratuit avec un compte Google personnel et l'accès par les abonnements Google
+AI Pro et Ultra ont été transférés vers un autre outil, Antigravity CLI
+(commande `agy`). Gemini CLI reste mis à jour (version 0.67 le 4 novembre
+2026), mais il vise désormais les organisations titulaires d'une licence
+Gemini Code Assist Standard ou Enterprise, et les utilisateurs d'une clé
+d'API payante (Gemini API ou Vertex AI), facturée au jeton. Le dépôt précise
+aussi qu'il n'est pas optimisé pour les modèles de la série Gemini 4.
+
+::: {.callout-warning}
+## Avant de choisir Gemini CLI pour le cours
+
+Pour une étudiante ou un étudiant sans licence d'entreprise, Gemini CLI
+signifie en pratique une clé d'API payante. Certaines pages de la
+documentation décrivent encore un palier gratuit (1 000 requêtes par jour
+avec un compte Google). Elles n'ont pas été mises à jour : le `README.md` du
+dépôt, la page des forfaits et l'annonce de Google de mai 2026 l'emportent.
+Google oriente les comptes personnels vers Antigravity CLI, qui n'est pas
+décrit ici.
+:::
+
+### Installer et lancer
+
+```bash
+npm install -g @google/gemini-cli        # ou : brew install gemini-cli
+gemini --version
+
+export GEMINI_API_KEY="..."              # clé créée dans Google AI Studio
+cd indexeur
+gemini
+```
+
+Au premier lancement, choisissez la méthode d'authentification : clé
+d'API Gemini, Vertex AI (`GOOGLE_CLOUD_PROJECT`, `GOOGLE_CLOUD_LOCATION` et
+des identifiants Google Cloud), ou « Sign in with Google » pour un compte
+d'organisation qui a une licence Code Assist. `npx @google/gemini-cli` lance
+l'outil sans l'installer. Les versions stables paraissent chaque semaine
+(`@latest`). Il existe aussi des canaux `@preview` et `@nightly`.
+
+### Une première session sur indexeur
+
+On peut taper la demande dans la session interactive, ou la passer au
+lancement avec `-i`. La session continue alors après la réponse :
+
+```bash
+gemini -i "Ajoute une méthode Index.termes_frequents(n) dans index.py qui
+renvoie les n termes les plus fréquents du corpus, par fréquence
+décroissante puis par ordre alphabétique en cas d'égalité, et une commande
+'indexeur termes DOSSIER' dans cli.py qui affiche les dix premiers. Écris
+d'abord le test dans tests/test_index.py, puis lance uv run pytest -q.
+Ne modifie pas exemples/."
+```
+
+À titre d'illustration schématique, et non comme une transcription réelle,
+la session ressemble à ceci :
+
+```
+> Ajoute une méthode Index.termes_frequents(n) …
+  ✓ ReadFile  src/indexeur/index.py
+  ? WriteFile tests/test_index.py      (diff affiché dans la boîte)
+    Allow once · … (autres choix selon la version)
+  ? Shell     uv run pytest -q
+    Allow once · …
+```
+
+En mode par défaut, chaque écriture de fichier et chaque commande passe par
+une boîte de confirmation qui montre le diff ou la commande. Le libellé
+exact des choix dépend de la version. `Échap` deux fois (ou `/rewind`) revient
+à un tour antérieur et peut annuler les modifications de fichiers. Relisez
+ensuite avec `git diff`.
+
+### Fichier d'instructions
+
+Le fichier d'instructions s'appelle par défaut `GEMINI.md`. Gemini CLI le
+cherche à trois endroits :
+
+- `~/.gemini/GEMINI.md` : instructions personnelles, pour tous les projets;
+- dans le dossier courant et ses parents, jusqu'à la racine du dépôt (le
+  dossier qui contient `.git`);
+- au fil de la session, dans les dossiers que l'agent consulte.
+
+Tous les fichiers trouvés sont concaténés. Gemini CLI ne lit pas `AGENTS.md`
+par défaut. Pour garder un seul fichier, comme le recommande la semaine 12,
+on le déclare dans `.gemini/settings.json` :
+
+```json
+{
+  "context": { "fileName": ["AGENTS.md", "GEMINI.md"] }
+}
+```
+
+On peut aussi créer un `GEMINI.md` qui ne contient que la ligne
+`@./AGENTS.md`, la syntaxe d'importation de Gemini CLI. `/memory show`
+affiche le contexte réellement chargé, `/memory reload` le relit, et
+`/init` propose un premier `GEMINI.md` à partir du dépôt. Le `AGENTS.md`
+d'`indexeur` présenté à la semaine 12 convient tel quel.
+
+### Permissions et bac à sable
+
+Il y a quatre modes d'approbation : `default` (confirmation des écritures et
+des commandes), `auto_edit` (modifications de fichiers acceptées sans
+demander), `plan` (lecture seule) et `yolo` (tout est accepté). On les
+choisit au lancement avec `--approval-mode`. Dans `settings.json`, la clé
+`general.defaultApprovalMode` ne peut pas activer `yolo`.
+
+Les règles fines passent par le moteur de politiques (*policy engine*) : des
+fichiers TOML de règles `[[rule]]` avec une décision `allow`, `ask_user` ou
+`deny` et une priorité. La règle la plus prioritaire l'emporte. Limite
+importante en novembre 2026 : les politiques de projet
+(`.gemini/policies/*.toml`) n'ont aucun effet, selon la documentation, qui
+renvoie au ticket #18186, toujours ouvert. Pour `indexeur`, on combine donc
+un réglage de projet versionné et une politique personnelle.
+
+Fichier `.gemini/settings.json`, versionné (format vérifié en novembre 2026) :
+
+```json
+{
+  "context": { "fileName": ["AGENTS.md", "GEMINI.md"] },
+  "tools": { "allowed": ["run_shell_command(uv run pytest)"] }
+}
+```
+
+```toml
+# ~/.gemini/policies/indexeur.toml (personnel; versionnez-en une copie)
+[[rule]]
+toolName = "run_shell_command"
+commandPrefix = "git commit"
+decision = "ask_user"
+priority = 100
+
+[[rule]]
+toolName = "run_shell_command"
+commandPrefix = ["git push", "curl"]
+decision = "deny"
+priority = 900
+denyMessage = "Interdit dans ce cours : pas de push ni de requête réseau."
+```
+
+Comme pour les autres agents, `commandPrefix` compare le début de la
+commande. Un garde-fou de ce genre se contourne. `/policies list` affiche les
+règles actives.
+
+Le bac à sable est désactivé par défaut. Il s'active avec `-s`, la variable
+`GEMINI_SANDBOX` ou `"tools": {"sandbox": …}`. Il s'active aussi
+automatiquement en mode `yolo`. Sous macOS, `GEMINI_SANDBOX=sandbox-exec`
+utilise Seatbelt. Le profil par défaut, `permissive-open`, limite l'écriture
+au projet mais laisse passer le réseau. Les profils `*-proxied`, choisis
+avec `SEATBELT_PROFILE`, font passer le réseau par un mandataire. Ailleurs,
+Gemini CLI utilise un conteneur Docker ou Podman, qu'on peut personnaliser
+avec `.gemini/sandbox.Dockerfile`.
+
+### MCP et extensions
+
+Les serveurs MCP se déclarent dans l'objet `mcpServers` de
+`.gemini/settings.json` (projet) ou de `~/.gemini/settings.json`
+(personnel) :
+
+```json
+{
+  "mcpServers": {
+    "git": { "command": "uvx", "args": ["mcp-server-git", "--repository", "."] }
+  }
+}
+```
+
+La commande `gemini mcp add git uvx mcp-server-git -- --repository .` écrit la
+même chose. Sa portée par défaut est le projet (`-s user` pour la portée
+personnelle). Dans une session, `/mcp` liste les serveurs, leurs outils et
+leurs ressources. Évitez l'option `"trust": true` : elle supprime toute
+confirmation pour les outils du serveur. Gemini CLI offre aussi :
+
+- des commandes personnalisées : des fichiers TOML dans `.gemini/commands/`
+  (`test.toml` devient `/test`, `{{args}}` reçoit les arguments);
+- des compétences : un dossier contenant un `SKILL.md`, dans `.gemini/skills/`
+  ou `.agents/skills/`;
+- des sous-agents : `.gemini/agents/`, gérés par `/agents`, invoqués
+  automatiquement ou avec `@nom` (par exemple `@codebase_investigator`);
+- des extensions qui regroupent tout cela, gérées avec
+  `gemini extensions install|list|update`.
+
+### Gérer le contexte et le coût
+
+| Besoin | Commande |
+|--------|----------|
+| Nouvelle session | `/clear` |
+| Compacter | `/compress`. Compaction automatique à 50 % de la fenêtre (`model.compressionThreshold`) |
+| Reprendre | `gemini -r latest`, `gemini -r 3`, `/resume`, `gemini --list-sessions` |
+| Jetons | `/stats model` (jetons et quota), `/stats session`, `/stats tools` |
+
+Les sessions sont enregistrées automatiquement dans
+`~/.gemini/tmp/<hachage du projet>/chats/`. Gemini CLI n'affiche pas de
+coût en dollars : avec une clé payante, le montant se lit dans la console de
+facturation (AI Studio ou Google Cloud). Les sous-agents ont leur propre
+fenêtre de contexte, ce qui allège la conversation principale. Le modèle
+choisi avec `/model` ne s'applique pas à eux.
+
+### Sans interface : scripts et intégration continue
+
+```bash
+gemini -p "Lance uv run pytest -q et résume les échecs" --output-format json \
+  | jq -r '.response'
+```
+
+`-p` force le mode non interactif. Le format `json` renvoie `response`,
+`stats` (jetons) et éventuellement `error`. `stream-json` produit un flux
+JSONL (`init`, `message`, `tool_use`, `tool_result`, `result`). Les codes
+de retour sont documentés : 0 pour un succès, 1 pour une erreur, 42 pour une
+entrée invalide, 53 pour une limite de tours dépassée. En mode non
+interactif, une décision `ask_user` est traitée comme un refus. Pour
+l'intégration continue, Google publie l'action GitHub
+`google-github-actions/run-gemini-cli`, configurable avec un secret
+`GEMINI_API_KEY`. Dans une session, `/setup-github` installe les flux de
+travail de revue et de tri. Dans un dossier non fiable, le mode sans
+interface s'arrête avec `FatalUntrustedWorkspaceError`.
+
+### Travail en parallèle
+
+Les arbres de travail Git sont pris en charge, mais encore expérimentaux.
+Il faut d'abord ajouter `"experimental": {"worktrees": true}` à
+`settings.json`. Ensuite, `gemini --worktree termes` crée
+`.gemini/worktrees/termes` sur sa propre branche et y lance la session. À la
+sortie, l'arbre et la branche sont conservés : leur nettoyage
+(`git worktree remove`, `git branch -D`) est à votre charge. On peut aussi
+créer l'arbre soi-même avec `git worktree add`, puis lancer `gemini` dedans.
+`/shells` affiche les commandes envoyées en arrière-plan.
+
+### Pièges et particularités
+
+- L'accès gratuit et l'accès par les abonnements Google AI Pro et Ultra ont
+  pris fin le 18 juin 2026. Une partie de la documentation dit encore le
+  contraire. Vérifiez votre mode d'authentification et sa facturation
+  avant la première session.
+- `AGENTS.md` n'est pas lu par défaut. Sans `context.fileName`, l'agent
+  ignore les instructions du cours sans le signaler, sauf par le compteur
+  de fichiers de contexte affiché en bas de l'écran.
+- Les politiques de projet (`.gemini/policies/`) ne fonctionnent pas en
+  novembre 2026 (ticket #18186). Une règle versionnée dans le dépôt peut
+  donc n'avoir aucun effet. Vérifiez avec `/policies list`.
+- Si la confiance des dossiers est active, un dossier non fiable passe en
+  « mode sans échec » : réglages du projet, serveurs MCP et commandes
+  personnalisées ne sont pas chargés. La documentation se contredit sur
+  l'activation par défaut de cette fonction. `/permissions trust` règle la
+  question.
+- Le mode `yolo` active le bac à sable par défaut. Selon la plateforme et
+  la valeur de `GEMINI_SANDBOX`, il s'agit de Seatbelt (macOS) ou d'un
+  conteneur Docker ou Podman. Un essai en mode `yolo` peut donc échouer
+  ou se comporter autrement qu'en mode `default` sur la même machine.
+
+Sources consultées (novembre 2026) :
+
+- <https://github.com/google-gemini/gemini-cli> (`README.md`, état du
+  projet, version 0.67.0)
+- <https://developers.googleblog.com/an-important-update-transitioning-gemini-cli-to-antigravity-cli/>
+- <https://geminicli.com/plans/>
+- <https://geminicli.com/docs/> et, dans le dépôt, `docs/get-started/`
+  (`installation.mdx`, `authentication.mdx`), `docs/cli/` (`cli-reference.md`,
+  `gemini-md.md`, `headless.md`, `sandbox.md`, `session-management.md`,
+  `git-worktrees.md`, `trusted-folders.md`, `custom-commands.md`,
+  `skills.md`, `model.md`, `checkpointing.md`), `docs/reference/`
+  (`commands.md`, `configuration.md`, `policy-engine.md`),
+  `docs/tools/` (`mcp-server.md`, `shell.md`), `docs/core/subagents.md`
+- <https://github.com/google-gemini/gemini-cli/issues/18186>
+- <https://github.com/google-github-actions/run-gemini-cli>

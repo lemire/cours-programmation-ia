@@ -30,6 +30,7 @@ book:
   chapters:
     - index.qmd
     - mise-en-route.qmd
+    - agents.qmd
     - part: "Bloc 1 — Formuler"
       chapters:
         - modules/1-formuler/s01.qmd

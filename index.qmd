@@ -91,13 +91,15 @@ de blogue. Le bilan critique du travail final s'appuie sur ces données.
 
 ## Quel agent?
 
-Le cours ne dépend d'aucun produit. Les exemples utilisent surtout des agents
-en ligne de commande (Claude Code, Codex CLI), parce que tout y est visible :
-les fichiers lus, les commandes exécutées, les jetons consommés. Cursor,
-GitHub Copilot (mode agent), Grok ou tout autre agent capable de lire et de
-modifier un dépôt et d'exécuter des commandes conviennent aussi. Les outils
-changent tous les trois mois. Les habitudes enseignées ici, elles, ne
-changent pas.
+Le cours ne dépend d'aucun produit. Il couvre les principaux agents de
+novembre 2026 : Claude Code, Codex CLI, Cursor, GitHub Copilot, Gemini CLI,
+Grok Build, OpenCode et Aider. La page [Les agents de codage](agents.qmd)
+donne, pour chacun, l'installation, le fichier d'instructions, les
+permissions, MCP, la gestion du contexte et la même tâche sur `indexeur`.
+Les semaines 11 à 14 renvoient à ces fiches. Les agents en ligne de commande
+ont un avantage pour apprendre : tout y est visible, des fichiers lus aux
+commandes exécutées et aux jetons consommés. Les outils changent tous les
+trois mois. Les habitudes enseignées ici, elles, ne changent pas.
 
 ::: {.callout-warning}
 ## Des frais sont possibles
