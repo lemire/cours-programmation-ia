@@ -32,8 +32,8 @@ efficace. » La phrase est plausible, et elle n'engage à rien. Plus rapide
 de combien? Sur quelles entrées? Mesuré comment?
 
 Les semaines 8 à 10 forment une seule démarche. Cette semaine, on construit
-l'instrument de mesure : le **banc d'essai**. La semaine 9, on s'en sert pour
-trouver où le temps passe (le **profilage**). La semaine 10, on boucle :
+l'instrument de mesure : le banc d'essai. La semaine 9, on s'en sert pour
+trouver où le temps passe (le profilage). La semaine 10, on boucle :
 hypothèse, changement, mesure, décision. Sans un banc fiable, les deux
 semaines suivantes ne valent rien. Une optimisation mesurée avec un
 instrument bruité est une opinion.
@@ -42,18 +42,18 @@ instrument bruité est une opinion.
 
 « Ce programme est lent » peut vouloir dire plusieurs choses.
 
-**Le temps réel** (*wall-clock time*) est le temps qui s'écoule à l'horloge
+*Le temps réel* (*wall-clock time*) est le temps qui s'écoule à l'horloge
 murale entre le début et la fin. C'est ce que voit l'utilisateur. En Python,
 on l'obtient avec `time.perf_counter()`, une horloge monotone à haute
 résolution. N'utilisez pas `time.time()` pour mesurer une durée : cette
 horloge peut reculer ou sauter si le système ajuste l'heure.
 
-**Le temps processeur** (*CPU time*) est le temps pendant lequel le
+*Le temps processeur* (*CPU time*) est le temps pendant lequel le
 processeur a réellement exécuté votre processus. On l'obtient avec
 `time.process_time()`. Il exclut le temps passé à attendre le disque, le
 réseau ou un autre processus qui occupe le cœur.
 
-**La latence** est le temps de traitement d'**une** requête. **Le débit** est
+*La latence* est le temps de traitement d'une requête. Le débit est
 le nombre de requêtes traitées par unité de temps. Les deux ne vont pas
 toujours ensemble : regrouper les requêtes par lots améliore souvent le débit
 en dégradant la latence. Pour `indexeur`, l'indexation est une question de
@@ -85,10 +85,10 @@ Apple M4 Max sous macOS 15.7, avec Python 3.15.2, sur secteur) :
 
 Trois leçons.
 
-1. Sur une machine chargée, le temps réel a presque **triplé**, alors que le
+1. Sur une machine chargée, le temps réel a presque triplé, alors que le
    code est identique. Une « régression » de 180 % peut venir d'une
    compilation qui tourne en arrière-plan.
-2. La **dispersion** a explosé : l'écart entre le minimum et le maximum passe
+2. La dispersion a explosé : l'écart entre le minimum et le maximum passe
    de 17 ms à 266 ms. Un banc d'essai doit donc rapporter la dispersion, et
    pas seulement un nombre.
 3. Le temps processeur a beaucoup moins bougé (+20 %), mais il a bougé : les
@@ -105,7 +105,7 @@ conclure à une différence de 4 %.
 
 ## Des effets qu'on ne soupçonne pas
 
-@mytkowicz2009wrong ont montré qu'on peut obtenir des conclusions **fausses**
+@mytkowicz2009wrong ont montré qu'on peut obtenir des conclusions fausses
 sans rien faire de manifestement incorrect. Dans leurs expériences, la
 taille des variables d'environnement de l'utilisateur, ou l'ordre dans lequel
 les fichiers objets sont passés à l'éditeur de liens, suffisait à faire
@@ -115,12 +115,12 @@ le placement du code et de la pile en mémoire, qui change l'alignement et le
 comportement des antémémoires.
 
 Ces effets sont plus discrets en Python qu'en C, mais la leçon est générale :
-**une mesure faite dans une seule configuration est une anecdote.** Elle
+*une mesure faite dans une seule configuration est une anecdote.* Elle
 justifie au moins trois pratiques :
 
-- répéter la mesure dans **plusieurs processus**, et pas seulement plusieurs
+- répéter la mesure dans plusieurs processus, et pas seulement plusieurs
   fois dans le même;
-- **alterner** les versions comparées (A, B, A, B…) plutôt que de tout
+- *alterner* les versions comparées (A, B, A, B…) plutôt que de tout
   mesurer de A puis tout de B : une dérive lente de la machine (température,
   tâche de fond) touche alors les deux également;
 - se méfier des écarts de quelques pourcents, sauf s'ils résistent à ces
@@ -128,33 +128,33 @@ justifie au moins trois pratiques :
 
 ## Échauffement, répétitions, et quel nombre rapporter
 
-**L'échauffement.** La première exécution est souvent plus lente : les
+*L'échauffement.* La première exécution est souvent plus lente : les
 modules se chargent, les antémémoires se remplissent, l'allocateur réserve sa
 mémoire et, dans un langage à compilateur à la volée (Java, JavaScript, PyPy,
 et de plus en plus CPython), le code chaud est compilé. Un banc d'essai fait
-donc une ou plusieurs exécutions **non mesurées** avant de mesurer. Si c'est
+donc une ou plusieurs exécutions non mesurées avant de mesurer. Si c'est
 justement le démarrage à froid qui vous intéresse (le temps de lancement
 d'une commande, par exemple), mesurez-le à part, dans des processus neufs.
 
-**Les répétitions.** Une seule mesure ne dit rien de sa variabilité. Cinq est
+*Les répétitions.* Une seule mesure ne dit rien de sa variabilité. Cinq est
 un minimum, et dix à trente sont courantes pour des mesures courtes. Une
-mesure doit aussi être assez **longue** : en dessous de la milliseconde, la
+mesure doit aussi être assez longue : en dessous de la milliseconde, la
 résolution de l'horloge et le coût de l'appel deviennent visibles. Pour
 mesurer une opération très courte, on la répète en boucle et on divise,
 comme le fait `timeit`.
 
-**Minimum ou médiane?** Le bruit sur une machine s'ajoute presque toujours :
+*Minimum ou médiane?* Le bruit sur une machine s'ajoute presque toujours :
 une interruption, un autre processus ou un défaut d'antémémoire ralentissent
 le programme, et rien ne l'accélère au-delà de ce que permet le matériel. Le
-**minimum** est donc l'estimation la plus proche du coût intrinsèque du
-code, et il est très stable. C'est le bon choix pour les **microbancs**
+*minimum* est donc l'estimation la plus proche du coût intrinsèque du
+code, et il est très stable. C'est le bon choix pour les microbancs
 d'essai, qui mesurent une petite fonction dans des conditions idéales. La
-**médiane** décrit le cas typique et résiste aux valeurs aberrantes. C'est le
+*médiane* décrit le cas typique et résiste aux valeurs aberrantes. C'est le
 bon choix quand le bruit fait partie de ce qui vous intéresse : un programme
-entier, des entrées-sorties, un service. La **moyenne** est sensible aux
+entier, des entrées-sorties, un service. La moyenne est sensible aux
 valeurs extrêmes, et il faut toujours l'accompagner de l'écart-type.
 
-Quel que soit le nombre choisi, rapportez aussi la **dispersion** : l'écart
+Quel que soit le nombre choisi, rapportez aussi la dispersion : l'écart
 interquartile (du premier au troisième quartile), ou le minimum et le
 maximum. Si les intervalles de deux versions se chevauchent largement, vous
 n'avez pas montré de différence.
@@ -162,7 +162,7 @@ n'avez pas montré de différence.
 ## Plusieurs tailles d'entrée
 
 Un banc qui mesure une seule taille donne un nombre. Un banc qui mesure
-plusieurs tailles donne une **courbe**, et la courbe révèle la complexité.
+plusieurs tailles donne une courbe, et la courbe révèle la complexité.
 Voici l'indexation d'`indexeur` 0.3.0 pour des corpus de taille croissante
 (même machine, médiane de 5 mesures, 3 pour 8 000 documents, écart
 interquartile entre crochets) :
@@ -175,8 +175,10 @@ interquartile entre crochets) :
 | 4 000 | 4 395,3 ms [4 382,3–4 404,2] | ×3,55 |
 | 8 000 | 16 625,7 ms [16 585,3–16 675,1] | ×3,78 |
 
+![Le temps d'indexation d'indexeur 0.3.0 selon le nombre de documents, comparé à une croissance linéaire.](../../images/figures/s08-quadratique.svg){fig-alt="Courbe des temps mesurés : 138 ms pour 500 documents, 1,24 s pour 2 000, 4,4 s pour 4 000 et 16,6 s pour 8 000. Une droite pointillée montre qu'un temps proportionnel au nombre de documents n'atteindrait que 2,2 s à 8 000 documents."}
+
 Quand on double la taille, le temps est multiplié par un nombre qui tend vers
-4 : le temps croît comme le **carré** du nombre de documents. Avec 8 000
+4 : le temps croît comme le carré du nombre de documents. Avec 8 000
 documents, il faut 16,6 s. Avec 80 000, à ce rythme, il faudrait près d'une
 demi-heure. Sur une seule taille, on aurait seulement conclu que « c'est un
 peu lent ». Sur cinq, on sait qu'il y a un défaut d'algorithme, et non un
@@ -189,10 +191,10 @@ il faut monter assez haut en taille.
 
 ## Les outils
 
-**`time.perf_counter()`.** C'est la base. Il suffit pour un banc maison comme
+`time.perf_counter()`. C'est la base. Il suffit pour un banc maison comme
 celui d'`indexeur`.
 
-**`timeit`**, dans la bibliothèque standard, mesure une petite instruction en
+`timeit`, dans la bibliothèque standard, mesure une petite instruction en
 la répétant, et retient le meilleur de plusieurs séries :
 
 ```console
@@ -200,8 +202,8 @@ $ uv run python -m timeit -s "from indexeur.texte import termes; t='Le chat et l
 2000 loops, best of 5: 113 usec per loop
 ```
 
-**[pyperf](https://pyperf.readthedocs.io)** fait la même chose plus
-sérieusement : il lance plusieurs **processus**, s'échauffe, calibre le
+*[pyperf](https://pyperf.readthedocs.io)* fait la même chose plus
+sérieusement : il lance plusieurs processus, s'échauffe, calibre le
 nombre de boucles, détecte une machine instable et rapporte la moyenne avec
 l'écart-type. Sous Linux, `pyperf system tune` prépare la machine (fréquence
 fixe, par exemple).
@@ -211,7 +213,7 @@ $ uv run python -m pyperf timeit -q -s "from indexeur.texte import termes; t='Le
 Mean +- std dev: 113 us +- 1 us
 ```
 
-**[hyperfine](https://github.com/sharkdp/hyperfine)** mesure une **commande**
+*[hyperfine](https://github.com/sharkdp/hyperfine)* mesure une commande
 entière, quel que soit le langage, avec échauffement, répétitions et
 comparaison de plusieurs commandes :
 
@@ -227,9 +229,9 @@ commande, démarrage de Python compris.
 Le dépôt contient `bancs/banc_indexation.py`. Lisez-le avant de continuer.
 Il a des qualités :
 
-- le corpus est **synthétique et reproductible** (graine fixe), et il suit
+- le corpus est synthétique et reproductible (graine fixe), et il suit
   approximativement une loi de Zipf, comme une vraie langue;
-- le corpus est généré **avant** le chronométrage, de sorte qu'on ne mesure
+- le corpus est généré avant le chronométrage, de sorte qu'on ne mesure
   pas la génération;
 - il fait plusieurs répétitions et rapporte la médiane, le minimum et le
   maximum;
@@ -237,21 +239,21 @@ Il a des qualités :
 
 Il a aussi des défauts :
 
-1. **Une seule taille par exécution.** On ne voit pas la complexité sans
+1. *Une seule taille par exécution.* On ne voit pas la complexité sans
    relancer le banc à la main.
-2. **Pas d'échauffement.** La première répétition est comptée.
-3. **Pas de description de la machine** ni de la version de Python dans la
+2. *Pas d'échauffement.* La première répétition est comptée.
+3. *Pas de description de la machine* ni de la version de Python dans la
    sortie. Dans trois semaines, vous ne saurez plus d'où viennent vos
    chiffres.
-4. **Pas de sauvegarde des résultats bruts.** On ne peut pas comparer deux
+4. *Pas de sauvegarde des résultats bruts.* On ne peut pas comparer deux
    versions autrement qu'en recopiant la console.
-5. **Le ramasse-miettes** peut se déclencher au milieu d'une mesure à cause
+5. *Le ramasse-miettes* peut se déclencher au milieu d'une mesure à cause
    des déchets de la précédente.
-6. **Les requêtes** sont tirées des termes les plus fréquents : dans le corpus
+6. *Les requêtes* sont tirées des termes les plus fréquents : dans le corpus
    synthétique, les trois premiers apparaissent dans tous les documents (ou
    presque). C'est un pire cas intéressant, mais pas un cas typique. Un banc
    devrait dire ce qu'il représente.
-7. **Le corpus synthétique** ne contient ni accents, ni ponctuation, ni mots
+7. *Le corpus synthétique* ne contient ni accents, ni ponctuation, ni mots
    vides. Une optimisation qui profite de cette régularité peut ne rien
    apporter, ou même nuire, sur de vrais textes.
 
@@ -305,51 +307,51 @@ très vite. Les erreurs typiques :
   répétition (on mesure alors l'antémémoire, et non le code);
 - rapporter la moyenne d'une seule exécution, sans dispersion;
 - choisir des tailles trop petites pour que la complexité apparaisse;
-- **exécuter** le banc et en résumer le résultat dans son message, au lieu de
+- *exécuter* le banc et en résumer le résultat dans son message, au lieu de
   vous le montrer, avec des arrondis ou des confusions d'unités. Lisez la
   sortie brute.
 
 Le cadrage de la semaine 3 s'applique : donnez à l'agent la liste des
 défauts à corriger, le format de sortie voulu et la commande qui servira de
-vérification. Puis relisez le code du banc **ligne par ligne**. C'est l'un
+vérification. Puis relisez le code du banc ligne par ligne. C'est l'un
 des rares fichiers où chaque ligne compte.
 
 ## Activité
 
 Travaillez dans une branche `semaine-08`.
 
-1. **Lire et critiquer.** Lisez `bancs/banc_indexation.py`. Sans regarder la
+1. *Lire et critiquer.* Lisez `bancs/banc_indexation.py`. Sans regarder la
    liste ci-dessus, notez ce qui vous paraît bien et ce qui manque. Comparez
    ensuite avec la liste.
 
-2. **Mesurer le bruit.** Lancez le banc fourni cinq fois de suite, machine au
+2. *Mesurer le bruit.* Lancez le banc fourni cinq fois de suite, machine au
    repos. Relancez-le pendant qu'une tâche lourde tourne (une compilation, un
    film, `uv run python -c "while True: pass"` dans deux ou trois
    terminaux). Notez dans le carnet l'écart obtenu, et la configuration :
    processeur, système, version de Python, secteur ou batterie.
 
-3. **Rédiger une fiche de tâche** pour un banc amélioré : tailles multiples,
+3. *Rédiger une fiche de tâche* pour un banc amélioré : tailles multiples,
    échauffement, dispersion, description de la machine, résultats bruts en
-   JSON, et **aucune modification** de `src/`. Le critère d'acceptation est
+   JSON, et aucune modification de `src/`. Le critère d'acceptation est
    une commande à exécuter et la forme de sa sortie.
 
-4. **Faire exécuter la fiche** par un agent, dans une session neuve. Relisez
+4. *Faire exécuter la fiche* par un agent, dans une session neuve. Relisez
    le code produit ligne par ligne, en cherchant les erreurs typiques de la
    section précédente. Vérifiez que `git diff --stat` ne touche que
    `bancs/`.
 
-5. **Établir la référence.** Lancez votre banc sur 500, 1 000, 2 000, 4 000
+5. *Établir la référence.* Lancez votre banc sur 500, 1 000, 2 000, 4 000
    et 8 000 documents, enregistrez le JSON dans `rapports/` et faites un
    commit. Ce sont les chiffres « avant » de toute la suite du bloc.
 
-6. **Carnet.** Une entrée par session, et une entrée pour l'expérience du
+6. *Carnet.* Une entrée par session, et une entrée pour l'expérience du
    bruit.
 
 ::: {.callout-tip}
 ## Toujours la même machine
 
-Toutes les mesures du bloc 3 (et du TP3) doivent être faites sur **la même
-machine**, dans des conditions semblables : sur secteur, sans autre tâche
+Toutes les mesures du bloc 3 (et du TP3) doivent être faites sur la même
+machine, dans des conditions semblables : sur secteur, sans autre tâche
 lourde. Un Codespace convient pour apprendre, mais ses performances varient
 selon la charge de l'hôte, qui vous est invisible. Si c'est votre seule
 option, multipliez les répétitions et dites-le dans le rapport.
@@ -380,3 +382,85 @@ option, multipliez les répétitions et dites-le dans le rapport.
    de mesurer A dix fois puis B dix fois?
 4. Votre agent vous annonce : « Le banc montre une amélioration de 3 %. »
    Quelles informations vous faut-il avant de le croire?
+
+## Autoévaluation
+
+:::: {.qcm}
+::: {.question}
+Pour mesurer une durée en Python, pourquoi préfère-t-on `time.perf_counter()`
+à `time.time()`?
+
+- `time.time()` mesure le temps processeur, pas le temps réel
+- `perf_counter()` est une horloge monotone à haute résolution; `time.time()` peut reculer ou sauter quand le système ajuste l'heure []{.bonne}
+- `perf_counter()` retire automatiquement le bruit
+- `time.time()` n'existe plus en Python 3.15
+
+::: {.explication}
+Une durée se mesure avec une horloge monotone. `time.time()` donne l'heure
+du système, qui peut être corrigée pendant la mesure.
+:::
+:::
+
+::: {.question}
+On indexe 1 000, puis 2 000, puis 4 000 documents, et le temps est
+multiplié par environ 3,2 puis 3,6. Que peut-on conclure?
+
+- Le temps croît linéairement, avec un peu de bruit
+- Le temps tend vers une croissance quadratique : il y a un défaut d'algorithme, pas seulement de constante []{.bonne}
+- La machine était chargée pendant les grandes tailles
+- Il faut rapporter la moyenne plutôt que la médiane
+
+::: {.explication}
+Un rapport qui tend vers 4 quand la taille double signale un temps
+proportionnel au carré de la taille. Le rapport n'atteint pas 4 tout de
+suite, parce qu'une partie linéaire s'y mêle.
+:::
+:::
+
+::: {.question}
+Vous mesurez une petite fonction dans des conditions idéales (microbanc
+d'essai). Quel nombre rapporter de préférence?
+
+- La moyenne, sans autre précision
+- Le maximum, pour être prudent
+- Le minimum, avec une mesure de dispersion []{.bonne}
+- La première mesure, avant l'échauffement
+
+::: {.explication}
+Le bruit s'ajoute presque toujours au coût intrinsèque : le minimum en est
+l'estimation la plus proche et la plus stable. La médiane convient quand le
+bruit fait partie de ce qu'on veut mesurer.
+:::
+:::
+
+::: {.question}
+Deux exécutions du même banc, sur la même machine au repos, donnent 1 231 ms
+puis 1 278 ms. Que faut-il en retenir pour comparer deux versions?
+
+- Rien : un écart de 4 % est négligeable
+- Qu'il faut toujours prendre la plus petite des deux
+- Qu'une seule exécution par version ne permet pas de conclure à un écart de quelques pourcents []{.bonne}
+- Que la machine est défectueuse
+
+::: {.explication}
+Le bruit entre processus dépasse ici la dispersion à l'intérieur de chaque
+exécution. Il faut répéter dans plusieurs processus et alterner les versions.
+:::
+:::
+
+::: {.question}
+Selon @mytkowicz2009wrong, qu'est-ce qui peut suffire à changer la
+conclusion d'une comparaison de performance?
+
+- La couleur du terminal
+- Le nombre de tests de la suite
+- La version de Git utilisée
+- La taille des variables d'environnement, ou l'ordre de passage des fichiers objets à l'éditeur de liens []{.bonne}
+
+::: {.explication}
+Ces détails modifient le placement du code et de la pile en mémoire, donc le
+comportement des antémémoires. Une mesure faite dans une seule configuration
+est une anecdote.
+:::
+:::
+::::

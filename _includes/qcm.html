@@ -1,0 +1,93 @@
+<!-- QCM autocorrigés. Dans la page :
+
+     :::: {.qcm}
+     ::: {.question}
+     Énoncé de la question?
+
+     - Une réponse
+     - La bonne réponse []{.bonne}
+     - Une autre réponse
+
+     ::: {.explication}
+     Pourquoi c'est la bonne réponse.
+     :::
+     :::
+     ::::
+
+     Chaque élément de liste devient un bouton; un clic corrige la question
+     et affiche l'explication. Le pointage s'affiche sous le questionnaire. -->
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll(".qcm").forEach(qcm => {
+      const questions = [...qcm.querySelectorAll(".question")];
+      let repondues = 0, bonnes = 0;
+      const pointage = document.createElement("p");
+      pointage.className = "qcm-pointage";
+      const majPointage = () => {
+        pointage.textContent = repondues < questions.length
+          ? `Questions répondues : ${repondues} sur ${questions.length}`
+          : `Résultat : ${bonnes} sur ${questions.length}` +
+            (bonnes === questions.length ? ". Bravo!" : ". Relisez les explications, puis la section correspondante.");
+      };
+      const recommencer = document.createElement("button");
+      recommencer.type = "button";
+      recommencer.className = "qcm-recommencer btn btn-sm btn-outline-secondary";
+      recommencer.textContent = "Recommencer";
+
+      questions.forEach((question, i) => {
+        const enonce = question.querySelector("p");
+        if (enonce) {
+          const numero = document.createElement("span");
+          numero.className = "qcm-numero";
+          numero.textContent = `${i + 1}. `;
+          enonce.prepend(numero);
+        }
+        const liste = question.querySelector("ul");
+        if (!liste) return;
+        liste.classList.add("qcm-choix");
+        const choix = [...liste.children];
+        choix.forEach(li => {
+          const bonne = li.querySelector(".bonne") !== null;
+          li.querySelectorAll(".bonne").forEach(s => s.remove());
+          const bouton = document.createElement("button");
+          bouton.type = "button";
+          bouton.innerHTML = li.innerHTML;
+          bouton.dataset.bonne = bonne ? "1" : "0";
+          li.replaceChildren(bouton);
+          bouton.addEventListener("click", () => {
+            if (question.classList.contains("repondue")) return;
+            question.classList.add("repondue");
+            repondues++;
+            if (bonne) bonnes++;
+            choix.forEach(autre => {
+              const b = autre.querySelector("button");
+              b.disabled = true;
+              if (b.dataset.bonne === "1") b.classList.add("qcm-bonne");
+            });
+            if (!bonne) bouton.classList.add("qcm-mauvaise");
+            bouton.classList.add("qcm-choisie");
+            majPointage();
+          });
+        });
+      });
+
+      recommencer.addEventListener("click", () => {
+        repondues = bonnes = 0;
+        questions.forEach(q => {
+          q.classList.remove("repondue");
+          q.querySelectorAll(".qcm-choix button").forEach(b => {
+            b.disabled = false;
+            b.classList.remove("qcm-bonne", "qcm-mauvaise", "qcm-choisie");
+          });
+        });
+        majPointage();
+      });
+
+      majPointage();
+      const pied = document.createElement("div");
+      pied.className = "qcm-pied";
+      pied.append(pointage, recommencer);
+      qcm.append(pied);
+    });
+  });
+</script>

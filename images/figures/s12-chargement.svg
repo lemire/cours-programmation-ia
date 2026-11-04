@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 330" role="img" aria-labelledby="titre desc" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="13">
+  <title id="titre">Ce que le harnais charge, et quand</title>
+  <desc id="desc">Au début de chaque session, le contexte reçoit le fichier d'instructions AGENTS.md en entier, et seulement le nom et la description de chaque compétence. Pendant la session, quand l'agent juge qu'une compétence s'applique, ou quand vous l'invoquez, le reste de son SKILL.md et ses scripts sont lus.</desc>
+  <defs>
+    <marker id="fleche" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#52514e"/>
+    </marker>
+  </defs>
+  <rect width="720" height="330" fill="#fcfcfb"/>
+
+  <!-- Dépôt -->
+  <rect x="24" y="40" width="252" height="250" rx="6" fill="#ffffff" stroke="#b9b8b2"/>
+  <text x="46" y="64" fill="#0b0b0b">Dans le dépôt</text>
+  <g font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" fill="#52514e">
+    <text x="46" y="96">AGENTS.md</text>
+    <text x="46" y="132">.claude/skills/</text>
+    <text x="56" y="152">fonctionnalite-test-dabord/</text>
+    <text x="70" y="172">SKILL.md</text>
+    <text x="70" y="192">verifier.sh</text>
+    <text x="56" y="216">mesurer/</text>
+    <text x="70" y="236">SKILL.md</text>
+    <text x="56" y="260">…</text>
+  </g>
+
+  <!-- Contexte au départ -->
+  <text x="320" y="64" fill="#0b0b0b">Contexte au début de chaque session</text>
+  <rect x="320" y="78" width="370" height="30" rx="4" fill="#ffffff" stroke="#2a78d6" stroke-width="1.5"/>
+  <text x="332" y="98" fill="#0b0b0b">AGENTS.md, en entier</text>
+  <g fill="#ffffff" stroke="#2a78d6" stroke-width="1.5">
+    <rect x="320" y="116" width="120" height="24" rx="4"/>
+    <rect x="445" y="116" width="120" height="24" rx="4"/>
+    <rect x="570" y="116" width="120" height="24" rx="4"/>
+  </g>
+  <g fill="#52514e" font-size="12">
+    <text x="330" y="133">nom + description</text>
+    <text x="455" y="133">nom + description</text>
+    <text x="580" y="133">nom + description</text>
+  </g>
+
+  <!-- Pendant la session -->
+  <text x="320" y="200" fill="#0b0b0b">Plus tard, si la description correspond à la tâche</text>
+  <rect x="320" y="214" width="370" height="30" rx="4" fill="#ffffff" stroke="#b9b8b2"/>
+  <text x="332" y="234" fill="#52514e">le reste de SKILL.md, puis ses scripts au besoin</text>
+  <path d="M680 142 L680 210" fill="none" stroke="#52514e" stroke-width="1.5" stroke-dasharray="4 4" marker-end="url(#fleche)"/>
+  <text x="670" y="176" text-anchor="end" fill="#52514e" font-size="12">l'agent juge qu'elle s'applique, ou vous l'invoquez</text>
+
+  <!-- Liens dépôt → contexte -->
+  <g fill="none" stroke="#b9b8b2" stroke-width="1.2" marker-end="url(#fleche)">
+    <path d="M118 92 L316 92"/>
+    <path d="M150 168 C230 168 260 128 316 128"/>
+  </g>
+
+  <text x="30" y="316" fill="#52514e" font-size="12">Dix compétences coûtent au départ dix descriptions. La description doit donc dire quand utiliser la compétence.</text>
+</svg>

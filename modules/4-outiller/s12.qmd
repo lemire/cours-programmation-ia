@@ -32,8 +32,8 @@ unittest` », « pas de dépendances », « la normalisation se fait dans
 comme vous l'avez fait dans les fiches de tâche du bloc 1. Ça marche, mais
 c'est fastidieux, et un jour vous l'oublierez.
 
-La solution adoptée par tous les agents est la même : un **fichier
-d'instructions** à la racine du dépôt, que le harnais charge
+La solution adoptée par tous les agents est la même : un fichier
+d'instructions à la racine du dépôt, que le harnais charge
 automatiquement au début de chaque session. Ce fichier est du texte ordinaire,
 versionné avec le code. Il est relu en revue de code comme le reste, et il
 s'applique à toute l'équipe, humains et agents.
@@ -63,26 +63,26 @@ dans la documentation de votre agent, en date du jour.
 
 ## Ce qui va dans le fichier
 
-Le fichier d'instructions sert à transmettre ce que l'agent **ne peut pas
-deviner** en lisant le code, ou ce qu'il devinerait mal. Quatre catégories
+Le fichier d'instructions sert à transmettre ce que l'agent ne peut pas
+deviner en lisant le code, ou ce qu'il devinerait mal. Quatre catégories
 couvrent l'essentiel.
 
-**1. Les commandes.** Comment installer, tester, mesurer, formater. C'est la
+*1. Les commandes.* Comment installer, tester, mesurer, formater. C'est la
 partie la plus utile, et de loin. Un agent qui ne connaît pas la commande de
 test en invente une, et un agent qui ne connaît pas la commande *rapide* de
 test lance toute la suite à chaque modification.
 
-**2. Les règles d'architecture.** Ce que dit `ARCHITECTURE.md`, en version
+*2. Les règles d'architecture.* Ce que dit `ARCHITECTURE.md`, en version
 courte : le sens des dépendances, où va quoi, ce qui est interdit. Si le
 document d'architecture existe, renvoyez-y plutôt que de le recopier, et
 résumez seulement les règles qu'on viole le plus souvent.
 
-**3. Les conventions.** Ce qu'un nouveau membre de l'équipe apprendrait en
+*3. Les conventions.* Ce qu'un nouveau membre de l'équipe apprendrait en
 une semaine de revues de code : la langue des identifiants (le français,
 dans `indexeur`), le style des messages de commit, la façon de nommer les
 tests.
 
-**4. Les pièges.** Ce qui a déjà mal tourné. « Les tests de `test_cli.py`
+*4. Les pièges.* Ce qui a déjà mal tourné. « Les tests de `test_cli.py`
 lisent `exemples/` : ne modifiez pas ces fichiers. » « Le banc d'essai prend
 une minute avec `--documents 8000` : utilisez la valeur par défaut pendant le
 développement. » Chaque piège consigné dans votre carnet est candidat à une
@@ -90,31 +90,31 @@ ligne dans le fichier d'instructions.
 
 ## Ce qui n'y va pas
 
-**Les romans.** Le fichier est chargé dans le contexte de *chaque* session et
+*Les romans.* Le fichier est chargé dans le contexte de *chaque* session et
 de *chaque* requête. Mille lignes d'instructions, c'est des dizaines de
 milliers de jetons payés à chaque fois, et un signal dilué : plus le fichier
 est long, moins chaque instruction est suivie (semaine 13). Visez quelques
 dizaines de lignes, cent tout au plus.
 
-**Les évidences.** « Écris du code propre et bien testé. » « Sois prudent. »
+*Les évidences.* « Écris du code propre et bien testé. » « Sois prudent. »
 Ces phrases ne changent rien au comportement du modèle, qui « croit » déjà
-le faire. Une instruction utile est **vérifiable** : on peut dire, en
+le faire. Une instruction utile est vérifiable : on peut dire, en
 regardant un diff, si elle a été respectée. « Chaque nouvelle fonction
 publique a au moins un test dans `tests/` » est vérifiable. « Teste bien »
 ne l'est pas.
 
-**Les secrets.** Le fichier est versionné, souvent public, et il est envoyé au
+*Les secrets.* Le fichier est versionné, souvent public, et il est envoyé au
 fournisseur du modèle à chaque requête. Aucun mot de passe, aucun jeton,
 aucune adresse interne.
 
-**Les instructions temporaires.** « Cette semaine, on travaille sur la
+*Les instructions temporaires.* « Cette semaine, on travaille sur la
 sortie JSON » n'a pas sa place dans un fichier qui durera des mois. Les
 instructions temporaires vont dans la fiche de tâche.
 
-**Ce que le harnais fait mieux.** « Ne pousse jamais sur GitHub » est une
+*Ce que le harnais fait mieux.* « Ne pousse jamais sur GitHub » est une
 instruction raisonnable, mais un modèle peut l'oublier ou être convaincu de
 l'ignorer (semaine 11). Une interdiction dans les permissions ne s'oublie
-pas. Les instructions **guident**, et les permissions **contraignent**.
+pas. Les instructions guident, et les permissions contraignent.
 N'utilisez pas les premières pour faire le travail des secondes.
 
 ## Un exemple complet
@@ -174,23 +174,23 @@ impressions. Elle ne garantit rien, mais elle rend l'écart visible.
 
 ## Les compétences : des démarches réutilisables
 
-Le fichier d'instructions dit **comment est** le projet. Certaines
-connaissances sont plutôt des **démarches** : « comment on ajoute une
+Le fichier d'instructions dit comment est le projet. Certaines
+connaissances sont plutôt des démarches : « comment on ajoute une
 fonctionnalité ici », « comment on mesure une optimisation », « comment on
 prépare une version ». Elles sont trop longues pour le fichier
 d'instructions, et elles ne servent que de temps en temps.
 
 Les agents offrent deux mécanismes pour cela, qui se recoupent :
 
-- **Les commandes personnalisées** : un fichier Markdown contenant une
+- *Les commandes personnalisées* : un fichier Markdown contenant une
   invite, qu'on déclenche par son nom (`/mesurer`, par exemple). Claude Code
   les lit dans `.claude/commands/`. D'autres agents ont l'équivalent sous
   d'autres noms (*prompt files* dans Copilot, par exemple). C'est vous qui
   décidez quand l'invoquer.
-- **Les compétences** (*Agent Skills*) [@agentskills2025] : un **dossier**
+- *Les compétences* (*Agent Skills*) [@agentskills2025] : un dossier
   qui contient un fichier `SKILL.md` et, au besoin, des scripts et des
-  documents de référence. L'en-tête de `SKILL.md` donne un **nom** et une
-  **description**. Seuls ces deux champs sont chargés au début de la
+  documents de référence. L'en-tête de `SKILL.md` donne un nom et une
+  *description*. Seuls ces deux champs sont chargés au début de la
   session. Le reste n'est lu que lorsque l'agent juge, d'après la
   description, que la compétence s'applique, ou lorsque vous l'invoquez.
   Le format, d'abord introduit par Anthropic, a été publié comme norme
@@ -198,8 +198,10 @@ Les agents offrent deux mécanismes pour cela, qui se recoupent :
 
 Le chargement progressif est l'idée importante. Dix compétences ne coûtent
 au départ que dix descriptions, et non dix documents complets. La
-description doit donc dire **quand** utiliser la compétence, pas seulement
+description doit donc dire quand utiliser la compétence, pas seulement
 ce qu'elle fait.
+
+![Ce que le harnais charge, et quand. Le fichier d'instructions est lu en entier à chaque session; une compétence, seulement si elle sert.](../../images/figures/s12-chargement.svg){fig-alt="À gauche, le dépôt : AGENTS.md et des dossiers de compétences contenant SKILL.md et des scripts. À droite, le contexte au début de la session : AGENTS.md en entier et, pour chaque compétence, son nom et sa description. Plus tard, si la description correspond à la tâche, le reste de SKILL.md et ses scripts sont lus."}
 
 ### Exemple : ajouter une fonctionnalité, test d'abord
 
@@ -253,7 +255,7 @@ est portable : c'est du shell ordinaire, que vous pouvez aussi exécuter à la
 main.
 
 Ce dernier point mérite qu'on s'y arrête. Une compétence qui contient un
-**script** est plus fiable qu'une compétence qui ne contient que du texte.
+*script* est plus fiable qu'une compétence qui ne contient que du texte.
 « Vérifie que `exemples/` n'a pas changé » est une instruction que le modèle
 peut mal suivre. Un `grep` dans un script ne se trompe pas. Chaque fois
 qu'une étape d'une démarche est mécanique, écrivez-la en code.
@@ -263,17 +265,17 @@ qu'une étape d'une démarche est mécanique, écrivez-la en code.
 Les instructions sont du code : un texte qui change le comportement d'un
 programme. Elles méritent le même traitement.
 
-**En revue de code.** Toute modification d'`AGENTS.md` ou d'une compétence
+*En revue de code.* Toute modification d'`AGENTS.md` ou d'une compétence
 passe par une demande de fusion, comme le reste. Les questions à poser en
 revue : cette ligne est-elle vérifiable? est-elle déjà dite ailleurs?
 contredit-elle une autre ligne? qu'est-ce qu'elle coûte en jetons?
 
-**Par l'expérience.** Une instruction n'est pas efficace parce qu'elle est
+*Par l'expérience.* Une instruction n'est pas efficace parce qu'elle est
 bien écrite. Elle l'est si l'agent change de comportement. Pour le savoir :
 
 1. choisissez une tâche où le problème se manifeste (par exemple, l'agent
    lance `python -m pytest` au lieu de `uv run pytest`);
-2. lancez-la en session neuve **sans** l'instruction, deux ou trois fois;
+2. lancez-la en session neuve sans l'instruction, deux ou trois fois;
 3. ajoutez l'instruction, puis relancez la même tâche en session neuve,
    autant de fois;
 4. comparez.
@@ -282,7 +284,7 @@ C'est un petit essai contrôlé, et le modèle étant stochastique, une seule
 exécution ne prouve rien. Trois exécutions ne prouvent pas grand-chose non
 plus, mais elles suffisent souvent à repérer une instruction sans effet.
 
-**Par l'élagage.** Une fois par mois (ou à chaque TP), relisez le fichier
+*Par l'élagage.* Une fois par mois (ou à chaque TP), relisez le fichier
 et retirez ce qui n'est plus vrai ou ne sert plus. Un fichier d'instructions
 périmé est pire que pas de fichier : l'agent suit avec assurance une règle
 abandonnée depuis trois mois.
@@ -292,8 +294,8 @@ abandonnée depuis trois mois.
 Les agents distinguent généralement plusieurs niveaux : un fichier
 personnel (dans votre dossier personnel, qui s'applique à tous vos projets),
 un fichier de projet versionné (partagé par l'équipe) et parfois un fichier
-local de projet non versionné. La règle est simple. Ce qui concerne **le
-projet** va dans le fichier versionné. Ce qui concerne **vos goûts** (vous
+local de projet non versionné. La règle est simple. Ce qui concerne le
+projet va dans le fichier versionné. Ce qui concerne vos goûts (vous
 préférez des explications courtes, vous travaillez en anglais) va dans le
 fichier personnel. Une préférence personnelle versionnée s'impose à toute
 l'équipe, et une règle de projet gardée dans un fichier personnel n'existe
@@ -303,23 +305,23 @@ pour personne d'autre.
 
 Sur une branche `semaine-12` de votre copie d'`indexeur`.
 
-1. **Relire le carnet.** Parcourez votre `CARNET.md` depuis la semaine 1 et
+1. *Relire le carnet.* Parcourez votre `CARNET.md` depuis la semaine 1 et
    dressez la liste des corrections que vous avez faites plus d'une fois à la
    main. C'est la matière première de votre fichier d'instructions.
-2. **Écrire `AGENTS.md`.** En partant de cette liste, et non de l'exemple
+2. Écrire `AGENTS.md`. En partant de cette liste, et non de l'exemple
    ci-dessus, écrivez votre fichier : commandes, règles, conventions,
    pièges, vérification finale. Moins de 80 lignes. Si votre agent lit un
    autre nom de fichier, faites-le pointer vers `AGENTS.md`.
-3. **Éprouver une instruction.** Choisissez une ligne de votre fichier qui
+3. *Éprouver une instruction.* Choisissez une ligne de votre fichier qui
    corrige un comportement observé dans le carnet. Faites l'essai décrit plus
    haut : trois sessions neuves sans la ligne, trois avec. Notez les
    résultats et le coût en jetons de chaque série.
-4. **Écrire une compétence.** Écrivez une compétence (ou une commande
+4. *Écrire une compétence.* Écrivez une compétence (ou une commande
    personnalisée, si votre agent n'a pas de compétences) pour une démarche
    que vous avez répétée au cours du bloc 2 ou du bloc 3 : « test d'abord »,
    « mesurer une optimisation » ou une autre. Incluez au moins un script de
    vérification.
-5. **Éprouver la compétence.** Donnez une tâche nouvelle (une des demandes du
+5. *Éprouver la compétence.* Donnez une tâche nouvelle (une des demandes du
    `README.md`) en session neuve, sans nommer la compétence. L'agent
    l'a-t-il utilisée d'elle-même? Sinon, que faut-il changer dans la
    description?
@@ -350,3 +352,80 @@ Ces fichiers font partie des livrables du [TP4](../../evaluation.qmd#sec-tp4).
 3. Un fichier d'instructions est du texte que le modèle suit. Un dépôt
    public que vous clonez peut contenir un `AGENTS.md`. Qu'est-ce que cela
    implique, compte tenu de la semaine 11?
+
+## Autoévaluation
+
+:::: {.qcm}
+::: {.question}
+Pourquoi un fichier d'instructions comme `AGENTS.md` est-il utile?
+
+- Il donne au modèle une mémoire permanente de vos conversations passées
+- Chaque session commence à zéro, et le harnais charge ce fichier au début de chacune []{.bonne}
+- Il remplace les tests du projet
+- Il empêche l'agent d'exécuter des commandes dangereuses
+
+::: {.explication}
+L'agent ne garde rien d'une session à l'autre. Le fichier d'instructions,
+chargé automatiquement, évite de répéter les règles du projet dans chaque
+demande. Il ne remplace ni les tests ni les permissions.
+:::
+:::
+
+::: {.question}
+Laquelle de ces lignes a le moins sa place dans `AGENTS.md`?
+
+- « Lancer les tests avec `uv run pytest`. »
+- « Aucune dépendance à l'exécution (règle 4 d'ARCHITECTURE.md). »
+- « La normalisation se fait dans `texte.py`, et nulle part ailleurs. »
+- « Écris du code propre et de bonne qualité. » []{.bonne}
+
+::: {.explication}
+Une évidence invérifiable coûte des jetons à chaque session sans changer le
+comportement de l'agent. Les trois autres lignes sont précises et
+vérifiables.
+:::
+:::
+
+::: {.question}
+Votre agent lit `CLAUDE.md`, et l'équipe utilise `AGENTS.md`. Que faire?
+
+- Copier le contenu dans les deux fichiers
+- Faire pointer l'un vers l'autre (importation ou lien symbolique) pour n'avoir qu'une source []{.bonne}
+- Garder deux fichiers différents, un par agent
+- Renoncer au fichier d'instructions
+
+::: {.explication}
+Deux copies finissent par diverger. Une seule source, et un renvoi depuis
+l'autre nom.
+:::
+:::
+
+::: {.question}
+Vous avez dix compétences dans le dépôt. Que contient le contexte au début d'une session?
+
+- Les dix fichiers `SKILL.md` en entier, avec leurs scripts
+- Rien : les compétences ne sont lues que si vous les invoquez par leur nom
+- Le nom et la description de chacune; le reste n'est lu que si une compétence s'applique []{.bonne}
+- Seulement la compétence utilisée lors de la session précédente
+
+::: {.explication}
+C'est le chargement progressif. Comme seule la description est chargée au
+départ, elle doit dire quand utiliser la compétence.
+:::
+:::
+
+::: {.question}
+Comment savoir si une nouvelle instruction est efficace?
+
+- Si elle est bien rédigée, elle est efficace
+- Demander à l'agent s'il l'a comprise
+- Lancer la même tâche en sessions neuves, plusieurs fois sans l'instruction puis plusieurs fois avec, et comparer []{.bonne}
+- L'ajouter en majuscules pour qu'elle soit suivie
+
+::: {.explication}
+Une instruction est efficace si le comportement change. Le modèle étant
+stochastique, une seule exécution ne prouve rien : il faut un petit essai
+répété, avant et après.
+:::
+:::
+::::

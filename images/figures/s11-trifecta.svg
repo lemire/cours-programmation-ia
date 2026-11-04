@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 350" role="img" aria-labelledby="titre desc" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="13">
+  <title id="titre">La trifecta létale et la capacité qu'on retire</title>
+  <desc id="desc">Un agent relié à trois capacités : l'accès à des données privées, l'exposition à du contenu non fiable, et un moyen de communiquer vers l'extérieur. Avec les trois, une injection peut lire un secret et l'envoyer. On coupe en général la troisième : réseau coupé dans le bac à sable, git push et curl interdits, outils MCP en lecture seule.</desc>
+  <rect width="720" height="350" fill="#fcfcfb"/>
+
+  <!-- Agent -->
+  <rect x="290" y="150" width="140" height="50" rx="6" fill="#ffffff" stroke="#2a78d6" stroke-width="1.5"/>
+  <text x="360" y="180" text-anchor="middle" fill="#0b0b0b">Agent</text>
+
+  <!-- Trois capacités -->
+  <g fill="#ffffff" stroke="#b9b8b2">
+    <rect x="30" y="30" width="220" height="80" rx="6"/>
+    <rect x="470" y="30" width="220" height="80" rx="6"/>
+    <rect x="235" y="250" width="250" height="80" rx="6" stroke="#e34948" stroke-dasharray="5 4"/>
+  </g>
+  <g fill="#0b0b0b">
+    <text x="46" y="54">1. Données privées</text>
+    <text x="486" y="54">2. Contenu non fiable</text>
+    <text x="251" y="274">3. Communication vers l'extérieur</text>
+  </g>
+  <g fill="#52514e" font-size="12">
+    <text x="46" y="76">le dépôt, les secrets,</text>
+    <text x="46" y="94">les courriels</text>
+    <text x="486" y="76">le Web, des billets publics,</text>
+    <text x="486" y="94">un serveur MCP tiers</text>
+    <text x="251" y="296">réseau, git push, curl,</text>
+    <text x="251" y="314">un billet ou un courriel public</text>
+  </g>
+
+  <!-- Liens -->
+  <g stroke="#52514e" stroke-width="1.5" fill="none">
+    <path d="M250 95 L300 148"/>
+    <path d="M470 95 L420 148"/>
+  </g>
+  <path d="M360 202 L360 248" stroke="#e34948" stroke-width="1.5" stroke-dasharray="5 4" fill="none"/>
+  <g stroke="#e34948" stroke-width="2">
+    <line x1="350" y1="218" x2="370" y2="232"/>
+    <line x1="370" y1="218" x2="350" y2="232"/>
+  </g>
+
+  <!-- Explications -->
+  <g fill="#52514e" font-size="12">
+    <text x="30" y="160">Les trois réunies : une injection</text>
+    <text x="30" y="178">lue en 2 peut faire sortir</text>
+    <text x="30" y="196">par 3 ce qui est en 1.</text>
+    <text x="490" y="160">On retire presque toujours la 3 :</text>
+    <text x="490" y="178">bac à sable sans réseau, push et</text>
+    <text x="490" y="196">curl interdits, MCP en lecture seule.</text>
+  </g>
+</svg>

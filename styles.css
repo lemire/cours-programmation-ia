@@ -66,3 +66,62 @@ main table.table > thead {
 .semaine dl { margin-bottom: 0; }
 .semaine dt { font-weight: 600; }
 .semaine dd { margin-left: 0; margin-bottom: 0.4rem; }
+
+/* Figures : une carte claire, lisible aussi en thème sombre. */
+.figure-cours img,
+figure img[src$=".svg"] {
+  border-radius: 0.5rem;
+  border: 1px solid var(--bs-border-color);
+}
+
+/* QCM autocorrigés (voir _includes/qcm.html). */
+.qcm .question {
+  margin: 1.2rem 0;
+  padding: 0.8rem 1rem 0.4rem;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 0.5rem;
+}
+.qcm .qcm-numero { color: var(--bs-secondary-color); }
+.qcm ul.qcm-choix {
+  list-style: none;
+  padding-left: 0;
+}
+.qcm ul.qcm-choix li { margin: 0.35rem 0; }
+.qcm ul.qcm-choix button {
+  width: 100%;
+  text-align: left;
+  padding: 0.4rem 0.7rem;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 0.35rem;
+  background: transparent;
+  color: var(--bs-body-color);
+}
+.qcm ul.qcm-choix button:not(:disabled):hover {
+  background: rgba(42, 120, 214, 0.08);
+  border-color: #2a78d6;
+}
+.qcm ul.qcm-choix button:disabled { opacity: 0.75; }
+.qcm ul.qcm-choix button.qcm-bonne {
+  opacity: 1;
+  border-color: #008300;
+  background: rgba(0, 131, 0, 0.1);
+}
+.qcm ul.qcm-choix button.qcm-bonne::after { content: "  ✓ bonne réponse"; color: #008300; }
+.qcm ul.qcm-choix button.qcm-mauvaise {
+  opacity: 1;
+  border-color: #e34948;
+  background: rgba(227, 73, 72, 0.1);
+}
+.qcm ul.qcm-choix button.qcm-mauvaise::after { content: "  ✗ votre réponse"; color: #e34948; }
+body.quarto-dark .qcm ul.qcm-choix button.qcm-bonne::after { color: #4ade80; }
+body.quarto-dark .qcm ul.qcm-choix button.qcm-mauvaise::after { color: #e66767; }
+.qcm ul.qcm-choix p { margin: 0; display: inline; }
+.qcm .explication { display: none; margin-top: 0.5rem; font-size: 0.95em; }
+.qcm .question.repondue .explication { display: block; }
+.qcm-pied {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.qcm-pointage { margin: 0; }

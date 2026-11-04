@@ -33,13 +33,13 @@ bloc 3, vous demanderez à un agent de réécrire le cœur d'`indexeur` pour
 l'accélérer. Vous voudrez alors savoir, sans relire chaque ligne, que les
 résultats n'ont pas changé.
 
-Il faut donc **tester les tests**. Cette semaine présente trois outils
+Il faut donc tester les tests. Cette semaine présente trois outils
 complémentaires :
 
-- la **couverture**, qui dit quelles lignes la suite exécute;
-- les **propriétés** et les **tests différentiels**, qui font vérifier par la
+- la couverture, qui dit quelles lignes la suite exécute;
+- les propriétés et les tests différentiels, qui font vérifier par la
   suite beaucoup plus de cas qu'on ne pourrait en écrire à la main;
-- la **mutation**, qui mesure directement si la suite détecte des erreurs.
+- la mutation, qui mesure directement si la suite détecte des erreurs.
 
 Tous les chiffres de cette page ont été obtenus en novembre 2026 sur
 `indexeur` 0.3.0, avec Python 3.15, pytest 9.2, coverage.py 7.17, pytest-cov
@@ -71,7 +71,7 @@ src/indexeur/texte.py          19      0      4      0   100%
 TOTAL                         149     17     32      1    88%
 ```
 
-La colonne *Missing* est la plus utile : elle donne les lignes que **rien**
+La colonne *Missing* est la plus utile : elle donne les lignes que rien
 n'exécute. Ici, le corpus synthétique (`corpus.py`, lignes 35 à 42) n'est
 jamais testé, alors que le banc d'essai du bloc 3 en dépend. C'est une vraie
 information. L'option `--cov-branch` ajoute les branches : une ligne
@@ -79,7 +79,7 @@ information. L'option `--cov-branch` ajoute les branches : une ligne
 branche « faux » apparaît dans *BrPart*.
 
 La couverture a une limite qu'il faut bien comprendre. Une ligne couverte a
-été **exécutée**, mais elle n'a pas forcément été **vérifiée**. Les tests de
+été exécutée, mais elle n'a pas forcément été vérifiée. Les tests de
 `recherche.py` couvrent 100 % des lignes et des branches. Pourtant, on peut
 remplacer, dans `score_bm25`,
 
@@ -93,7 +93,7 @@ par
 score += idf(index, None) * tf * (K1 + 1) / (tf + norme)
 ```
 
-et **tous les tests passent encore**. Avec `None` au lieu du terme, l'idf
+et tous les tests passent encore. Avec `None` au lieu du terme, l'idf
 devient le même pour tous les termes. Or les tests du classement
 n'utilisent que des requêtes d'un seul terme, et pour une requête d'un seul
 terme, un idf constant ne change pas l'ordre des documents. La ligne est
@@ -107,22 +107,22 @@ d'important.
 
 ## Les tests de propriétés
 
-Un test d'exemple vérifie **un** cas : pour telle entrée, telle sortie. Un
-**test de propriété** énonce une règle qui doit valoir pour **toutes** les
+Un test d'exemple vérifie un cas : pour telle entrée, telle sortie. Un
+*test de propriété* énonce une règle qui doit valoir pour toutes les
 entrées, et laisse un outil chercher un contre-exemple. L'idée vient de
 QuickCheck [@claessen2000quickcheck]. En Python, l'outil standard est
 [Hypothesis](https://hypothesis.readthedocs.io).
 
 Quelles propriétés pour `indexeur`? On en trouve en se demandant ce qui doit
-**toujours** être vrai :
+*toujours* être vrai :
 
-- `normaliser` est **idempotente** : normaliser deux fois revient à
+- `normaliser` est idempotente : normaliser deux fois revient à
   normaliser une fois;
-- `termes` ne renvoie **jamais** de mot vide;
-- `termes` ne dépend **pas de la casse** : un texte en majuscules et le même
+- `termes` ne renvoie jamais de mot vide;
+- `termes` ne dépend pas de la casse : un texte en majuscules et le même
   texte en minuscules donnent les mêmes termes;
-- `rechercher` renvoie **au plus k** résultats, **triés** par score
-  décroissant, et chaque document trouvé contient **tous** les termes de la
+- `rechercher` renvoie au plus k résultats, triés par score
+  décroissant, et chaque document trouvé contient tous les termes de la
   requête.
 
 ```python
@@ -165,7 +165,7 @@ def test_resultats_coherents(textes, requete, k):
         assert set(termes(requete)) <= set(termes(index.documents[r.identifiant]))
 ```
 
-Deux remarques sur ce code. La **stratégie** `st.text()` produit des chaînes
+Deux remarques sur ce code. La stratégie `st.text()` produit des chaînes
 Unicode quelconques, y compris des caractères que vous n'auriez jamais
 pensé à essayer. Pour la recherche, en revanche, on a restreint le
 vocabulaire (`MOTS`) : avec des mots tirés au hasard parmi tous les
@@ -185,7 +185,7 @@ E       )
 ```
 
 En moins d'une seconde, Hypothesis a trouvé un contre-exemple, et l'a
-**réduit** (*shrinking*) à un seul caractère : `µ`, le signe *micro*
+*réduit* (*shrinking*) à un seul caractère : `µ`, le signe *micro*
 (U+00B5). Sa majuscule est la lettre grecque `Μ`, dont la minuscule est
 `μ`, le *mu* grec (U+03BC), un autre caractère. Passé en majuscules puis en
 minuscules, le signe micro ne revient pas à lui-même. Il en va de même pour
@@ -203,7 +203,7 @@ d'exemple : l'outil a trouvé un cas que l'humain et l'agent ignoraient.
 ## Quand une propriété échoue
 
 Un échec ne désigne pas toujours un défaut du code. Parfois, c'est la
-**propriété** qui est fausse ou trop forte. Avant de « corriger », demandez-vous
+*propriété* qui est fausse ou trop forte. Avant de « corriger », demandez-vous
 si la règle énoncée est bien celle que vous voulez. C'est une décision de
 conception, à consigner, comme à la semaine 5. Ne demandez jamais à un agent
 de « faire passer » une propriété sans lui dire laquelle des deux, du code ou
@@ -218,8 +218,8 @@ alors déterministe sur ce cas, quelle que soit la machine.
 
 ## Les tests différentiels
 
-Un **test différentiel** compare deux implémentations de la même chose.
-Celle qu'on teste est rapide, compliquée ou nouvelle. L'autre, l'**oracle**,
+Un test différentiel compare deux implémentations de la même chose.
+Celle qu'on teste est rapide, compliquée ou nouvelle. L'autre, l'oracle,
 est lente, simple et évidente. Si les deux diffèrent sur une entrée, l'une
 des deux est fausse.
 
@@ -295,25 +295,25 @@ additions, et donc les derniers chiffres d'un flottant (semaine 5). La
 comparaison des identifiants, elle, est exacte : l'ordre des résultats fait
 partie du contrat.
 
-Il y a deux règles pour un bon oracle. Il doit être **assez simple pour être
-juste à la lecture**, sans quoi on compare deux programmes également
-douteux. Et il doit être **indépendant** du code testé. Notre oracle réutilise
+Il y a deux règles pour un bon oracle. Il doit être assez simple pour être
+juste à la lecture, sans quoi on compare deux programmes également
+douteux. Et il doit être indépendant du code testé. Notre oracle réutilise
 `termes`, ce qui est un choix : il ne vérifie pas la normalisation, que les
 propriétés vérifient déjà. Il ne réutilise ni l'index, ni `idf`, ni
 `score_bm25`.
 
 ## Les tests de mutation
 
-La couverture dit ce que la suite exécute. Les **tests de mutation** disent
-ce qu'elle **détecte**. L'idée remonte à la fin des années 1970
+La couverture dit ce que la suite exécute. Les tests de mutation disent
+ce qu'elle détecte. L'idée remonte à la fin des années 1970
 [@jia2011mutation]. Un outil fabrique des centaines de versions légèrement
-fautives du programme, les **mutants** : un `+` devient `-`, un `<` devient
+fautives du programme, les mutants : un `+` devient `-`, un `<` devient
 `<=`, une constante change, un argument devient `None`. Il exécute la suite
-sur chacun. Un mutant qui fait échouer au moins un test est **tué**. Un
-mutant qui laisse passer tous les tests **survit**, et chaque survivant est
+sur chacun. Un mutant qui fait échouer au moins un test est tué. Un
+mutant qui laisse passer tous les tests survit, et chaque survivant est
 une erreur plausible que votre suite ne verrait pas.
 
-Le **score de mutation** est la proportion de mutants tués. C'est une mesure
+Le score de mutation est la proportion de mutants tués. C'est une mesure
 directe de ce qu'on veut savoir : la suite détecte-t-elle des erreurs? Elle
 est aussi bien adaptée au travail avec un agent, parce que les mutants
 ressemblent aux erreurs qu'un agent commet : une borne décalée d'un, un
@@ -347,7 +347,7 @@ Sur la suite fournie, mutmut produit 286 mutants. Par module :
 | `recherche.py` | 44 | 21 | 0 |
 | `cli.py` | 49 | 34 | 0 |
 | `corpus.py` | 7 | 2 | 45 |
-| **Total** | **178** | **63** | **45** |
+| Total | 178 | 63 | 45 |
 
 `recherche.py`, couvert à 100 %, laisse survivre un mutant sur trois. En
 voici trois, tels que `mutmut show` les affiche :
@@ -368,8 +368,8 @@ voici trois, tels que `mutmut show` les affiche :
 ```
 
 Chacun calcule des scores faux, et aucun test ne le voit, parce que les
-tests vérifient l'**ordre** des résultats sur de petits exemples, et jamais
-les **valeurs** des scores ni des requêtes à plusieurs termes de raretés
+tests vérifient l'ordre des résultats sur de petits exemples, et jamais
+les valeurs des scores ni des requêtes à plusieurs termes de raretés
 différentes.
 
 Ajoutons les propriétés et le test différentiel de cette page, puis
@@ -383,14 +383,16 @@ relançons mutmut :
 | `cli.py` | 49 | 34 | 0 |
 | `corpus.py` | 31 | 22 | 1 (délai dépassé) |
 
-Dans `recherche.py`, on passe de 21 survivants à **un seul** :
+![Mutants tués et survivants, par module, avant et après l'ajout des propriétés et du test différentiel.](../../images/figures/s06-mutants.svg){fig-alt="Barres horizontales par module. Avec la suite fournie, recherche.py laisse 21 mutants survivants; après l'ajout des propriétés et du test différentiel, il n'en reste qu'un. Les survivants de cli.py ne changent pas (34). corpus.py passe de 45 mutants sans test à 31 tués et 22 survivants."}
+
+Dans `recherche.py`, on passe de 21 survivants à un seul :
 
 ```diff
 -def rechercher(index, requete, k=10):
 +def rechercher(index, requete, k=11):
 ```
 
-Aucun test ne vérifie la valeur **par défaut** de `k`. Est-ce grave? C'est
+Aucun test ne vérifie la valeur par défaut de `k`. Est-ce grave? C'est
 un comportement documenté (« les k documents les plus pertinents », 10 par
 défaut dans l'aide de la ligne de commande), donc un test d'une ligne
 s'impose.
@@ -398,14 +400,14 @@ s'impose.
 Les survivants restants sont instructifs, car ils ne sont pas tous du même
 ordre :
 
-- **Des mutants équivalents.** Remplacer `encoding="utf-8"` par
+- *Des mutants équivalents.* Remplacer `encoding="utf-8"` par
   `encoding="UTF-8"` ne change rien : aucun test ne peut tuer ce mutant.
   C'est la grande limite de la méthode [@jia2011mutation] : il faut trier
   les survivants à la main, et un score de 100 % est rarement atteignable.
-- **Des détails sans importance.** La plupart des survivants de `cli.py`
+- *Des détails sans importance.* La plupart des survivants de `cli.py`
   modifient les textes d'aide d'`argparse` (`help="XXchercher…XX"`). On peut
   les ignorer en connaissance de cause.
-- **De vrais trous.** Dans `corpus.py`, le mutant
+- *De vrais trous.* Dans `corpus.py`, le mutant
   `hasard = random.Random(None)` survit : la graine est ignorée, le corpus
   synthétique n'est plus reproductible, et aucun test ne s'en aperçoit. Or
   le banc d'essai du bloc 3 suppose cette reproductibilité. Le test qui
@@ -414,8 +416,8 @@ ordre :
   `cli.py`, le mutant qui retire `type=int` de l'option `-k` survit aussi :
   aucun test ne passe `-k` en ligne de commande.
 
-Le score de mutation global a donc moins d'intérêt que la **lecture des
-survivants**. Chaque survivant pose une question précise : « cette erreur
+Le score de mutation global a donc moins d'intérêt que la lecture des
+survivants. Chaque survivant pose une question précise : « cette erreur
 serait-elle grave? » Si oui, il manque un test, et le mutant vous dit
 lequel.
 
@@ -435,29 +437,29 @@ le mutant, mais il cassera à la première optimisation légitime.
 
 Travaillez dans une branche `semaine-06`.
 
-1. **Couverture.** Mesurez la couverture avec branches. Notez les lignes non
+1. *Couverture.* Mesurez la couverture avec branches. Notez les lignes non
    couvertes et dites, pour chacune, si c'est grave.
 
-2. **Mutation, avant.** Configurez mutmut et lancez-le. Notez le score par
+2. *Mutation, avant.* Configurez mutmut et lancez-le. Notez le score par
    module. Examinez au moins dix survivants de `recherche.py` et de
    `index.py` avec `mutmut show`, et classez-les : équivalent, sans
    importance, vrai trou.
 
-3. **Propriétés.** Écrivez au moins quatre propriétés, dont au moins deux qui
+3. *Propriétés.* Écrivez au moins quatre propriétés, dont au moins deux qui
    ne figurent pas sur cette page. Quelques pistes : ajouter un document qui
    ne contient pas les termes de la requête ne change pas l'ensemble des
    résultats; l'ordre d'ajout des documents ne change pas les résultats;
    `termes(a + " " + b) == termes(a) + termes(b)` (vrai? essayez). Si une
    propriété échoue, décidez qui a tort et consignez la décision.
 
-4. **Différentiel.** Ajoutez le test différentiel, puis faites-le porter
+4. *Différentiel.* Ajoutez le test différentiel, puis faites-le porter
    aussi sur des corpus produits par Hypothesis.
 
-5. **Mutation, après.** Relancez mutmut. Comparez. Pour les vrais trous qui
+5. *Mutation, après.* Relancez mutmut. Comparez. Pour les vrais trous qui
    restent, faites écrire les tests manquants par un agent, comme dans
    l'encadré ci-dessus, puis relisez-les et relancez mutmut.
 
-6. **Carnet.** Notez le temps passé par l'agent et par vous, et le nombre de
+6. *Carnet.* Notez le temps passé par l'agent et par vous, et le nombre de
    mutants tués par les tests qu'il a écrits.
 
 ## À retenir
@@ -486,3 +488,85 @@ Travaillez dans une branche `semaine-06`.
 4. Les propriétés de Hypothesis s'exécutent sur des entrées aléatoires. Le
    test est-il encore déterministe au sens de la semaine 5? Que fait
    Hypothesis pour limiter le problème, et que pouvez-vous faire de plus?
+
+## Autoévaluation
+
+:::: {.qcm}
+::: {.question}
+Les tests de `recherche.py` couvrent 100 % des lignes et des branches. Que
+peut-on en conclure?
+
+- Que toute erreur dans `recherche.py` ferait échouer au moins un test
+- Que chaque ligne a été exécutée au moins une fois, sans plus []{.bonne}
+- Que le score de mutation de `recherche.py` est aussi de 100 %
+- Que les tests de propriétés y sont inutiles
+
+::: {.explication}
+Une ligne couverte a été exécutée, pas forcément vérifiée. Avec la suite
+fournie, un mutant sur trois survit dans `recherche.py`, malgré une
+couverture complète.
+:::
+:::
+
+::: {.question}
+Laquelle de ces règles est une bonne propriété à confier à Hypothesis pour
+`indexeur`?
+
+- `rechercher(index, "chat")` renvoie `["a", "b"]` sur le petit index des tests
+- Normaliser un mot déjà normalisé ne le change pas []{.bonne}
+- `termes` est plus rapide que `normaliser`
+- La couverture de `texte.py` reste à 100 %
+
+::: {.explication}
+Une propriété est une règle qui doit valoir pour toutes les entrées, comme
+l'idempotence de `normaliser`. Le premier choix est un test d'exemple; les
+deux autres ne sont pas des comportements du code.
+:::
+:::
+
+::: {.question}
+Une propriété échoue sur le contre-exemple `"µ"`. Que faites-vous d'abord?
+
+- Vous demandez à l'agent de faire passer la propriété
+- Vous supprimez la propriété : un caractère aussi rare ne compte pas
+- Vous décidez qui fait foi, le code ou la propriété, puis vous gardez le cas avec `@example("µ")` []{.bonne}
+- Vous relancez Hypothesis jusqu'à ce qu'il ne trouve plus ce cas
+
+::: {.explication}
+Un échec peut venir du code ou d'une propriété trop forte : c'est une
+décision de conception. Une fois tranché, `@example` garde le cas dans la
+suite, de façon déterministe.
+:::
+:::
+
+::: {.question}
+Dans un test différentiel, quel rôle joue l'oracle?
+
+- C'est la version optimisée, que l'on veut valider
+- C'est une implémentation lente, simple et évidente, à laquelle on compare la version testée []{.bonne}
+- C'est l'outil qui génère les mutants
+- C'est le jeu de données de référence enregistré une fois pour toutes
+
+::: {.explication}
+L'oracle se passe de toute astuce : pour `indexeur`, il relit tous les
+documents et calcule BM25 à partir de la définition. Si les deux versions
+diffèrent, l'une des deux est fausse.
+:::
+:::
+
+::: {.question}
+mutmut signale qu'un mutant remplaçant `encoding="utf-8"` par
+`encoding="UTF-8"` survit. Qu'en concluez-vous?
+
+- Il manque un test sur l'encodage des fichiers
+- La suite est trop faible : il faut viser 100 % de mutants tués
+- mutmut est mal configuré
+- C'est un mutant équivalent : aucun test ne peut le tuer, on l'ignore en connaissance de cause []{.bonne}
+
+::: {.explication}
+Le mutant ne change pas le comportement. Les mutants équivalents sont la
+grande limite de la méthode : il faut lire les survivants, et un score de
+100 % est rarement atteignable.
+:::
+:::
+::::

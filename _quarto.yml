@@ -76,4 +76,5 @@ format:
     include-after-body:
       - _includes/theme.html
       - _includes/liens.html
+      - _includes/qcm.html
     number-depth: 1

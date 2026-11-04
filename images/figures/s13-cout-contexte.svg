@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 340" role="img" aria-labelledby="titre desc" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="13">
+  <title id="titre">Jetons envoyés à chaque requête : une longue session ou deux courtes</title>
+  <desc id="desc">Une session de 40 tours dont le contexte passe de 20 000 à 120 000 jetons envoie environ 2,8 millions de jetons en tout. Deux sessions de 20 tours, chacune repartie à neuf, plafonnent à 70 000 jetons et envoient environ 1,8 million de jetons. Le total correspond à l'aire sous chaque courbe.</desc>
+  <rect width="720" height="340" fill="#fcfcfb"/>
+
+  <!-- Légende -->
+  <line x1="90" y1="20" x2="118" y2="20" stroke="#2a78d6" stroke-width="2"/>
+  <text x="126" y="24" fill="#0b0b0b">une session de 40 tours : environ 2,8 millions de jetons envoyés en tout</text>
+  <line x1="90" y1="42" x2="118" y2="42" stroke="#eb6834" stroke-width="2"/>
+  <text x="126" y="46" fill="#0b0b0b">deux sessions de 20 tours : environ 1,8 million</text>
+
+  <!-- Grille et axes -->
+  <g stroke="#e4e3df" stroke-width="1">
+    <line x1="80" y1="217.1" x2="660" y2="217.1"/>
+    <line x1="80" y1="154.3" x2="660" y2="154.3"/>
+    <line x1="80" y1="91.4" x2="660" y2="91.4"/>
+  </g>
+  <line x1="80" y1="280" x2="660" y2="280" stroke="#52514e" stroke-width="1"/>
+  <g fill="#52514e" font-size="12" text-anchor="end">
+    <text x="72" y="284">0</text>
+    <text x="72" y="221">40</text>
+    <text x="72" y="158">80</text>
+    <text x="72" y="95">120</text>
+  </g>
+  <g fill="#52514e" font-size="12" text-anchor="middle">
+    <text x="80" y="298">1</text>
+    <text x="213.8" y="298">10</text>
+    <text x="362.6" y="298">20</text>
+    <text x="511.3" y="298">30</text>
+    <text x="660" y="298">40</text>
+    <text x="370" y="324">tour de la session</text>
+  </g>
+  <text transform="translate(26 175) rotate(-90)" text-anchor="middle" fill="#52514e" font-size="12">milliers de jetons par requête</text>
+
+  <!-- Aires (le total envoyé) -->
+  <path d="M80 280 L80 248.6 L660 91.4 L660 280 Z" fill="#2a78d6" fill-opacity="0.08"/>
+  <path d="M80 280 L80 248.6 L362.6 170 L362.6 280 Z M377.5 280 L377.5 248.6 L660 170 L660 280 Z" fill="#eb6834" fill-opacity="0.10"/>
+
+  <!-- Courbes -->
+  <path d="M80 248.6 L660 91.4" fill="none" stroke="#2a78d6" stroke-width="2"/>
+  <path d="M80 248.6 L362.6 170" fill="none" stroke="#eb6834" stroke-width="2"/>
+  <path d="M362.6 170 L377.5 248.6" fill="none" stroke="#eb6834" stroke-width="1.5" stroke-dasharray="3 3"/>
+  <path d="M377.5 248.6 L660 170" fill="none" stroke="#eb6834" stroke-width="2"/>
+
+  <text x="384" y="266" fill="#52514e" font-size="12">session neuve</text>
+</svg>

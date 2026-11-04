@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 320" role="img" aria-labelledby="titre desc" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="13">
+  <title id="titre">Le cycle d'une fiche de tâche</title>
+  <desc id="desc">On écrit la fiche, on la fait exécuter dans une session neuve, puis on vérifie : rapport, périmètre, tests relancés soi-même, diff relu. Si tout va bien, on fait le commit avec la fiche. Sinon, on corrige la fiche, on annule les modifications et on relance dans une session neuve, sans corriger dans la même session.</desc>
+  <defs>
+    <marker id="fleche" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#52514e"/>
+    </marker>
+    <marker id="fleche-rouge" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#e34948"/>
+    </marker>
+    <marker id="fleche-verte" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#008300"/>
+    </marker>
+  </defs>
+  <rect width="720" height="320" fill="#fcfcfb"/>
+
+  <g fill="#ffffff" stroke="#b9b8b2">
+    <rect x="20" y="60" width="150" height="70" rx="6"/>
+    <rect x="215" y="60" width="160" height="70" rx="6" stroke="#2a78d6" stroke-width="1.5"/>
+    <rect x="420" y="30" width="180" height="130" rx="6"/>
+    <rect x="620" y="65" width="85" height="60" rx="6" stroke="#008300"/>
+    <rect x="215" y="215" width="270" height="60" rx="6" stroke="#e34948"/>
+  </g>
+
+  <g fill="#0b0b0b">
+    <text x="95" y="88" text-anchor="middle">Écrire la fiche</text>
+    <text x="295" y="88" text-anchor="middle">Session neuve</text>
+    <text x="436" y="54">Vérifier vous-même</text>
+    <text x="662" y="92" text-anchor="middle">Commit</text>
+    <text x="350" y="240" text-anchor="middle">Corriger la fiche, puis git restore .</text>
+  </g>
+  <g fill="#52514e" font-size="12">
+    <text x="95" y="108" text-anchor="middle">taches/1.2-positions.md</text>
+    <text x="295" y="108" text-anchor="middle">« Exécute la fiche… »</text>
+    <text x="436" y="78">1. lire le rapport</text>
+    <text x="436" y="98">2. git status, git diff --stat</text>
+    <text x="436" y="118">3. relancer uv run pytest -q</text>
+    <text x="436" y="138">4. relire le diff, ligne à ligne</text>
+    <text x="662" y="110" text-anchor="middle">avec la fiche</text>
+    <text x="350" y="260" text-anchor="middle">pas de correction dans la même session</text>
+  </g>
+
+  <g fill="none" stroke="#52514e" stroke-width="1.5" marker-end="url(#fleche)">
+    <path d="M172 95 L211 95"/>
+    <path d="M377 95 L416 95"/>
+  </g>
+  <path d="M602 95 L616 95" fill="none" stroke="#008300" stroke-width="1.5" marker-end="url(#fleche-verte)"/>
+  <path d="M510 162 C510 200 500 245 489 245" fill="none" stroke="#e34948" stroke-width="1.5" marker-end="url(#fleche-rouge)"/>
+  <path d="M213 245 C95 245 95 180 95 134" fill="none" stroke="#e34948" stroke-width="1.5" marker-end="url(#fleche-rouge)"/>
+  <text x="520" y="200" fill="#e34948" font-size="12">non conforme</text>
+  <text x="611" y="150" fill="#008300" font-size="12">conforme</text>
+
+  <text x="360" y="305" text-anchor="middle" fill="#52514e" font-size="12">Le plus souvent, l'échec vient d'une fiche incomplète : c'est elle qu'on améliore.</text>
+</svg>

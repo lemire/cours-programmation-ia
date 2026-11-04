@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 300" role="img" aria-labelledby="titre desc" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="13">
+  <title id="titre">Le test comme contrat entre vous et l'agent</title>
+  <desc id="desc">Vous écrivez les tests, vous les voyez échouer, vous en faites un commit. L'agent modifie le code et relance les tests jusqu'à ce qu'ils passent. Vous vérifiez ensuite que les tests n'ont pas été modifiés, vous relancez les tests vous-même et vous relisez le diff avant d'accepter.</desc>
+  <defs>
+    <marker id="fleche" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#52514e"/>
+    </marker>
+  </defs>
+  <rect width="720" height="300" fill="#fcfcfb"/>
+
+  <!-- Couloirs -->
+  <line x1="20" y1="150" x2="700" y2="150" stroke="#e2e1dc"/>
+  <text x="20" y="28" fill="#52514e" font-size="12">Vous</text>
+  <text x="20" y="178" fill="#52514e" font-size="12">Agent</text>
+
+  <g fill="#ffffff" stroke="#b9b8b2">
+    <rect x="20" y="50" width="125" height="60" rx="6"/>
+    <rect x="160" y="50" width="130" height="60" rx="6" stroke="#e34948"/>
+    <rect x="305" y="50" width="110" height="60" rx="6"/>
+    <rect x="150" y="195" width="270" height="60" rx="6" stroke="#2a78d6" stroke-width="1.5"/>
+    <rect x="450" y="50" width="250" height="82" rx="6" stroke="#008300"/>
+  </g>
+
+  <g fill="#0b0b0b">
+    <text x="82" y="76" text-anchor="middle">Écrire les tests</text>
+    <text x="225" y="76" text-anchor="middle">Les voir rouges</text>
+    <text x="360" y="76" text-anchor="middle">Commit</text>
+    <text x="285" y="220" text-anchor="middle">Modifier le code, relancer les tests</text>
+    <text x="466" y="72">Vérifier, puis accepter</text>
+  </g>
+  <g fill="#52514e" font-size="12">
+    <text x="82" y="96" text-anchor="middle">le critère, d'abord</text>
+    <text x="225" y="96" text-anchor="middle">pour la bonne raison</text>
+    <text x="360" y="96" text-anchor="middle">des tests seuls</text>
+    <text x="285" y="240" text-anchor="middle">jusqu'au vert; ne touche pas aux tests</text>
+    <text x="466" y="92">git diff HEAD~1 -- tests/ vide</text>
+    <text x="466" y="108">uv run pytest, relancé par vous</text>
+    <text x="466" y="124">diff relu</text>
+  </g>
+
+  <g fill="none" stroke="#52514e" stroke-width="1.5" marker-end="url(#fleche)">
+    <path d="M147 80 L156 80"/>
+    <path d="M292 80 L301 80"/>
+    <path d="M360 112 L360 191"/>
+    <path d="M422 225 L575 225 L575 136"/>
+  </g>
+  <path d="M180 257 C180 285 250 285 250 260" fill="none" stroke="#52514e" stroke-width="1.2" marker-end="url(#fleche)"/>
+  <text x="260" y="285" fill="#52514e" font-size="12">rouge : on recommence</text>
+
+  <text x="372" y="172" fill="#52514e" font-size="12">« Ne modifie pas les tests. »</text>
+</svg>

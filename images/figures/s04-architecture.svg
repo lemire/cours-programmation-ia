@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 330" role="img" aria-labelledby="titre desc" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="13">
+  <title id="titre">Les dépendances d'indexeur et deux écarts typiques d'un agent</title>
+  <desc id="desc">Dépendances permises : cli vers recherche, cli vers corpus, cli vers index, recherche vers index, recherche vers texte, index vers texte. Deux écarts typiques, en rouge : index qui importe recherche, ce qui remonte le graphe; et une racinisation ajoutée dans rechercher au lieu de texte.termes, ce qui duplique la normalisation et viole la règle 1.</desc>
+  <defs>
+    <marker id="fleche" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#52514e"/>
+    </marker>
+    <marker id="fleche-rouge" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#e34948"/>
+    </marker>
+  </defs>
+  <rect width="720" height="330" fill="#fcfcfb"/>
+
+  <g fill="#ffffff" stroke="#b9b8b2">
+    <rect x="30" y="120" width="110" height="50" rx="6"/>
+    <rect x="210" y="50" width="130" height="50" rx="6"/>
+    <rect x="210" y="190" width="130" height="50" rx="6"/>
+    <rect x="410" y="120" width="110" height="50" rx="6"/>
+    <rect x="590" y="120" width="110" height="50" rx="6" stroke="#2a78d6" stroke-width="1.5"/>
+  </g>
+  <g fill="#0b0b0b" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13">
+    <text x="85" y="150" text-anchor="middle">cli.py</text>
+    <text x="275" y="80" text-anchor="middle">recherche.py</text>
+    <text x="275" y="220" text-anchor="middle">corpus.py</text>
+    <text x="465" y="150" text-anchor="middle">index.py</text>
+    <text x="645" y="150" text-anchor="middle">texte.py</text>
+  </g>
+
+  <!-- Dépendances permises -->
+  <g fill="none" stroke="#52514e" stroke-width="1.5" marker-end="url(#fleche)">
+    <path d="M140 135 L206 85"/>
+    <path d="M140 155 L206 205"/>
+    <path d="M142 145 L406 145"/>
+    <path d="M340 85 L408 132"/>
+    <path d="M340 66 C480 30 600 60 640 116"/>
+    <path d="M522 145 L586 145"/>
+  </g>
+
+  <!-- Écart 1 : index importe recherche -->
+  <path d="M440 118 C420 100 380 92 344 90" fill="none" stroke="#e34948" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#fleche-rouge)"/>
+  <text x="430" y="104" fill="#e34948" font-size="12">✗ import qui remonte</text>
+
+  <!-- Écart 2 : racinisation dans rechercher -->
+  <rect x="210" y="16" width="130" height="24" rx="4" fill="#ffffff" stroke="#e34948" stroke-dasharray="4 3"/>
+  <text x="275" y="33" text-anchor="middle" fill="#e34948" font-size="12">✗ raciniser(requête)</text>
+
+  <g fill="#52514e" font-size="12">
+    <text x="360" y="270" text-anchor="middle">Règle 1 : toute normalisation (accents, mots vides, racinisation) va dans texte.termes, et nulle part ailleurs.</text>
+    <text x="360" y="290" text-anchor="middle">Une racinisation ajoutée dans rechercher transforme les requêtes, pas les documents : plus rien ne correspond.</text>
+    <text x="360" y="315" text-anchor="middle">Vérification : grep -n "^from\|^import" src/indexeur/*.py</text>
+  </g>
+</svg>

@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 350" role="img" aria-labelledby="titre desc" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="13">
+  <title id="titre">Trois arbres de travail rattachés au même dépôt</title>
+  <desc id="desc">Un seul dépôt Git (historique, branches, objets) et trois arbres de travail : indexeur sur main, indexeur-ou sur la branche ou, indexeur-extraits sur la branche extraits. Chaque arbre a ses fichiers, son environnement .venv et sa session d'agent. Les branches s'intègrent dans main, avec les tests après chaque intégration. Git n'isole pas le reste : ports, fichiers temporaires et caches, bases de données, processeur, quotas de jetons.</desc>
+  <defs>
+    <marker id="fleche" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#52514e"/>
+    </marker>
+  </defs>
+  <rect width="720" height="350" fill="#fcfcfb"/>
+
+  <!-- Le dépôt partagé -->
+  <rect x="210" y="16" width="300" height="40" rx="6" fill="#ffffff" stroke="#2a78d6" stroke-width="1.5"/>
+  <text x="360" y="41" text-anchor="middle" fill="#0b0b0b">un seul dépôt : historique, branches, objets</text>
+
+  <g stroke="#b9b8b2" stroke-width="1">
+    <line x1="360" y1="56" x2="130" y2="96"/>
+    <line x1="360" y1="56" x2="360" y2="96"/>
+    <line x1="360" y1="56" x2="590" y2="96"/>
+  </g>
+
+  <!-- Les trois arbres -->
+  <g fill="#ffffff" stroke="#b9b8b2" stroke-width="1">
+    <rect x="30" y="96" width="200" height="104" rx="6"/>
+    <rect x="260" y="96" width="200" height="104" rx="6"/>
+    <rect x="490" y="96" width="200" height="104" rx="6"/>
+  </g>
+  <g fill="#0b0b0b">
+    <text x="46" y="120">indexeur/</text>
+    <text x="276" y="120">indexeur-ou/</text>
+    <text x="506" y="120">indexeur-extraits/</text>
+  </g>
+  <g fill="#52514e" font-size="12">
+    <text x="46" y="142">branche main</text>
+    <text x="46" y="162">ses fichiers, son .venv</text>
+    <text x="46" y="182">intégration et tests</text>
+    <text x="276" y="142">branche ou</text>
+    <text x="276" y="162">ses fichiers, son .venv</text>
+    <text x="276" y="182">une session d'agent</text>
+    <text x="506" y="142">branche extraits</text>
+    <text x="506" y="162">ses fichiers, son .venv</text>
+    <text x="506" y="182">une session d'agent</text>
+  </g>
+
+  <!-- Intégration -->
+  <g fill="none" stroke="#52514e" stroke-width="1.5" marker-end="url(#fleche)">
+    <path d="M360 202 C360 236 150 236 150 204"/>
+    <path d="M590 202 C590 252 110 252 110 204"/>
+  </g>
+  <text x="360" y="268" text-anchor="middle" fill="#52514e" font-size="12">une branche à la fois, les tests après chaque intégration</text>
+
+  <!-- Ce que Git n'isole pas -->
+  <rect x="30" y="284" width="660" height="52" rx="6" fill="#ffffff" stroke="#eb6834" stroke-width="1" stroke-dasharray="4 3"/>
+  <text x="46" y="306" fill="#0b0b0b">Partagé entre les arbres, sans que Git le voie :</text>
+  <text x="46" y="326" fill="#52514e" font-size="12">ports réseau, /tmp et caches, bases de données, processeur (bancs d'essai), quotas de jetons</text>
+</svg>

@@ -35,15 +35,15 @@ dans un fichier du dépôt, `taches/1.2-positions.md` par exemple, puis à dire
 
 Le fichier a plusieurs avantages sur la demande tapée.
 
-- **On l'écrit à tête reposée**, en relisant le code, et non dans l'urgence
+- *On l'écrit à tête reposée*, en relisant le code, et non dans l'urgence
   d'une session ouverte.
-- **On peut le rejouer.** Si l'agent échoue, on annule, on corrige la fiche
+- *On peut le rejouer.* Si l'agent échoue, on annule, on corrige la fiche
   et on relance une session neuve avec la même fiche. On sait alors que
   c'est la fiche qui a changé, et rien d'autre.
-- **Il est versionné.** Le commit qui contient le code peut contenir aussi la
+- *Il est versionné.* Le commit qui contient le code peut contenir aussi la
   fiche qui l'a demandé. Six mois plus tard, on sait pourquoi le code est
   ainsi.
-- **On peut le comparer.** Le TP1 vous demande justement de comparer un
+- *On peut le comparer.* Le TP1 vous demande justement de comparer un
   cadrage flou et un cadrage précis. Sans fiches, il n'y a rien à comparer.
 
 ## Le gabarit
@@ -53,14 +53,14 @@ pour l'agent. Il compte pour vous : une rubrique vide se voit.
 
 | Rubrique | Question | Exemple de défaut qu'elle évite |
 |---|---|---|
-| **But** | Quel effet observable veut-on, et pourquoi? | l'agent optimise autre chose que ce qu'on voulait |
-| **Contexte** | Que faut-il lire avant de commencer? | l'agent devine une convention écrite ailleurs |
-| **Périmètre** | Quels fichiers a-t-il le droit de modifier? | la dérive de périmètre (semaine 1) |
-| **Hors périmètre** | Qu'est-ce qu'on ne fait *pas* dans cette tâche? | la tâche suivante faite à moitié, en passant |
-| **Contraintes** | Quelles règles du projet s'appliquent? | une dépendance interdite, une sortie non déterministe |
-| **Critère d'acceptation** | À quoi reconnaît-on que c'est fini et juste? | « c'est fait » sans preuve |
-| **Vérification** | Quelles commandes exactes lancer? | des tests exécutés à moitié, ou pas du tout |
-| **Rapport** | Que doit dire l'agent à la fin? | une décision prise en silence |
+| But | Quel effet observable veut-on, et pourquoi? | l'agent optimise autre chose que ce qu'on voulait |
+| Contexte | Que faut-il lire avant de commencer? | l'agent devine une convention écrite ailleurs |
+| Périmètre | Quels fichiers a-t-il le droit de modifier? | la dérive de périmètre (semaine 1) |
+| Hors périmètre | Qu'est-ce qu'on ne fait *pas* dans cette tâche? | la tâche suivante faite à moitié, en passant |
+| Contraintes | Quelles règles du projet s'appliquent? | une dépendance interdite, une sortie non déterministe |
+| Critère d'acceptation | À quoi reconnaît-on que c'est fini et juste? | « c'est fait » sans preuve |
+| Vérification | Quelles commandes exactes lancer? | des tests exécutés à moitié, ou pas du tout |
+| Rapport | Que doit dire l'agent à la fin? | une décision prise en silence |
 
 Voici le gabarit lui-même, à copier dans `taches/GABARIT.md` :
 
@@ -102,7 +102,7 @@ Lance, dans cet ordre, et montre la sortie :
 Ne fais pas de commit.
 ```
 
-Deux remarques sur ce gabarit. La rubrique **Rapport** sert à combattre le
+Deux remarques sur ce gabarit. La rubrique Rapport sert à combattre le
 deuxième mode d'échec de la semaine 1 (affirmer sans vérifier) : on exige les
 commandes et leur sortie, et pas seulement une conclusion. La consigne « Ne
 fais pas de commit » vous laisse le dernier mot : c'est vous qui faites le
@@ -123,7 +123,7 @@ Et « pour qu'on puisse faire la recherche d'expressions » est une invitation
 à faire aussi la tâche suivante.
 
 Voici la fiche précise. On suppose qu'à la semaine 2, on a décidé de compter
-les positions **après** le retrait des mots vides. C'est un choix parmi
+les positions après le retrait des mots vides. C'est un choix parmi
 d'autres, et l'essentiel est qu'il soit écrit.
 
 ```markdown
@@ -191,30 +191,30 @@ fiche ferment une porte que l'agent aurait pu ouvrir. Comparez ce que vous
 obtenez dans les deux cas (c'est l'activité de la semaine) : les écarts sont
 rarement dans le code central, et presque toujours dans tout ce qui l'entoure.
 
-Remarquez aussi ce que la fiche ne dit **pas** : elle ne dit pas comment
+Remarquez aussi ce que la fiche ne dit pas : elle ne dit pas comment
 stocker les positions. Un dictionnaire `(terme, identifiant) → liste`, une
 liste par entrée de `postings`, une autre structure : c'est à l'agent de
-choisir, et on jugera le choix au moment de relire. La fiche fixe le **quoi**
+choisir, et on jugera le choix au moment de relire. La fiche fixe le quoi
 (l'interface, les exemples, l'invariant avec `frequence`) et laisse le
-**comment**.
+*comment*.
 
 ## Écrire un bon critère d'acceptation
 
 Le critère d'acceptation est la rubrique la plus importante, et celle qu'on
 bâcle le plus souvent. Quelques règles :
 
-- **Donnez un exemple exact.** « `positions("chat", "a")` vaut `[0, 2]` »
+- *Donnez un exemple exact.* « `positions("chat", "a")` vaut `[0, 2]` »
   vaut mieux que trois phrases de description. Un exemple d'entrée et de
   sortie lève les ambiguïtés que la prose laisse passer (départ à 0 ou à 1,
   liste ou tuple, ordre).
-- **Énoncez un invariant si vous en voyez un.** « `frequence` égale la
+- *Énoncez un invariant si vous en voyez un.* « `frequence` égale la
   longueur de `positions` » relie la nouvelle structure à l'ancienne. Un
   agent qui tient deux structures en parallèle risque de les désynchroniser.
   L'invariant le force à les garder cohérentes, et il donnera un excellent
   test de propriété à la semaine 6.
-- **Dites quels tests doivent exister.** Sinon, l'agent écrira peut-être un
+- *Dites quels tests doivent exister.* Sinon, l'agent écrira peut-être un
   seul test, ou aucun, et « les tests passent » ne voudra rien dire.
-- **Dites ce qui ne doit pas changer.** « Les tests existants passent sans
+- *Dites ce qui ne doit pas changer.* « Les tests existants passent sans
   être modifiés » est le critère le plus simple qui protège contre le
   troisième mode d'échec de la semaine 1 (faire passer les tests en les
   modifiant). La semaine 7 montrera comment le faire respecter par
@@ -232,8 +232,8 @@ l'agent de ce qu'il fait bien (lire le code existant et trouver
 l'implémentation qui s'y intègre) et vous gardez pour vous ce qu'il fait mal
 (deviner l'intention).
 
-La règle : **spécifiez l'interface et le comportement, pas
-l'implémentation**, sauf quand l'implémentation **est** la contrainte.
+La règle : spécifiez l'interface et le comportement, pas
+l'implémentation, sauf quand l'implémentation est la contrainte.
 « Sans dépendance externe », « sans changer la complexité de `ajouter` » et
 « sans lire de fichier » sont des contraintes légitimes. « Utilise
 `enumerate` » n'en est pas une.
@@ -281,8 +281,8 @@ fiche interdit de modifier. Face à une contradiction, l'agent doit choisir.
 Il peut modifier le test malgré la consigne, renoncer à l'exemple, ou bien,
 dans le pire des cas, trouver un contournement qui satisfait la lettre des
 deux consignes (placer le fichier ailleurs et changer le chemin dans un autre
-test, par exemple). Le bon comportement est de **s'arrêter et de signaler la
-contradiction** : c'est à cela que sert le point 4 de la rubrique Rapport
+test, par exemple). Le bon comportement est de s'arrêter et de signaler la
+contradiction : c'est à cela que sert le point 4 de la rubrique Rapport
 (« les questions qui restent »). Vous pouvez le rendre explicite : « Si deux
 consignes de cette fiche te semblent incompatibles, arrête-toi et
 signale-le. »
@@ -295,7 +295,7 @@ avez choisi.
 
 ## La fiche, l'agent et vous
 
-Lancez chaque fiche dans une **session neuve**, en une phrase : « Exécute la
+Lancez chaque fiche dans une session neuve, en une phrase : « Exécute la
 fiche `taches/1.2-positions.md`. » Puis, quand l'agent a terminé :
 
 1. Lisez son rapport. Signale-t-il une décision imprévue? une question?
@@ -304,8 +304,10 @@ fiche `taches/1.2-positions.md`. » Puis, quand l'agent a terminé :
 3. Relancez vous-même la vérification (`uv run pytest -q`). Ne vous fiez pas
    à la sortie que l'agent affirme avoir obtenue.
 4. Relisez le diff, critère d'acceptation à la main, ligne par ligne.
-5. Si tout va bien, faites le commit **avec la fiche**, dans le même commit
+5. Si tout va bien, faites le commit avec la fiche, dans le même commit
    ou dans le précédent.
+
+![Le cycle d'une fiche : exécuter dans une session neuve, vérifier soi-même, puis faire le commit ou corriger la fiche.](../../images/figures/s03-cycle-fiche.svg){fig-alt="Écrire la fiche, puis la faire exécuter dans une session neuve, puis vérifier soi-même en quatre étapes : lire le rapport, git status et git diff --stat, relancer uv run pytest -q, relire le diff. Si c'est conforme, commit avec la fiche. Sinon, corriger la fiche puis git restore, et recommencer, sans correction dans la même session."}
 
 Si quelque chose ne va pas, ne corrigez pas dans la même session. Demandez-vous
 d'abord si c'est la fiche qui était incomplète. Le plus souvent, c'est le cas.
@@ -318,10 +320,10 @@ TP1 vous demandera justement de montrer cette amélioration.
 Travaillez sur votre branche `semaine-02`, ou sur une nouvelle branche
 `semaine-03` partie de celle-ci.
 
-1. **Gabarit.** Copiez le gabarit dans `taches/GABARIT.md` et faites-en un
+1. *Gabarit.* Copiez le gabarit dans `taches/GABARIT.md` et faites-en un
    commit.
 
-2. **Comparaison flou contre précis.** Partez d'un commit où les positions
+2. *Comparaison flou contre précis.* Partez d'un commit où les positions
    n'existent pas encore (le commit de départ, sur une branche
    `s03-flou`). Dans une session neuve, donnez la demande floue (« Ajoute les
    positions des mots dans l'index pour qu'on puisse faire la recherche
@@ -335,19 +337,19 @@ Travaillez sur votre branche `semaine-02`, ou sur une nouvelle branche
    - si la branche floue a commencé la recherche d'expressions elle-même;
    - le temps et les jetons consommés.
 
-3. **Les fiches de la recherche d'expression.** Écrivez les fiches des
+3. *Les fiches de la recherche d'expression.* Écrivez les fiches des
    tâches de modification de votre plan de la semaine 2 (1.3, 1.4 et 1.5, ou
    leurs équivalents). Pour chacune, appliquez le test « pourrais-je la faire
    moi-même en respectant chaque ligne? ». Cherchez en particulier la
    contradiction de `test_stats` dans votre fiche 1.5.
 
-4. **Exécution.** Faites exécuter la fiche 1.3 (analyse de la requête) dans
+4. *Exécution.* Faites exécuter la fiche 1.3 (analyse de la requête) dans
    une session neuve. Suivez les cinq étapes de la section précédente. Si
    vous devez corriger la fiche, gardez les deux versions (le commit de la
    première, puis celui de la seconde) : c'est exactement ce que le TP1
    demandera.
 
-5. **Carnet.** Une entrée par session, en indiquant chaque fois la fiche
+5. *Carnet.* Une entrée par session, en indiquant chaque fois la fiche
    utilisée et sa version.
 
 ## À retenir
@@ -378,3 +380,72 @@ Travaillez sur votre branche `semaine-02`, ou sur une nouvelle branche
    d'expression). Quel exemple exact choisiriez-vous dans `exemples/` pour
    qu'il distingue vraiment une recherche d'expression d'une recherche
    ordinaire de tous les termes?
+
+## Autoévaluation
+
+:::: {.qcm}
+::: {.question}
+Quel avantage une fiche versionnée a-t-elle sur une demande tapée dans la session?
+
+- L'agent lit les fichiers plus attentivement que les messages
+- Elle dispense de relire le diff
+- On peut la rejouer après correction : si le résultat change, on sait que c'est la fiche qui a changé []{.bonne}
+- Elle consomme moins de jetons
+
+::: {.explication}
+Une fiche se corrige, se relance dans une session neuve et se compare. Elle est aussi versionnée avec le code qu'elle a demandé.
+:::
+:::
+
+::: {.question}
+Pourquoi la rubrique Rapport exige-t-elle les commandes exécutées et leur sortie?
+
+- Pour lutter contre l'affirmation non vérifiée : on veut une observation, pas une conclusion []{.bonne}
+- Pour que l'agent puisse faire le commit lui-même
+- Pour remplir le carnet de bord automatiquement
+- Parce que pytest ne fonctionne pas sans cette consigne
+
+::: {.explication}
+« Tous les tests passent » est une conclusion plausible. La sortie de la commande est une observation. Vous relancez d'ailleurs la vérification vous-même.
+:::
+:::
+
+::: {.question}
+Laquelle de ces consignes sur-spécifie la solution?
+
+- « Sans dépendance externe »
+- « Sans changer la complexité de ajouter »
+- « positions("chat", "a") vaut [0, 2] »
+- « Ajoute un attribut self.positions de type dict[tuple[str, str], list[int]] et utilise enumerate » []{.bonne}
+
+::: {.explication}
+On spécifie l'interface et le comportement (l'exemple exact en est un), et les contraintes légitimes. Dicter l'implémentation prive l'agent de ce qu'il fait bien : trouver le code qui s'intègre à l'existant.
+:::
+:::
+
+::: {.question}
+Une fiche demande d'ajouter un fichier à exemples/ et interdit de modifier les tests existants. Or test_stats attend « documents : 6 ». Quel est le bon comportement de l'agent?
+
+- Modifier test_stats, puisque l'ajout du fichier est l'objectif principal
+- S'arrêter et signaler la contradiction []{.bonne}
+- Mettre le fichier dans un autre dossier et changer le chemin dans un autre test
+- Renoncer silencieusement à l'exemple
+
+::: {.explication}
+Face à une contradiction, l'agent doit la signaler (point 4 du Rapport). Le remède est en amont : relire la fiche en se demandant si on pourrait soi-même respecter chaque ligne.
+:::
+:::
+
+::: {.question}
+L'agent a mal fait la tâche. Que recommande la page?
+
+- Lui expliquer l'erreur dans la même session, pour qu'il corrige
+- Corriger le code à la main, puis faire le commit
+- Se demander si la fiche était incomplète, la corriger, annuler les modifications et relancer dans une session neuve []{.bonne}
+- Changer d'agent
+
+::: {.explication}
+Le plus souvent, c'est la fiche qui était incomplète. Corriger dans la même session hérite du contexte de l'échec; une session neuve teste la fiche corrigée, et seulement elle.
+:::
+:::
+::::

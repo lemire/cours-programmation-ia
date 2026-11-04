@@ -36,9 +36,9 @@ C'est écrit dans `ARCHITECTURE.md` (règle 2), et c'est respecté partout, ce
 qui est justement pour cela invisible.
 
 Un agent a le même problème que vous, en pire. Il lit les fichiers que sa
-tâche semble demander, puis il écrit du code **plausible**, c'est-à-dire du
+tâche semble demander, puis il écrit du code plausible, c'est-à-dire du
 code qui ressemble à ce qu'on écrit d'habitude dans ce genre de projet. Ce
-n'est pas forcément ce qu'on écrit dans **ce** projet. Plus les règles du
+n'est pas forcément ce qu'on écrit dans ce projet. Plus les règles du
 projet sont implicites, plus le code de l'agent s'en écarte. Il ne le fait
 pas par négligence : il n'a simplement aucun moyen de deviner ces règles.
 
@@ -52,19 +52,19 @@ qui doit l'être.
 
 Avant de confier une tâche sur un dépôt, lisez-le, dans cet ordre.
 
-1. **Le `README.md`** : à quoi sert le projet, comment on l'installe, comment
+1. Le `README.md` : à quoi sert le projet, comment on l'installe, comment
    on le lance.
-2. **La documentation d'architecture**, si elle existe (`ARCHITECTURE.md`,
+2. *La documentation d'architecture*, si elle existe (`ARCHITECTURE.md`,
    `docs/`, `CONTRIBUTING.md`). Si elle n'existe pas, c'est une information :
    les règles sont dans la tête des gens.
-3. **Les tests.** Ils disent ce que le code est censé faire, sous une forme
+3. *Les tests.* Ils disent ce que le code est censé faire, sous une forme
    exécutable. Dans `indexeur`, `tests/test_recherche.py` vous apprend en
    vingt lignes que la recherche est un ET, insensible aux accents, et qu'elle
    classe par fréquence.
-4. **Les points d'entrée** : ici, `cli.py` et `__init__.py`. Suivez un appel
+4. *Les points d'entrée* : ici, `cli.py` et `__init__.py`. Suivez un appel
    de bout en bout : `indexeur chercher` → `construire` → `Index.ajouter` →
    `texte.termes`, puis `rechercher` → `intersection` → `score_bm25`.
-5. **L'historique** : `git log --oneline`, puis `git log -p` sur les fichiers
+5. *L'historique* : `git log --oneline`, puis `git log -p` sur les fichiers
    qui vous concernent. Un historique vous dit ce qui change souvent, et
    parfois pourquoi.
 
@@ -76,11 +76,11 @@ utile comme lecteur.
 
 À la semaine 1, vous avez demandé à l'agent d'expliquer l'architecture
 d'`indexeur`. C'est un excellent usage de l'agent, à condition de traiter
-l'explication comme une **hypothèse**. Un modèle de langue produit une
+l'explication comme une hypothèse. Un modèle de langue produit une
 explication cohérente même quand il n'a pas lu les fichiers qui la
 contrediraient. La cohérence du récit ne prouve rien.
 
-Demandez une explication **vérifiable** :
+Demandez une explication vérifiable :
 
 > Explique l'architecture de ce projet. Pour chaque affirmation, donne le
 > fichier et le numéro de ligne qui l'appuient. Distingue ce que tu as lu
@@ -91,14 +91,14 @@ hasard, et allez voir. Si toutes tiennent, la confiance augmente sans être
 totale. Si l'une est fausse, vérifiez tout le reste. Les erreurs typiques sont
 les suivantes :
 
-- une **responsabilité attribuée au mauvais module** (« `index.py` calcule les
+- une responsabilité attribuée au mauvais module (« `index.py` calcule les
   scores »);
-- une **règle inventée** parce qu'elle est courante ailleurs (« les
+- une règle inventée parce qu'elle est courante ailleurs (« les
   identifiants de documents sont des entiers »);
-- une **règle manquée** parce qu'elle n'est visible que par son absence (rien
+- une règle manquée parce qu'elle n'est visible que par son absence (rien
   dans `recherche.py` ne lit de fichier, mais rien ne dit non plus qu'il ne
   faut pas);
-- une **explication de l'intention** présentée comme un fait (« ce code est
+- une explication de l'intention présentée comme un fait (« ce code est
   lent pour rester simple »). Peut-être, mais rien dans le dépôt ne le dit.
 
 Cette vérification coûte dix minutes. Elle vous apprend en même temps le
@@ -106,12 +106,12 @@ dépôt et la fiabilité de votre agent sur ce dépôt.
 
 ## Rendre les invariants explicites
 
-Un **invariant** est une propriété que le code respecte toujours, et dont
+Un invariant est une propriété que le code respecte toujours, et dont
 d'autres parties du code dépendent. Certains invariants d'`indexeur` sont
 écrits dans `ARCHITECTURE.md`. D'autres ne le sont nulle part. En voici
 trois, trouvés en lisant le code.
 
-**L'index renvoie ses propres listes.** `Index.documents_avec` renvoie
+*L'index renvoie ses propres listes.* `Index.documents_avec` renvoie
 `self.postings.get(terme, [])`, c'est-à-dire la liste interne de l'index, et
 non une copie. Un appelant qui la modifie modifie l'index :
 
@@ -124,12 +124,12 @@ non une copie. Un appelant qui la modifie modifie l'index :
 ```
 
 Le code actuel ne le fait jamais : `intersection` construit de nouvelles
-listes. L'invariant implicite est donc : **personne ne modifie une liste
-renvoyée par `documents_avec`**. Un agent chargé d'optimiser `intersection` à
+listes. L'invariant implicite est donc : personne ne modifie une liste
+renvoyée par `documents_avec`. Un agent chargé d'optimiser `intersection` à
 la semaine 10 pourrait très bien trier la liste sur place, et corrompre
 l'index sans qu'aucun test actuel ne le détecte.
 
-**Les listes de documents sont dans l'ordre d'ajout.** `intersection` garde
+*Les listes de documents sont dans l'ordre d'ajout.* `intersection` garde
 « l'ordre de la première liste », et `test_ajouter_et_retrouver` vérifie que
 `documents_avec("chat") == ["a", "b"]`. Rien ne dit si cet ordre est une
 garantie de l'API ou un accident. La différence compte : si vous remplacez la
@@ -137,9 +137,9 @@ liste par un ensemble pour accélérer l'indexation (ce que le bloc 3 vous
 tentera de faire), ce test échouera. Il faudra alors savoir si c'est le test
 ou le changement qui est faux.
 
-**Les mots vides sont écrits sous forme normalisée.** Dans `texte.py`,
+*Les mots vides sont écrits sous forme normalisée.* Dans `texte.py`,
 `MOTS_VIDES` contient `meme` et `ete`, sans accents. Ce n'est pas une faute de
-frappe : `termes` compare le mot **après** `normaliser`, donc après le retrait
+frappe : `termes` compare le mot après `normaliser`, donc après le retrait
 des accents. Quelqu'un (ou un agent) qui ajoute `même` ou `très` à la liste,
 avec l'accent, ajoute un mot vide qui ne sera jamais reconnu. Aucun message
 d'erreur, aucun test qui échoue : le mot reste simplement indexé.
@@ -147,10 +147,10 @@ d'erreur, aucun test qui échoue : le mot reste simplement indexé.
 Quand vous trouvez un tel invariant, vous avez trois options, de la plus
 faible à la plus forte :
 
-1. **l'écrire** dans `ARCHITECTURE.md` (ou dans la docstring concernée);
-2. **le tester** : un test qui échoue si l'invariant est violé
+1. *l'écrire* dans `ARCHITECTURE.md` (ou dans la docstring concernée);
+2. *le tester* : un test qui échoue si l'invariant est violé
    (semaines 5 et 6);
-3. **le rendre impossible à violer** : par exemple, faire renvoyer une copie,
+3. *le rendre impossible à violer* : par exemple, faire renvoyer une copie,
    ou un tuple, par `documents_avec`. Cela peut avoir un coût, qu'on mesure
    (bloc 3).
 
@@ -202,7 +202,7 @@ d'une fiche de tâche (semaine 3), « Lis `docs/decisions/0001-…` » remplace 
 paragraphe d'explications.
 
 N'écrivez pas un ADR pour chaque choix. Écrivez-en un quand la décision
-**aurait pu être prise autrement**, qu'elle a des conséquences visibles, et
+*aurait pu être prise autrement*, qu'elle a des conséquences visibles, et
 que quelqu'un risque de la défaire sans en connaître la raison.
 
 ## L'agent qui invente ou qui duplique
@@ -210,7 +210,7 @@ que quelqu'un risque de la défaire sans en connaître la raison.
 Deux écarts à l'architecture reviennent si souvent qu'il vaut la peine de les
 chercher systématiquement dans chaque diff.
 
-**Il invente des abstractions.** On demande la sortie JSON (demande 2), et
+*Il invente des abstractions.* On demande la sortie JSON (demande 2), et
 l'agent crée un module `formateurs.py` avec une classe abstraite
 `Formateur`, deux sous-classes `FormateurTexte` et `FormateurJSON`, et une
 fabrique. Il y a deux formats. Une fonction et un `if` suffisaient, dans
@@ -220,7 +220,7 @@ reproduisent les formes même quand le projet n'en a pas besoin. Chaque
 abstraction de trop est un fichier de plus à lire pour la prochaine session,
 humaine ou non.
 
-**Il duplique.** On demande la racinisation (demande 5 : trouver *chevaux*
+*Il duplique.* On demande la racinisation (demande 5 : trouver *chevaux*
 quand on cherche *cheval*). L'agent lit `recherche.py`, voit que la requête
 est transformée par `termes(requete)` et ajoute la racinisation… juste après,
 dans `rechercher`. Les requêtes sont alors racinisées, mais pas les
@@ -233,16 +233,18 @@ réécrit une fonction qui existe déjà (une deuxième intersection, un deuxiè
 
 Pour détecter ces écarts dans un diff :
 
-- **Nouveaux fichiers, nouvelles classes.** `git diff --stat` en montre la
+- *Nouveaux fichiers, nouvelles classes.* `git diff --stat` en montre la
   liste. Pour chacun, demandez-vous s'il était nécessaire.
-- **Recherche des doublons.** Un `grep` sur les opérations sensibles :
+- *Recherche des doublons.* Un `grep` sur les opérations sensibles :
   `grep -rn "lower()\|normalize" src/` doit renvoyer seulement `texte.py`.
-- **Sens des dépendances.** `grep -n "^from\|^import" src/indexeur/*.py` : un
+- *Sens des dépendances.* `grep -n "^from\|^import" src/indexeur/*.py` : un
   `import` qui remonte le graphe d'`ARCHITECTURE.md` (par exemple
   `index.py` qui importe `recherche`) est une violation.
 
+![Les dépendances d'`indexeur` et deux écarts typiques : un import qui remonte le graphe, et une normalisation ajoutée hors de `texte.termes`.](../../images/figures/s04-architecture.svg){fig-alt="Graphe des modules : cli.py dépend de recherche.py, corpus.py et index.py; recherche.py dépend de index.py et texte.py; index.py dépend de texte.py. En rouge pointillé : index.py qui importe recherche.py, marqué comme import qui remonte; et une fonction raciniser(requête) ajoutée dans recherche.py, contraire à la règle 1."}
+
 Pour les prévenir, la fiche de tâche est le bon outil. Dans le Contexte,
-nommez ce qu'il faut **réutiliser** (« la normalisation se fait dans
+nommez ce qu'il faut réutiliser (« la normalisation se fait dans
 `texte.termes` », « utilise `intersection` existante »). Dans les
 Contraintes, nommez les règles par leur numéro. Une tâche d'exploration
 préalable peut aussi poser la question directement : « Quelles fonctions
@@ -254,8 +256,8 @@ Kent Beck résume une stratégie en une phrase : *make the change easy
 (warning: this may be hard), then make the easy change*. Autrement dit,
 d'abord rendre le changement facile (ce qui peut être difficile), puis faire
 le changement facile. Fowler décrit la même pratique sous le nom de
-**refactoring préparatoire** [@fowler2018refactoring, chap. 2] : avant d'ajouter une
-fonctionnalité, on restructure le code, **sans changer son comportement**,
+*refactoring préparatoire* [@fowler2018refactoring, chap. 2] : avant d'ajouter une
+fonctionnalité, on restructure le code, sans changer son comportement,
 pour que la fonctionnalité s'y insère naturellement.
 
 Prenons la demande 6 : ajouter la recherche avec OU. Aujourd'hui,
@@ -275,18 +277,18 @@ def candidats(index, termes_requete):
 ```
 
 `rechercher` appelle `candidats` au lieu de faire l'intersection elle-même. Le
-comportement est identique : **les tests existants passent sans
-modification**. Ensuite seulement, on ajoute le OU, qui devient un
+comportement est identique : les tests existants passent sans
+modification. Ensuite seulement, on ajoute le OU, qui devient un
 remplacement local de `candidats`.
 
 Le refactoring préparatoire est une tâche idéale pour un agent, pour trois
 raisons :
 
-- son **critère d'acceptation est simple et fort** : aucun comportement ne
+- son critère d'acceptation est simple et fort : aucun comportement ne
   change, donc les tests existants, inchangés, doivent passer;
-- son **diff est facile à relire**, parce qu'on y cherche une seule chose :
+- son diff est facile à relire, parce qu'on y cherche une seule chose :
   du code déplacé, pas du code modifié;
-- il **sépare deux risques** : si le OU casse quelque chose, on sait que ce
+- il sépare deux risques : si le OU casse quelque chose, on sait que ce
   n'est pas le refactoring.
 
 Une condition : le filet de sécurité doit exister. « Les tests passent » ne
@@ -304,9 +306,9 @@ Le TP1 réunit les quatre premières semaines. Vous choisissez une demande du
 `README.md` d'`indexeur` (sauf la 3) et vous la faites réaliser deux fois, à
 partir du même commit :
 
-- une fois **floue**, sur une branche `flou` : la demande telle quelle, dans
+- une fois floue, sur une branche `flou` : la demande telle quelle, dans
   une session neuve, sans aide;
-- une fois **précise**, sur une branche `precis` : décomposée en au moins
+- une fois précise, sur une branche `precis` : décomposée en au moins
   trois fiches de tâche (semaines 2 et 3), alignées sur l'architecture
   (cette semaine), chacune exécutée dans une session neuve.
 
@@ -316,45 +318,45 @@ complet, les livrables et la grille sont à la page
 
 Quelques conseils :
 
-- **Choisissez une demande qui touche l'architecture.** Les demandes 1
+- *Choisissez une demande qui touche l'architecture.* Les demandes 1
   (expression exacte), 4 (sauvegarde de l'index), 5 (racinisation) et 7
   (retrait d'un document) forcent des décisions et touchent plusieurs
   modules. La demande 2 (JSON) est plus simple : elle donne moins à
   comparer.
-- **Écrivez vos critères de comparaison avant de lancer la branche floue**,
+- *Écrivez vos critères de comparaison avant de lancer la branche floue*,
   pour ne pas les choisir après coup en fonction du résultat.
-- **Ne corrigez rien sur la branche floue.** Son intérêt est de montrer ce
+- *Ne corrigez rien sur la branche floue.* Son intérêt est de montrer ce
   qu'un agent fait seul.
-- **Gardez les versions de vos fiches.** Si une fiche a dû être corrigée et
+- *Gardez les versions de vos fiches.* Si une fiche a dû être corrigée et
   relancée, le premier essai, son échec et la correction sont parmi les
   éléments les plus intéressants du rapport.
-- **Le résultat n'est pas joué d'avance.** Il est possible que la branche
+- *Le résultat n'est pas joué d'avance.* Il est possible que la branche
   floue soit acceptable, surtout pour une petite demande. Si c'est le cas,
   dites-le, et expliquez pourquoi. Un rapport honnête vaut mieux qu'un
   rapport qui confirme ce que le cours affirme.
 
 ## Activité
 
-1. **Explication vérifiable.** Dans une session neuve, lancez la demande
+1. *Explication vérifiable.* Dans une session neuve, lancez la demande
    d'explication vérifiable de cette page. Vérifiez quatre affirmations au
    hasard et notez le résultat dans le carnet : combien étaient exactes?
 
-2. **Invariants.** Dans une autre session neuve, demandez : « Quels
+2. *Invariants.* Dans une autre session neuve, demandez : « Quels
    invariants implicites ce code respecte-t-il, qui ne sont écrits ni dans
    `ARCHITECTURE.md` ni dans les docstrings? Pour chacun, donne le code qui
    en dépend. Ne modifie aucun fichier. » Comparez sa liste aux trois
    invariants de cette page. En a-t-il trouvé d'autres? Sont-ils réels?
    Ajoutez à `ARCHITECTURE.md` ceux que vous retenez.
 
-3. **Premier ADR.** Écrivez `docs/decisions/0001-….md` pour la décision sur
+3. *Premier ADR.* Écrivez `docs/decisions/0001-….md` pour la décision sur
    les mots vides de la semaine 2 (ou pour une décision de votre TP1).
 
-4. **Refactoring préparatoire.** Écrivez la fiche de l'extraction de
+4. *Refactoring préparatoire.* Écrivez la fiche de l'extraction de
    `candidats` selon le gabarit de la semaine 3. Critère central : les tests
    existants passent sans modification, et `git diff` ne montre que du code
    déplacé. Faites-la exécuter dans une session neuve, et relisez le diff.
 
-5. **Chasse à la duplication.** Sur une branche jetable, donnez à l'agent la
+5. *Chasse à la duplication.* Sur une branche jetable, donnez à l'agent la
    demande 5 telle quelle (« La recherche ne trouve pas *chevaux* quand je
    cherche *cheval*. »). Où a-t-il mis la transformation? A-t-il respecté la
    règle 1? Appliquez les trois vérifications (nouveaux fichiers, `grep`,
@@ -362,7 +364,7 @@ Quelques conseils :
    demande pour le TP1, auquel cas elle n'est pas la bonne branche de
    départ : repartez du commit d'origine.
 
-6. **TP1.** Terminez et remettez le TP1.
+6. *TP1.* Terminez et remettez le TP1.
 
 ## À retenir
 
@@ -393,6 +395,75 @@ Quelques conseils :
 3. Le test `test_ajouter_et_retrouver` vérifie l'ordre des documents
    (`["a", "b"]`). Est-ce une bonne chose? Réécrivez-le, si vous jugez que
    l'ordre n'est pas une garantie de l'API, et expliquez ce que vous perdez.
-4. Dans quel cas le refactoring préparatoire est-il une **mauvaise** idée
+4. Dans quel cas le refactoring préparatoire est-il une mauvaise idée
    avec un agent? Pensez au cas où les tests ne couvrent pas le code
    déplacé.
+
+## Autoévaluation
+
+:::: {.qcm}
+::: {.question}
+Pourquoi un agent s'écarte-t-il plus facilement de l'architecture d'un projet que de la syntaxe d'un fichier?
+
+- Parce qu'il ne sait pas lire les fichiers de documentation
+- Parce que l'architecture est faite de règles qui ne sont dans aucun fichier en particulier; il écrit alors du code plausible en général, pas forcément conforme à ce projet []{.bonne}
+- Parce que les modèles ignorent les instructions sur l'architecture
+- Parce que l'architecture change à chaque commit
+
+::: {.explication}
+Le sens des dépendances, ce qu'un module s'interdit, les conventions : tout cela est invisible dans un fichier isolé. Ce qui n'est pas écrit, l'agent le devine, et il recommence à zéro à chaque session.
+:::
+:::
+
+::: {.question}
+L'agent explique l'architecture avec assurance et cohérence. Que faites-vous?
+
+- Vous l'acceptez : un récit cohérent est un bon indice d'exactitude
+- Vous la rejetez : les agents inventent toujours
+- Vous lui demandez s'il est sûr de lui
+- Vous exigez fichier et numéro de ligne pour chaque affirmation, puis vous en vérifiez quelques-unes au hasard []{.bonne}
+
+::: {.explication}
+Un modèle produit une explication cohérente même sans avoir lu ce qui la contredirait. On vérifie par échantillonnage; une seule erreur oblige à tout vérifier.
+:::
+:::
+
+::: {.question}
+Quelqu'un ajoute « même », avec l'accent, à MOTS_VIDES dans texte.py. Que se passe-t-il?
+
+- Le mot n'est jamais reconnu comme mot vide, sans erreur ni test qui échoue []{.bonne}
+- Python lève une erreur d'encodage
+- Le test test_termes_retire_les_mots_vides échoue
+- Le mot est retiré deux fois
+
+::: {.explication}
+termes compare le mot après normaliser, donc sans accents. C'est un invariant implicite : à écrire, à tester, ou à rendre impossible à violer.
+:::
+:::
+
+::: {.question}
+Un agent ajoute la racinisation juste après termes(requete) dans rechercher. Quel est le problème?
+
+- La recherche devient plus lente
+- Les requêtes sont racinisées mais pas les documents, et plus rien ne correspond; la règle 1 exige que toute normalisation passe par texte.termes []{.bonne}
+- rechercher n'a pas le droit d'appeler termes
+- Aucun : c'est l'endroit prévu pour la racinisation
+
+::: {.explication}
+Une seule normalisation, dans texte.termes, appliquée aux documents comme aux requêtes. Ajouter une transformation ailleurs duplique la logique et désynchronise les deux côtés.
+:::
+:::
+
+::: {.question}
+Pourquoi le refactoring préparatoire (extraire candidats avant d'ajouter le OU) convient-il bien à un agent?
+
+- Parce qu'il n'a pas besoin de tests
+- Parce qu'il ajoute la fonctionnalité plus vite
+- Parce que son critère est simple et fort (les tests existants, inchangés, passent) et que son diff ne contient que du code déplacé []{.bonne}
+- Parce que l'agent peut en profiter pour reformater le module
+
+::: {.explication}
+Aucun comportement ne change : le critère est clair, le diff se relit vite, et les risques sont séparés. Condition : les tests doivent couvrir le code déplacé.
+:::
+:::
+::::

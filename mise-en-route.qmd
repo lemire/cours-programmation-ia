@@ -21,16 +21,16 @@ ligne de commande fonctionnent mieux sous WSL que sous PowerShell.
 
 ## Installer un agent de codage
 
-Choisissez **un** agent principal. Vous pourrez en essayer d'autres en cours
+Choisissez un agent principal. Vous pourrez en essayer d'autres en cours
 de route : comparer deux agents sur la même tâche est d'ailleurs un bon
 exercice. Les critères qui comptent pour ce cours :
 
-1. L'agent peut **lire et modifier** les fichiers du dépôt.
-2. Il peut **exécuter des commandes** (tests, bancs d'essai), avec votre
+1. L'agent peut lire et modifier les fichiers du dépôt.
+2. Il peut exécuter des commandes (tests, bancs d'essai), avec votre
    permission.
-3. Il **montre** ce qu'il fait : quels fichiers il lit, quelles commandes il
+3. Il montre ce qu'il fait : quels fichiers il lit, quelles commandes il
    lance.
-4. Il permet de connaître la **consommation de jetons** ou le coût d'une
+4. Il permet de connaître la consommation de jetons ou le coût d'une
    session.
 
 | Agent | Forme | Documentation |
@@ -44,7 +44,7 @@ exercice. Les critères qui comptent pour ce cours :
 Suivez la documentation de l'agent choisi pour l'installer et vous
 authentifier. Vérifiez ensuite qu'il fonctionne dans un dossier vide, avec une
 demande sans risque : « Crée un fichier `bonjour.py` qui affiche la date du
-jour, puis exécute-le. » Observez **avant** d'accepter : l'agent vous
+jour, puis exécute-le. » Observez avant d'accepter : l'agent vous
 demande-t-il la permission d'écrire le fichier? d'exécuter Python?
 
 ::: {.callout-important}
@@ -59,7 +59,7 @@ d'annulation.
 
 ## Le dépôt d'exercice
 
-Téléchargez [**indexeur.zip**](indexeur.zip), décompressez-le, puis
+Téléchargez [indexeur.zip](indexeur.zip), décompressez-le, puis
 faites-en votre propre dépôt :
 
 ```bash
@@ -72,7 +72,7 @@ uv run pytest                           # 20 tests doivent passer
 uv run indexeur chercher exemples "sirop érable"
 ```
 
-Créez ensuite un dépôt **privé** sur GitHub et poussez-y votre copie. Vos
+Créez ensuite un dépôt privé sur GitHub et poussez-y votre copie. Vos
 travaux seront remis sous forme de lien vers ce dépôt (ou d'archive de
 celui-ci) : la personne qui vous encadre doit y avoir accès.
 
@@ -83,7 +83,7 @@ agent sur du code que vous ne connaissez pas.
 
 ## Le carnet de bord {#sec-carnet}
 
-Créez à la racine de votre dépôt un fichier `CARNET.md`. Après **chaque**
+Créez à la racine de votre dépôt un fichier `CARNET.md`. Après chaque
 session de travail avec un agent, ajoutez-y une entrée :
 
 ```markdown
@@ -101,17 +101,17 @@ session de travail avec un agent, ajoutez-y une entrée :
 ```
 
 Cinq minutes par session suffisent. Soyez honnête, surtout sur les échecs :
-le carnet n'est pas noté pour ses succès, mais il est la **matière
-première** du bilan critique de la semaine 15. Un carnet qui ne contient que
+le carnet n'est pas noté pour ses succès, mais il est la matière
+première du bilan critique de la semaine 15. Un carnet qui ne contient que
 des réussites n'apprend rien à personne.
 
 Où trouver la consommation de jetons :
 
-- **Claude Code** : la commande `/cost` (ou `/usage`, selon la version et le
+- *Claude Code* : la commande `/cost` (ou `/usage`, selon la version et le
   type de compte) pendant la session;
-- **Codex CLI** : le résumé affiché à la fin de la session, ou `/status`;
-- **Copilot et Cursor** : le tableau de bord d'utilisation du compte;
-- **API d'un fournisseur** : la console du fournisseur, qui donne le détail
+- *Codex CLI* : le résumé affiché à la fin de la session, ou `/status`;
+- *Copilot et Cursor* : le tableau de bord d'utilisation du compte;
+- *API d'un fournisseur* : la console du fournisseur, qui donne le détail
   par jour et par clé.
 
 Si votre outil ne donne pas de chiffre par session, notez au moins la durée
@@ -137,7 +137,7 @@ indexeur/
 - `uv run pytest` échoue dès le départ : vérifiez la version de Python
   (`uv python list`). `uv python install 3.12` en installe une récente sans
   toucher au Python du système.
-- L'agent ne trouve pas les fichiers : lancez-le **depuis la racine** du
+- L'agent ne trouve pas les fichiers : lancez-le depuis la racine du
   dépôt.
 - L'agent tourne en rond ou fait n'importe quoi : arrêtez-le (`Échap` ou
   `Ctrl-C`), annulez avec `git restore .`, et notez ce qui s'est passé dans le

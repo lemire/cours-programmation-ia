@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 300" role="img" aria-labelledby="titre desc" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="13">
+  <title id="titre">Les tâches de la recherche d'expression et leurs dépendances</title>
+  <desc id="desc">Tâche 1, exploration, sans modification, précède la tâche 2, positions dans l'index. La tâche 3, analyse de la requête, ne dépend pas de la tâche 2 : les deux peuvent se faire en parallèle. La tâche 4, recherche d'expression, dépend des tâches 2 et 3. La tâche 5, exemple et documentation, vient en dernier.</desc>
+  <defs>
+    <marker id="fleche" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#52514e"/>
+    </marker>
+  </defs>
+  <rect width="720" height="300" fill="#fcfcfb"/>
+
+  <!-- Zone parallèle -->
+  <rect x="168" y="40" width="224" height="200" rx="8" fill="none" stroke="#2a78d6" stroke-dasharray="5 4"/>
+  <text x="280" y="30" text-anchor="middle" fill="#2a78d6" font-size="12">indépendantes : en parallèle possible</text>
+
+  <g fill="#ffffff" stroke="#b9b8b2">
+    <rect x="20" y="70" width="130" height="56" rx="6" stroke-dasharray="3 3"/>
+    <rect x="182" y="70" width="196" height="56" rx="6"/>
+    <rect x="182" y="164" width="196" height="56" rx="6"/>
+    <rect x="410" y="117" width="140" height="56" rx="6" stroke="#2a78d6" stroke-width="1.5"/>
+    <rect x="590" y="117" width="110" height="56" rx="6"/>
+  </g>
+
+  <g fill="#0b0b0b">
+    <text x="85" y="94" text-anchor="middle">1. Exploration</text>
+    <text x="280" y="94" text-anchor="middle">2. Positions dans l'index</text>
+    <text x="280" y="188" text-anchor="middle">3. Analyse de la requête</text>
+    <text x="480" y="141" text-anchor="middle">4. Recherche</text>
+    <text x="645" y="141" text-anchor="middle">5. Exemple</text>
+  </g>
+  <g fill="#52514e" font-size="12">
+    <text x="85" y="113" text-anchor="middle">aucune modification</text>
+    <text x="280" y="113" text-anchor="middle">comportement inchangé</text>
+    <text x="280" y="207" text-anchor="middle">fonction pure</text>
+    <text x="480" y="160" text-anchor="middle">d'expression</text>
+    <text x="645" y="160" text-anchor="middle">et documentation</text>
+  </g>
+
+  <g fill="none" stroke="#52514e" stroke-width="1.5" marker-end="url(#fleche)">
+    <path d="M152 98 L178 98"/>
+    <path d="M380 98 C396 98 394 135 406 138"/>
+    <path d="M380 192 C396 192 394 155 406 152"/>
+    <path d="M552 145 L586 145"/>
+  </g>
+
+  <text x="360" y="275" text-anchor="middle" fill="#52514e" font-size="12">Commencer par la tâche 4, « la vraie », c'est laisser l'agent improviser 2 et 3 au passage.</text>
+</svg>

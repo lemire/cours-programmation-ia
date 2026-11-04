@@ -29,7 +29,7 @@ Un modèle de langue ne voit qu'une chose : le texte qu'on lui envoie à chaque
 requête. Ce texte est découpé en **jetons** (*tokens*), des morceaux de mots.
 En anglais, un jeton vaut à peu près trois quarts de mot. En français et
 dans le code, c'est un peu moins favorable. Le nombre de jetons qu'un modèle
-peut recevoir d'un coup est sa **fenêtre de contexte** : quelques centaines
+peut recevoir d'un coup est sa fenêtre de contexte : quelques centaines
 de milliers de jetons pour les modèles de codage courants en 2026, parfois
 un million.
 
@@ -39,8 +39,8 @@ Rappelez-vous la boucle de la [semaine 1](../1-formuler/s01.qmd) :
 contexte += [reponse, resultat]
 ```
 
-À chaque tour de boucle, le contexte **grandit**. Rien n'en sort, sauf si le
-harnais l'élague. Et à chaque tour, le modèle reçoit **tout** le contexte
+À chaque tour de boucle, le contexte grandit. Rien n'en sort, sauf si le
+harnais l'élague. Et à chaque tour, le modèle reçoit tout le contexte
 accumulé. Une session de quarante tours, c'est quarante requêtes, dont la
 dernière contient les trente-neuf précédentes.
 
@@ -56,15 +56,15 @@ Au début d'une session, avant même votre demande, le contexte contient déjà 
 
 Puis, au fil de la session :
 
-- **les fichiers lus.** `recherche.py` fait une soixantaine de lignes, soit
+- *les fichiers lus.* `recherche.py` fait une soixantaine de lignes, soit
   quelques centaines de jetons. Un fichier de 3 000 lignes dans un vrai
   projet en fait des dizaines de milliers, et l'agent le lit peut-être en
   entier pour y trouver une fonction;
-- **les sorties de commandes.** C'est souvent le plus gros poste, et le plus
+- *les sorties de commandes.* C'est souvent le plus gros poste, et le plus
   facile à réduire. `pytest` en mode verbeux sur une grosse suite, une trace
   d'erreur de cent lignes, un `git log` sans limite, un `npm install`, un
   `pip install` : tout cela entre dans le contexte, ligne par ligne;
-- **l'historique** : vos messages, les réponses du modèle et ses
+- *l'historique* : vos messages, les réponses du modèle et ses
   « réflexions », y compris les essais ratés et les fausses pistes.
 
 Faites l'exercice une fois : ouvrez le journal d'une session longue
@@ -74,23 +74,23 @@ partie ne sert plus à rien au moment où la session se termine.
 ## Pourquoi un long contexte nuit
 
 Un contexte plus long coûte plus cher (on y revient plus bas), mais ce n'est
-pas le pire. Le pire, c'est qu'il **dégrade le travail**.
+pas le pire. Le pire, c'est qu'il dégrade le travail.
 
-**L'attention se dilue.** @liu2024lost ont placé une information utile à
+*L'attention se dilue.* @liu2024lost ont placé une information utile à
 différents endroits d'un long contexte, puis ont posé une question qui
 en dépendait. Les modèles retrouvaient bien l'information placée au début ou à
-la fin, et nettement moins bien celle placée **au milieu**. Les modèles
+la fin, et nettement moins bien celle placée au milieu. Les modèles
 ont progressé depuis, mais le phénomène général demeure : plus le contexte
 est long, moins chaque élément pèse. Votre instruction initiale, si
 précise soit-elle, est noyée sous trente sorties de `pytest`.
 
-**Les erreurs persistent.** Si l'agent a fait une mauvaise hypothèse au
+*Les erreurs persistent.* Si l'agent a fait une mauvaise hypothèse au
 tour 5 (« le problème vient de la normalisation »), cette hypothèse reste dans
 le contexte. Même corrigée, elle continue d'influencer la suite. Une fausse
 piste explorée longuement est difficile à abandonner, pour un modèle comme
 pour un humain.
 
-**La dérive.** Au fil des tours, l'objectif glisse. La tâche était « ajouter
+*La dérive.* Au fil des tours, l'objectif glisse. La tâche était « ajouter
 la recherche avec OU ». Au tour 25, l'agent restructure la gestion des
 erreurs de la ligne de commande, parce qu'un test qu'il a lui-même écrit
 échouait pour une raison sans rapport. Chaque pas était localement
@@ -104,8 +104,8 @@ locales.
 
 ## Ce qui marche
 
-L'idée générale, résumée par @anthropic2025context : chercher **le plus petit
-ensemble de jetons à fort signal** qui permet au modèle de faire la tâche.
+L'idée générale, résumée par @anthropic2025context : chercher le plus petit
+ensemble de jetons à fort signal qui permet au modèle de faire la tâche.
 Voici les techniques, de la plus simple à la plus élaborée.
 
 ### 1. Une tâche, une session
@@ -114,7 +114,7 @@ C'est la technique la plus efficace, et vous l'appliquez depuis la semaine 1.
 Une fiche de tâche bornée ([semaine 3](../1-formuler/s03.qmd)) se fait
 dans une session neuve, qui se termine quand la tâche est faite. La tâche
 suivante commence dans une nouvelle session. Ce qui doit passer d'une tâche à
-l'autre passe par des **fichiers** : le code (dans Git), la fiche de la tâche
+l'autre passe par des fichiers : le code (dans Git), la fiche de la tâche
 suivante, `AGENTS.md`. Pas par la mémoire de la session.
 
 ### 2. Repartir à neuf plutôt que corriger
@@ -124,7 +124,7 @@ va pas : « non, pas comme ça, essaie plutôt… ». Parfois, ça marche. Souve
 on ajoute une correction à un contexte déjà pollué, et la session suivante
 coûte plus cher que si l'on était reparti de zéro.
 
-La règle pratique : **après deux corrections sans progrès, arrêtez**. Annulez
+La règle pratique : après deux corrections sans progrès, arrêtez. Annulez
 (`git restore .`), notez dans le carnet ce que vous avez appris (« l'agent
 croit que la normalisation est en cause, alors que non »), améliorez la fiche
 de tâche avec cette information, et relancez une session neuve. Ce que vous
@@ -151,10 +151,10 @@ donnez-leur une sortie courte par défaut et une option `--verbeux`.
 ### 4. La compaction
 
 Quand le contexte approche de la limite, la plupart des harnais proposent de
-le **compacter** : le modèle résume la session, et le résumé remplace
+le compacter : le modèle résume la session, et le résumé remplace
 l'historique. Certains le font automatiquement, d'autres sur commande
 (`/compact` dans Claude Code et dans Codex, au moment d'écrire ces lignes).
-Plusieurs permettent aussi de **vider** le contexte sans quitter l'outil
+Plusieurs permettent aussi de vider le contexte sans quitter l'outil
 (`/clear` ou `/new`, selon l'agent).
 
 La compaction est utile, mais elle perd de l'information, et c'est le modèle
@@ -170,13 +170,13 @@ Certaines étapes demandent de lire beaucoup pour retenir peu : « trouve
 toutes les fonctions qui appellent `termes` », « lis la documentation de
 `hypothesis` et dis-moi comment écrire une stratégie pour du texte
 français ». Plusieurs agents permettent de confier cette étape à un
-**sous-agent** : une session séparée, avec son propre contexte, qui fait la
+*sous-agent* : une session séparée, avec son propre contexte, qui fait la
 recherche et ne renvoie que la conclusion. Le contexte principal reçoit dix
 lignes au lieu de dix fichiers.
 
 Le prix à payer : le sous-agent consomme ses propres jetons (le coût total
 augmente souvent), et vous ne voyez que son résumé, qui peut être faux. Les
-sous-agents servent à **isoler l'exploration**, pas à économiser de l'argent.
+sous-agents servent à isoler l'exploration, pas à économiser de l'argent.
 
 ### 6. Des notes structurées
 
@@ -187,8 +187,8 @@ ce fichier. C'est une compaction que vous contrôlez et que vous pouvez relire.
 
 ## Ce que coûtent les jetons
 
-Les fournisseurs facturent séparément les jetons **en entrée** (ce qu'on
-envoie au modèle) et **en sortie** (ce qu'il produit). La sortie coûte
+Les fournisseurs facturent séparément les jetons en entrée (ce qu'on
+envoie au modèle) et en sortie (ce qu'il produit). La sortie coûte
 plusieurs fois plus cher par jeton, mais l'entrée domine presque toujours la
 facture d'un agent de codage, parce que le contexte est renvoyé à chaque tour.
 
@@ -199,9 +199,9 @@ coûtent dix fois moins. Ces prix baissent régulièrement : vérifiez la page d
 tarifs de votre fournisseur et datez les chiffres que vous citez.
 
 Deux mécanismes réduisent la facture sans que vous ayez à y penser.
-La **mise en cache** des préfixes (*prompt caching*) facture à prix réduit
+La mise en cache des préfixes (*prompt caching*) facture à prix réduit
 la partie du contexte qui n'a pas changé depuis la requête précédente. Les
-**abonnements** forfaitaires masquent le coût par requête, mais imposent des
+*abonnements* forfaitaires masquent le coût par requête, mais imposent des
 quotas. Dans les deux cas, la consommation reste mesurable, et c'est elle que
 vous notez dans le carnet.
 
@@ -213,6 +213,8 @@ environ 2 × 20 × 45 000 = 1,8 million de jetons. Pour le même nombre de
 tours, c'est un tiers de moins. La différence vient seulement de la forme
 quadratique du coût : chaque tour paie pour tous les précédents. La mise en
 cache atténue cet écart, sans le faire disparaître.
+
+![Jetons envoyés à chaque requête, d'après le calcul ci-dessus. Le total d'une session est l'aire sous sa courbe.](../../images/figures/s13-cout-contexte.svg){fig-alt="Une session de 40 tours passe de 20 000 à 120 000 jetons par requête, soit environ 2,8 millions de jetons en tout. Deux sessions de 20 tours, reparties à neuf, plafonnent à 70 000 jetons, soit environ 1,8 million."}
 
 ## Mesurer sa façon de travailler
 
@@ -237,22 +239,22 @@ demande du `README.md` que vous n'avez pas encore traitée, de taille moyenne
 (par exemple « retirer un document de l'index », qui touche l'index, les
 fréquences et les longueurs).
 
-1. **Session longue.** Partant de `main`, faites faire la tâche en **une
-   seule** session, en corrigeant l'agent au fil de l'eau, sans jamais
+1. *Session longue.* Partant de `main`, faites faire la tâche en une
+   seule session, en corrigeant l'agent au fil de l'eau, sans jamais
    repartir à neuf ni compacter. Notez dans le carnet le nombre de tours, les
    jetons et le résultat.
-2. **Sessions courtes.** Partant à nouveau de `main` (autre branche),
+2. *Sessions courtes.* Partant à nouveau de `main` (autre branche),
    découpez la tâche en fiches et faites chaque fiche dans une session neuve.
    Appliquez la règle des deux corrections. Mêmes mesures.
-3. **Sorties réduites et sous-agent.** Troisième branche : comme à l'étape 2,
+3. *Sorties réduites et sous-agent.* Troisième branche : comme à l'étape 2,
    mais avec un `AGENTS.md` qui impose des commandes à sortie courte, et en
    confiant à un sous-agent (si votre outil le permet) l'exploration
    initiale du code. Mêmes mesures.
-4. **Comparer.** Un petit tableau : jetons en entrée et en sortie, durée,
+4. *Comparer.* Un petit tableau : jetons en entrée et en sortie, durée,
    nombre d'interventions de votre part, qualité du résultat (tests, respect
    d'`ARCHITECTURE.md`). Une seule exécution par variante ne prouve rien.
-   Dites ce que vous **observez** et ce qu'il faudrait pour en être sûr.
-5. **Carnet.** Une entrée par session, comme toujours.
+   Dites ce que vous observez et ce qu'il faudrait pour en être sûr.
+5. *Carnet.* Une entrée par session, comme toujours.
 
 ### Le TP4
 
@@ -263,7 +265,7 @@ journalisation (semaine 11), `AGENTS.md` et compétences (semaine 12). La
 gestion du contexte y entre aussi : un harnais qui charge douze serveurs MCP
 et un fichier d'instructions de 600 lignes n'est pas borné, même si chaque
 permission est juste. Dans votre rapport, estimez ce que coûte votre harnais
-en jetons **avant même la première demande** (la plupart des agents
+en jetons avant même la première demande (la plupart des agents
 affichent la taille du contexte initial; dans Claude Code, la commande
 `/context`), et justifiez ce coût.
 
@@ -291,3 +293,72 @@ affichent la taille du contexte initial; dans Claude Code, la commande
    inutile?
 3. Un sous-agent vous rend un résumé de son exploration. Comment
    vérifieriez-vous, à peu de frais, que ce résumé est juste?
+
+## Autoévaluation
+
+:::: {.qcm}
+::: {.question}
+Pourquoi le nombre total de jetons envoyés croît-il plus vite que le nombre de tours d'une session?
+
+- Parce que le modèle produit des réponses de plus en plus longues
+- Parce que chaque requête renvoie tout le contexte accumulé, si bien que chaque tour paie pour tous les précédents []{.bonne}
+- Parce que les fournisseurs augmentent le prix du jeton au fil de la session
+- Parce que la compaction ajoute un résumé à chaque tour
+
+::: {.explication}
+Le contexte grandit à chaque tour et il est renvoyé en entier à chaque requête. Le total ressemble donc à une somme de termes croissants, d'où une croissance quadratique. La mise en cache atténue la facture sans changer cette forme.
+:::
+:::
+
+::: {.question}
+Vous avez corrigé l'agent deux fois dans la même session, sans progrès. Que recommande la page?
+
+- Le corriger une troisième fois, plus fermement
+- Compacter la session, puis continuer
+- Changer de modèle sans quitter la session
+- Annuler, noter ce que vous avez appris, l'inscrire dans la fiche de tâche et relancer une session neuve []{.bonne}
+
+::: {.explication}
+Une correction s'ajoute à un contexte déjà pollué par la fausse piste. Ce que vous avez appris doit aller dans la fiche; les fausses pistes restent dans l'ancienne session.
+:::
+:::
+
+::: {.question}
+Quel est le principal intérêt d'un sous-agent?
+
+- Isoler une exploration qui lit beaucoup pour retenir peu, de sorte que le contexte principal ne reçoive que la conclusion []{.bonne}
+- Réduire le coût total en jetons de la tâche
+- Garantir que le résumé rendu est exact
+- Contourner les permissions de la session principale
+
+::: {.explication}
+Le sous-agent consomme ses propres jetons, et le coût total augmente souvent. Son résumé peut être faux. Il sert à garder le contexte principal court et pertinent.
+:::
+:::
+
+::: {.question}
+Pourquoi préférer une session courte à une session longue compactée?
+
+- Parce que la compaction efface les modifications de fichiers
+- Parce que la compaction est toujours plus chère qu'une session neuve
+- Parce que le résumé est choisi par le modèle et peut perdre une contrainte donnée au début []{.bonne}
+- Parce que la compaction n'existe que dans un seul agent
+
+::: {.explication}
+La compaction remplace l'historique par un résumé, et c'est le modèle qui décide de ce qu'il garde. Une contrainte comme « ne touche pas à exemples/ » peut disparaître. Les fichiers, eux, ne sont pas touchés.
+:::
+:::
+
+::: {.question}
+Qu'ont observé @liu2024lost en plaçant une information utile à différents endroits d'un long contexte?
+
+- Les modèles l'utilisaient mieux quand elle était au milieu
+- Les modèles l'utilisaient moins bien quand elle était au milieu que lorsqu'elle était au début ou à la fin []{.bonne}
+- La position n'avait aucun effet mesurable
+- Les modèles ignoraient toute information au-delà de 4 000 jetons
+
+::: {.explication}
+C'est l'effet « perdu au milieu ». Les modèles ont progressé depuis, mais la leçon demeure : plus le contexte est long, moins chaque élément pèse, y compris votre instruction initiale.
+:::
+:::
+::::

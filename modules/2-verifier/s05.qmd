@@ -4,7 +4,7 @@
 ## Cette semaine
 
 Objectifs
-: Écrire le test **avant** de déléguer une tâche à un agent. Reconnaître les
+: Écrire le test avant de déléguer une tâche à un agent. Reconnaître les
   trois qualités d'un test utile au travail agentique : déterministe,
   localisé, lié à la tâche. Repérer et éliminer les causes d'instabilité.
 
@@ -25,7 +25,7 @@ Durée estimée
 ## Pourquoi le test d'abord
 
 À la [semaine 1](../1-formuler/s01.qmd), on a vu que la boucle d'un agent
-s'arrête quand le modèle **décide** d'arrêter, et non quand le travail est
+s'arrête quand le modèle décide d'arrêter, et non quand le travail est
 vérifié. Le moyen le plus simple de faire entrer une vérification dans cette
 boucle consiste à donner à l'agent une commande qui échoue maintenant et qui
 doit réussir à la fin :
@@ -36,23 +36,25 @@ uv run pytest tests/test_expression.py
 
 Un agent qui dispose d'une telle commande se comporte différemment. Il lance
 le test, lit l'échec, modifie le code, relance. La boucle de la semaine 1
-devient une boucle de **rétroaction**, et le « c'est fait! » de l'agent se
+devient une boucle de rétroaction, et le « c'est fait! » de l'agent se
 vérifie en une seconde.
 
 C'est la vieille idée du développement piloté par les tests [@beck2002tdd] :
 
-1. **Rouge.** On écrit un test qui exprime ce qu'on veut, et on le voit
+1. *Rouge.* On écrit un test qui exprime ce qu'on veut, et on le voit
    échouer.
-2. **Vert.** On écrit le code le plus simple qui le fait passer.
-3. **Remaniement.** On améliore le code sans changer son comportement, les
+2. *Vert.* On écrit le code le plus simple qui le fait passer.
+3. *Remaniement.* On améliore le code sans changer son comportement, les
    tests servant de filet.
 
 Beck présentait cette méthode comme une façon de contrôler sa propre peur
 devant un problème difficile : avancer par petits pas vérifiés. Avec un
-agent, la répartition change. **Vous** écrivez le rouge, **l'agent** fait le
-vert (et souvent le remaniement), et **vous** jugez. Le test devient un
-**contrat** entre vous et l'agent : il dit ce qui sera accepté, avant que le
+agent, la répartition change. Vous écrivez le rouge, l'agent fait le
+vert (et souvent le remaniement), et vous jugez. Le test devient un
+*contrat* entre vous et l'agent : il dit ce qui sera accepté, avant que le
 travail ne commence.
+
+![Le test comme contrat : vous écrivez et figez les tests, l'agent travaille jusqu'au vert, vous vérifiez.](../../images/figures/s05-contrat.svg){fig-alt="Deux couloirs. Vous : écrire les tests, les voir rouges pour la bonne raison, commit des tests seuls. Agent : modifier le code et relancer les tests jusqu'au vert, sans toucher aux tests. Puis vous : vérifier que git diff HEAD~1 -- tests/ est vide, relancer uv run pytest vous-même, relire le diff, et accepter."}
 
 Écrire le test d'abord a un deuxième effet, moins visible : cela vous oblige
 à préciser la demande. Il est facile d'écrire « ajouter la recherche par
@@ -96,7 +98,7 @@ E       AssertionError: assert ['a', 'b'] == ['a']
 E         Left contains one more item: 'b'
 ```
 
-L'échec est **le bon échec**. La recherche actuelle trouve les deux documents,
+L'échec est le bon échec. La recherche actuelle trouve les deux documents,
 parce qu'ils contiennent tous deux *cabane* et *sucre*, et le test exige
 qu'elle n'en trouve qu'un. Vérifiez toujours qu'un nouveau test échoue, et
 qu'il échoue pour la raison prévue. Un test qui passe avant que la
@@ -108,7 +110,7 @@ devient *a* après normalisation, et *a* est un mot vide : la requête
 `"cabane à sucre"` ne contient donc que deux termes, *cabane* et *sucre*. Un
 document qui contient « cabane de sucre » doit-il être trouvé? Rien dans
 l'architecture actuelle ne permet de le savoir, car l'index ne garde pas les
-positions des mots. Ce sont des décisions à prendre **avant** de déléguer. On
+positions des mots. Ce sont des décisions à prendre avant de déléguer. On
 les inscrit dans la fiche de tâche ([semaine 3](../1-formuler/s03.qmd)), et
 chacune donne un test :
 
@@ -135,7 +137,7 @@ def test_guillemet_non_ferme_est_traite_comme_du_texte():
 
 Le dernier test passe déjà avec le code actuel, puisque les guillemets sont
 ignorés. Ce n'est pas un test d'acceptation, mais un test de
-**non-régression** : il empêche l'agent de casser un comportement qu'on veut
+*non-régression* : il empêche l'agent de casser un comportement qu'on veut
 garder. Les trois autres échouent, comme il se doit.
 
 Vous pourriez prendre d'autres décisions. L'important est qu'elles soient
@@ -148,23 +150,23 @@ qualités.
 
 ### Déterministe
 
-Un test **déterministe** donne le même résultat chaque fois qu'on l'exécute
+Un test déterministe donne le même résultat chaque fois qu'on l'exécute
 sur le même code. C'est une exigence plus forte avec un agent qu'avec un
 humain. Un humain qui voit un test échouer une fois sur vingt se dit « c'est
-encore ce test-là » et relance. Un agent qui le voit échouer **croit** qu'il
+encore ce test-là » et relance. Un agent qui le voit échouer croit qu'il
 a cassé quelque chose et se met à « corriger » du code qui fonctionnait. Le
 résultat est pire que l'absence de test.
 
 Les sources de non-déterminisme sont connues :
 
-- **L'horloge.** Un test qui dépend de `datetime.now()` ou de `time.time()`
+- *L'horloge.* Un test qui dépend de `datetime.now()` ou de `time.time()`
   change de comportement à minuit, en fin de mois ou au changement d'heure.
   On injecte le temps (un paramètre `maintenant=`), ou on le fige.
-- **Le hasard.** Un corpus produit par `random` sans graine n'est jamais le
+- *Le hasard.* Un corpus produit par `random` sans graine n'est jamais le
   même. Dans `indexeur`, `corpus.synthetique` prend une `graine`, et
   `random.Random(graine)` donne toujours la même suite.
-- **L'ordre des ensembles.** En Python, l'ordre d'itération d'un `set` de
-  chaînes **change d'une exécution à l'autre**, parce que le hachage des
+- *L'ordre des ensembles.* En Python, l'ordre d'itération d'un `set` de
+  chaînes change d'une exécution à l'autre, parce que le hachage des
   chaînes est randomisé au démarrage de l'interpréteur. Quatre exécutions de
   la même ligne :
 
@@ -180,15 +182,15 @@ Les sources de non-déterminisme sont connues :
   pour cela qu'`ARCHITECTURE.md` impose la règle 3 : à score égal, on trie par
   identifiant. Les dictionnaires, eux, conservent l'ordre d'insertion depuis
   Python 3.7.
-- **Le réseau et les fichiers.** Un test qui télécharge quelque chose échoue
+- *Le réseau et les fichiers.* Un test qui télécharge quelque chose échoue
   quand le réseau tombe. Un test qui écrit dans `/tmp/resultat.json` entre en
   collision avec un autre test, ou avec une autre session d'agent
   ([semaine 14](../4-outiller/s14.qmd)). Avec pytest, on utilise le répertoire
   temporaire propre à chaque test, `tmp_path`.
-- **L'ordre des tests.** Un test qui ne passe que si un autre s'est exécuté
+- *L'ordre des tests.* Un test qui ne passe que si un autre s'est exécuté
   avant lui (parce qu'il réutilise un état global, par exemple) casse dès
   qu'on lance un seul fichier, ce que les agents font tout le temps.
-- **Les nombres à virgule flottante.** Une somme de flottants dépend de
+- *Les nombres à virgule flottante.* Une somme de flottants dépend de
   l'ordre des opérations. Si un agent change cet ordre en optimisant, une
   égalité stricte entre scores peut échouer sans qu'il y ait d'erreur. On
   compare avec `pytest.approx`.
@@ -209,7 +211,7 @@ uv run pytest -q tests/test_recherche.py   # un fichier seul
 
 ### Localisé
 
-Un test **localisé** dit, quand il échoue, **où** est le problème. Comparez
+Un test localisé dit, quand il échoue, où est le problème. Comparez
 deux échecs :
 
 ```
@@ -229,31 +231,31 @@ qui n'avait pas besoin de l'être.
 
 En pratique :
 
-- **Une idée par test.** Le nom du test énonce cette idée :
+- *Une idée par test.* Le nom du test énonce cette idée :
   `test_expression_exacte_exige_des_mots_adjacents`, et non `test_recherche_2`.
-- **Le plus bas niveau possible.** On teste `rechercher()` directement,
+- *Le plus bas niveau possible.* On teste `rechercher()` directement,
   plutôt qu'à travers la ligne de commande. Les tests de la ligne de commande
   vérifient l'affichage et les options, pas la logique de recherche.
-- **Des données minimales et visibles.** Deux documents d'une ligne, écrits
+- *Des données minimales et visibles.* Deux documents d'une ligne, écrits
   dans le test, valent mieux que les six fichiers d'`exemples/` : on voit
   d'un coup d'œil pourquoi le résultat attendu est le bon.
-- **Des assertions qui montrent l'écart.** `assert ids == ["a"]` affiche les
+- *Des assertions qui montrent l'écart.* `assert ids == ["a"]` affiche les
   deux listes en cas d'échec, alors que `assert len(ids) == 1` n'affiche que
   deux nombres.
 
 ### Lié à la tâche
 
-Un test **lié à la tâche** vérifie ce que la demande exige, et rien d'autre.
+Un test lié à la tâche vérifie ce que la demande exige, et rien d'autre.
 Il se déduit du critère d'acceptation de la fiche de tâche : chaque phrase du
 critère devient un ou plusieurs tests, et chaque test renvoie à une phrase du
 critère.
 
 Ce lien fonctionne dans les deux sens.
 
-- **Rien de moins.** Si la fiche dit « la sortie JSON est triée par score
+- *Rien de moins.* Si la fiche dit « la sortie JSON est triée par score
   décroissant », un test le vérifie. Sinon, l'agent peut l'oublier sans que
   personne ne s'en aperçoive.
-- **Rien de plus.** Un test qui fige un détail non demandé, comme le nombre
+- *Rien de plus.* Un test qui fige un détail non demandé, comme le nombre
   exact d'espaces de l'affichage ou le texte précis d'un message d'erreur,
   empêche l'agent de faire un choix raisonnable, ou l'incite à « corriger »
   le test. Les tests trop précis sont aussi une source de dérive de
@@ -302,7 +304,7 @@ C'est le rouge. On peut déléguer.
 
 ## Déléguer contre un test
 
-Une fois les tests écrits et vus en rouge, faites-en un commit **avant** de
+Une fois les tests écrits et vus en rouge, faites-en un commit avant de
 lancer l'agent :
 
 ```bash
@@ -312,7 +314,7 @@ git commit -m "Tests d'acceptation de la sortie JSON (rouges)"
 
 Ce commit a deux usages. Il sépare votre travail de celui de l'agent dans
 l'historique. Surtout, il vous permet de vérifier, à la fin, que l'agent n'a
-**pas touché** aux tests :
+*pas touché* aux tests :
 
 ```bash
 git diff HEAD~1 -- tests/test_cli_json.py   # doit être vide
@@ -341,7 +343,7 @@ tests écrits par l'agent qui a écrit le code partagent ses erreurs de
 compréhension : s'il a mal compris la demande, il a mal compris les deux.
 Les tests ne jouent alors plus le rôle de contrat. Ils deviennent une
 seconde rédaction de la même idée. Pour un critère d'acceptation, écrivez
-les tests vous-même, ou faites-les écrire dans une **autre** session, à
+les tests vous-même, ou faites-les écrire dans une autre session, à
 partir de la seule fiche de tâche, puis relisez-les.
 :::
 
@@ -349,33 +351,33 @@ partir de la seule fiche de tâche, puis relisez-les.
 
 Travaillez dans une branche `semaine-05` de votre copie d'`indexeur`.
 
-1. **Choisir.** Prenez la demande 1 (expression exacte) ou la demande 2
+1. *Choisir.* Prenez la demande 1 (expression exacte) ou la demande 2
    (sortie JSON) du `README.md`. Si vous l'avez déjà traitée au TP1,
    prenez-en une autre, par exemple la demande 7 (retirer un document).
 
-2. **Décider.** Dans `taches/`, écrivez la fiche de tâche. Pour chaque
+2. *Décider.* Dans `taches/`, écrivez la fiche de tâche. Pour chaque
    ambiguïté (mots vides, guillemets non fermés, format exact, cas vides),
    inscrivez votre décision et sa justification.
 
-3. **Rouge.** Écrivez les tests d'acceptation : de quatre à huit tests, un
+3. *Rouge.* Écrivez les tests d'acceptation : de quatre à huit tests, un
    par décision. Exécutez-les. Vérifiez que chacun échoue, et pour la bonne
    raison. Faites un commit.
 
-4. **Instabilité.** Exécutez toute la suite vingt fois de suite, puis avec
+4. *Instabilité.* Exécutez toute la suite vingt fois de suite, puis avec
    `PYTHONHASHSEED=1` et `PYTHONHASHSEED=2`, puis fichier par fichier. Notez
    le résultat. (La suite fournie est stable. La vôtre l'est-elle aussi?)
 
-5. **Vert.** Dans une session neuve, déléguez l'implémentation selon le
+5. *Vert.* Dans une session neuve, déléguez l'implémentation selon le
    modèle de la section précédente. Ne l'aidez pas, sauf pour répondre à une
    question.
 
-6. **Juger.** Vérifiez : les tests passent-ils (lancez-les **vous-même**)?
+6. *Juger.* Vérifiez : les tests passent-ils (lancez-les vous-même)?
    `git diff` sur vos tests est-il vide? Combien d'itérations
    l'agent a-t-il faites entre le premier et le dernier lancement de pytest?
    L'implémentation respecte-t-elle `ARCHITECTURE.md`? Y a-t-il, dans le
    code, des comportements qu'aucun de vos tests ne vérifie?
 
-7. **Carnet.** Une entrée pour la session, en notant en particulier le
+7. *Carnet.* Une entrée pour la session, en notant en particulier le
    nombre de lancements de pytest par l'agent et le coût.
 
 ## À retenir
@@ -385,9 +387,9 @@ Travaillez dans une branche `semaine-05` de votre copie d'`indexeur`.
 - Écrire le test oblige à décider. Chaque décision écrite est une
   supposition de moins pour l'agent.
 - Un nouveau test doit échouer, et échouer pour la bonne raison.
-- Trois qualités : **déterministe** (pas d'horloge, de hasard sans graine,
-  d'ordre d'ensemble, de réseau), **localisé** (un échec dit où et quoi),
-  **lié à la tâche** (rien de moins, rien de plus que le critère
+- Trois qualités : déterministe (pas d'horloge, de hasard sans graine,
+  d'ordre d'ensemble, de réseau), localisé (un échec dit où et quoi),
+  *lié à la tâche* (rien de moins, rien de plus que le critère
   d'acceptation).
 - Un test instable est pire que pas de test : l'agent « corrige » du code
   sain.
@@ -408,3 +410,72 @@ Travaillez dans une branche `semaine-05` de votre copie d'`indexeur`.
    seuls ces tests peuvent-ils attraper?
 4. Votre agent a-t-il, à un moment, proposé de modifier un test ou exprimé
    un doute sur un test? Était-il dans son droit?
+
+## Autoévaluation
+
+:::: {.qcm}
+::: {.question}
+Qu'apporte, dans la boucle de l'agent, un test écrit d'abord et vu en rouge?
+
+- Il empêche l'agent de lire le code
+- Une commande qui échoue maintenant et doit réussir à la fin : le « c'est fait » devient vérifiable []{.bonne}
+- Il remplace la relecture du diff
+- Il réduit le nombre de fichiers que l'agent peut modifier
+
+::: {.explication}
+La boucle de l'agent ne vérifie rien d'elle-même. Un test rouge lui donne une rétroaction, et vous donne un critère d'acceptation fixé avant le travail.
+:::
+:::
+
+::: {.question}
+Un test échoue une fois sur vingt. Pourquoi est-ce plus grave avec un agent qu'avec un humain?
+
+- L'agent croit avoir cassé quelque chose et se met à « corriger » du code qui fonctionnait []{.bonne}
+- L'agent ne relance jamais les tests
+- Les agents désactivent les tests instables
+- Ce n'est pas plus grave
+
+::: {.explication}
+Un humain reconnaît « ce test-là » et relance. L'agent prend l'échec au sérieux et modifie du code sain : le résultat est pire que l'absence de test.
+:::
+:::
+
+::: {.question}
+Un agent remplace une liste par un set de chaînes « pour aller plus vite ». Quel risque pour les tests?
+
+- Aucun : un set est toujours trié
+- Le code ne compile plus
+- Les tests deviennent plus lents
+- L'ordre d'itération peut changer d'une exécution à l'autre, car le hachage des chaînes est randomisé : la sortie devient non déterministe []{.bonne}
+
+::: {.explication}
+D'où la règle 3 d'ARCHITECTURE.md : à score égal, on trie par identifiant. Les dictionnaires, eux, gardent l'ordre d'insertion.
+:::
+:::
+
+::: {.question}
+Lequel de ces tests est le mieux localisé?
+
+- test_tout_fonctionne, qui lance la ligne de commande sur exemples/ et vérifie le code de retour
+- test_recherche_2, avec assert len(ids) == 1
+- test_expression_exacte_exige_des_mots_adjacents, qui appelle rechercher() sur deux documents d'une ligne et vérifie assert ids == ["a"] []{.bonne}
+- Un test qui vérifie toutes les fonctionnalités en une seule assertion
+
+::: {.explication}
+Une idée par test, nommée; le plus bas niveau possible; des données minimales et visibles; une assertion qui montre l'écart en cas d'échec.
+:::
+:::
+
+::: {.question}
+Pourquoi éviter de faire écrire les tests d'acceptation par l'agent qui écrit le code?
+
+- Parce que les agents écrivent de mauvais tests en général
+- Parce que les tests partagent alors ses erreurs de compréhension : s'il a mal compris la demande, il a mal compris les deux []{.bonne}
+- Parce que pytest refuse les tests générés
+- Parce que cela coûte trop de jetons
+
+::: {.explication}
+Le test cesse d'être un contrat et devient une seconde rédaction de la même idée. Écrivez-les vous-même, ou dans une autre session à partir de la seule fiche, puis relisez-les.
+:::
+:::
+::::

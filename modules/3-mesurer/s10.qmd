@@ -24,7 +24,7 @@ Durée estimée
 
 ## La boucle
 
-Gregg décrit une anti-méthode qu'il appelle le **changement au hasard**
+Gregg décrit une anti-méthode qu'il appelle le changement au hasard
 (*random change anti-method*) : on modifie quelque chose qui « pourrait »
 aider, on lance le programme, et l'on garde le changement si l'on a
 l'impression que c'est mieux [@gregg2020systems]. Avec un agent, cette
@@ -33,23 +33,23 @@ minute, et chacune paraît raisonnable.
 
 La boucle d'optimisation remplace l'impression par une expérience :
 
-1. **Hypothèse.** Une phrase, fondée sur le profil : « La ligne 30 de
+1. *Hypothèse.* Une phrase, fondée sur le profil : « La ligne 30 de
    `index.py` est quadratique. La remplacer par une opération en temps
    constant devrait diviser par environ 4 le temps d'indexation de 2 000
    documents, et davantage pour les tailles supérieures. »
-2. **Changement.** Un seul, aussi petit que possible, dans un commit à lui.
-3. **Vérification.** Les tests passent, **y compris** le test différentiel
+2. *Changement.* Un seul, aussi petit que possible, dans un commit à lui.
+3. *Vérification.* Les tests passent, y compris le test différentiel
    (voir plus bas).
-4. **Mesure.** Le banc de la semaine 8, dans les mêmes conditions que la
+4. *Mesure.* Le banc de la semaine 8, dans les mêmes conditions que la
    référence.
-5. **Décision.** On garde le changement (commit sur la branche principale de
+5. *Décision.* On garde le changement (commit sur la branche principale de
    l'optimisation) ou on le rejette (la branche est conservée, mais pas
    intégrée). Dans les deux cas, on écrit une ligne au journal.
 
 Puis on reprofile, parce que le changement a déplacé le point chaud, et l'on
 recommence.
 
-**Un seul changement à la fois.** Si vous modifiez trois choses et que le
+*Un seul changement à la fois.* Si vous modifiez trois choses et que le
 programme accélère de 30 %, vous ne savez pas laquelle des trois a aidé. Il
 se peut même que l'une d'elles ralentisse le programme, masquée par les deux
 autres. Les agents ont tendance à « regrouper » les améliorations. Refusez
@@ -63,9 +63,9 @@ bogue rapide. Les tests existants d'`indexeur` sont des tests d'exemples
 peut les passer tout en changeant le classement dans un cas que personne n'a
 prévu, par exemple l'ordre de deux documents de même score.
 
-Le **test différentiel** compare la nouvelle version à une version de
+Le test différentiel compare la nouvelle version à une version de
 référence figée, sur beaucoup d'entrées générées. On copie le paquet
-d'origine sous un autre nom (`indexeur_ref`, hors de `src/`) **avant** la
+d'origine sous un autre nom (`indexeur_ref`, hors de `src/`) avant la
 première optimisation, puis :
 
 ```python
@@ -85,15 +85,15 @@ def test_memes_resultats_que_la_reference(graine):
         assert obtenu == attendu, requete
 ```
 
-Ce test exige l'égalité **exacte** des scores. C'est volontairement sévère :
+Ce test exige l'égalité exacte des scores. C'est volontairement sévère :
 une optimisation qui réordonne une somme de nombres à virgule flottante peut
 changer le dernier chiffre d'un score, et donc l'ordre de deux documents. Si
 vous décidez qu'un tel écart est acceptable, remplacez l'égalité par une
-tolérance, et **écrivez pourquoi** dans le journal. Ce choix vous appartient.
+tolérance, et écrivez pourquoi dans le journal. Ce choix vous appartient.
 Il ne revient pas à l'agent.
 
 Faites ce test vous-même, ou faites-le écrire par un agent dans une session
-à part, **avant** toute optimisation, puis interdisez sa modification pendant
+à part, avant toute optimisation, puis interdisez sa modification pendant
 la boucle (semaine 7).
 
 ## Une itération complète
@@ -102,14 +102,14 @@ Voici la première itération sur `indexeur`, faite pour préparer ce cours
 (Apple M4 Max, macOS 15.7, Python 3.15.2, sur secteur, banc de la
 semaine 8, médiane de 5 mesures).
 
-**Hypothèse** (semaine 9). La ligne 30 de `Index.ajouter` parcourt une liste
+*Hypothèse* (semaine 9). La ligne 30 de `Index.ajouter` parcourt une liste
 pour savoir si le document y est déjà, ce qui rend l'indexation
 quadratique. Prédiction : environ 310 ms pour 2 000 documents, au lieu de
 1 237 ms, et un rapport proche de 2 (et non plus de 4) quand la taille
 double.
 
-**Changement.** On compte les occurrences de chaque terme du document une
-fois pour toutes, puis on ajoute le document **une seule fois** à la liste
+*Changement.* On compte les occurrences de chaque terme du document une
+fois pour toutes, puis on ajoute le document une seule fois à la liste
 de chaque terme distinct :
 
 ```python
@@ -126,10 +126,10 @@ Les listes de documents gardent l'ordre d'ajout, ce qu'exige le reste du
 code. Le diff touche un seul fichier et compte 5 lignes ajoutées et 7
 retirées.
 
-**Vérification.** `uv run pytest` : 25 tests passent, dont les 5 cas du test
+*Vérification.* `uv run pytest` : 25 tests passent, dont les 5 cas du test
 différentiel.
 
-**Mesure.**
+*Mesure.*
 
 | Documents | Avant | Après | Gain |
 |---:|---:|---:|---:|
@@ -139,11 +139,13 @@ différentiel.
 | 4 000 | 4 395,3 ms | 613,1 ms | ×7,2 |
 | 8 000 | 16 625,7 ms | 1 257,2 ms | ×13,2 |
 
+![Le temps d'indexation avant et après la correction de la ligne 30, en échelles logarithmiques. La pente change : le gain grandit avec la taille.](../../images/figures/s10-complexite.svg){fig-alt="Deux courbes en échelles logarithmiques. Avant : de 138,4 ms à 500 documents jusqu'à 16,6 s à 8 000 documents, le temps quadruple quand la taille double. Après : de 76,4 ms à 1,26 s, le temps double quand la taille double. Gain de 13,2 à 8 000 documents."}
+
 La prédiction (environ 310 ms à 2 000 documents) est confirmée, à 2 % près.
 Le rapport entre deux tailles successives est maintenant de 1,96 à 2,05 :
-l'indexation est **linéaire**.
+l'indexation est linéaire.
 
-**Décision.** On garde. Commit : « Index.ajouter : Counter au lieu d'une
+*Décision.* On garde. Commit : « Index.ajouter : Counter au lieu d'une
 recherche linéaire ».
 
 Remarquez que le temps des requêtes, que ce changement ne touche pas, est
@@ -154,17 +156,17 @@ mauvais changement.
 
 ## Complexité ou constante
 
-Le tableau précédent montre un trait caractéristique : **le gain grandit avec
-la taille**. C'est la signature d'un changement de **complexité** (ici, de
+Le tableau précédent montre un trait caractéristique : le gain grandit avec
+la taille. C'est la signature d'un changement de complexité (ici, de
 quadratique à linéaire). Un tel gain ne se résume pas en un seul nombre.
 « Quatre fois plus rapide » est vrai à 2 000 documents et faux à 8 000.
 Rapportez la courbe.
 
-Un gain de **constante** donne au contraire à peu près le même facteur à
+Un gain de constante donne au contraire à peu près le même facteur à
 toutes les tailles. Il est précieux lui aussi, car un programme linéaire
 deux fois plus rapide reste deux fois plus rapide. Mais il ne sauve pas un
 algorithme quadratique quand les données grossissent. D'où l'ordre habituel :
-**d'abord la complexité, ensuite les constantes.**
+*d'abord la complexité, ensuite les constantes.*
 
 ## Une impasse
 
@@ -185,7 +187,7 @@ def mots(texte):
     return MOT.findall(texte)
 ```
 
-Les tests passent. On mesure, en **alternant** les deux versions et avec deux
+Les tests passent. On mesure, en alternant les deux versions et avec deux
 exécutions de chacune, 11 répétitions par exécution :
 
 | Version | Exécution | 2 000 documents | 8 000 documents |
@@ -202,7 +204,7 @@ récemment compilées, de sorte que `re.findall(r"\w+", texte)` ne recompile
 rien. L'agent appliquait une règle générale (« compilez vos expressions
 régulières ») sans savoir si elle s'appliquait ici.
 
-**Décision.** On rejette. La branche reste, et le journal dit pourquoi. Sans
+*Décision.* On rejette. La branche reste, et le journal dit pourquoi. Sans
 cette ligne au journal, vous, un collègue ou un agent proposerez la même
 idée le mois prochain.
 
@@ -217,13 +219,13 @@ Autre proposition fréquente : mettre `normaliser` en antémémoire avec
 l'essaie (branche `essai-cache`, une ligne ajoutée) : l'indexation de 2 000
 documents passe de 296 ms à 110 ms, soit un gain de 2,7. Les tests passent.
 
-Avant de garder ce changement, demandez-vous **ce que le banc représente**.
+Avant de garder ce changement, demandez-vous ce que le banc représente.
 Le corpus synthétique utilise un vocabulaire de 5 000 mots, sans accents ni
 majuscules, tirés selon une loi de Zipf. Les 400 000 mots du corpus ne sont
 donc que 5 000 mots différents, et l'antémémoire est presque toujours
 touchée. Un vrai texte français a un vocabulaire bien plus riche, avec des
 formes fléchies, des majuscules et des noms propres. Le gain y sera plus
-faible, et l'antémémoire consommera de la mémoire. Il faut un **second banc**,
+faible, et l'antémémoire consommera de la mémoire. Il faut un second banc,
 sur de vrais textes, pour trancher. En attendant, la décision est « en
 suspens », et le journal le dit.
 
@@ -261,31 +263,31 @@ est maintenant environ 40 % plus rapide, et tous les tests passent. »
 
 Que manque-t-il?
 
-- **La référence.** Quarante pour cent par rapport à quoi? Mesurée dans le
+- *La référence.* Quarante pour cent par rapport à quoi? Mesurée dans le
   même processus, à la même heure? L'agent a peut-être comparé à un chiffre
   qu'il a lu dans un rapport précédent, mesuré dans d'autres conditions.
-- **La dispersion.** Une seule exécution de chaque version ne permet pas de
+- *La dispersion.* Une seule exécution de chaque version ne permet pas de
   distinguer 40 % de 4 %, comme on l'a vu.
-- **L'attribution.** Quatre changements, un seul nombre : lequel a aidé?
+- *L'attribution.* Quatre changements, un seul nombre : lequel a aidé?
   L'un d'eux nuit peut-être.
-- **La correction.** « Tous les tests passent », mais lesquels? Le test
+- *La correction.* « Tous les tests passent », mais lesquels? Le test
   différentiel était-il là? L'agent l'a-t-il modifié?
-- **Parfois, la mesure elle-même.** Certains agents « estiment » le gain à
+- *Parfois, la mesure elle-même.* Certains agents « estiment » le gain à
   partir du code, sans avoir exécuté le banc. Vérifiez dans la trace de la
   session que la commande a bien été lancée, et lisez sa sortie.
 
 La parade est la même qu'au bloc 1 : une fiche de tâche par itération, avec
-l'hypothèse, le changement **unique** autorisé, les fichiers qu'on peut
-modifier, et un critère d'acceptation qui dit **comment** mesurer. Par
+l'hypothèse, le changement unique autorisé, les fichiers qu'on peut
+modifier, et un critère d'acceptation qui dit comment mesurer. Par
 exemple :
 
 > Critère d'acceptation : `uv run pytest` passe sans modification de
 > `tests/`. `uv run python bancs/banc.py --tailles 2000 8000 --repetitions 11
-> --json rapports/mesures/iter-04.json` est exécuté **deux fois**, en
+> --json rapports/mesures/iter-04.json` est exécuté deux fois, en
 > alternance avec la version précédente (`git stash`). Montre-moi la sortie
 > brute des quatre exécutions, sans la résumer.
 
-L'agent peut très bien **proposer** les hypothèses. C'est même l'un de ses
+L'agent peut très bien proposer les hypothèses. C'est même l'un de ses
 usages les plus utiles : il connaît les idiomes rapides de Python mieux que
 la plupart d'entre nous. Mais la décision repose sur la mesure, et la mesure
 se lit dans la sortie brute.
@@ -293,37 +295,37 @@ se lit dans la sortie brute.
 ## Savoir s'arrêter
 
 Une fois la ligne 30 corrigée, `termes` représente 82 % du temps d'indexation.
-D'après la loi d'Amdahl, même en rendant **gratuit** tout le reste de
+D'après la loi d'Amdahl, même en rendant gratuit tout le reste de
 `ajouter`, on ne gagnerait au plus que 1/0,82 ≈ 1,22, soit 22 %. Les efforts
 suivants doivent donc viser `termes`, ou rien.
 
 Plus généralement, arrêtez-vous quand l'une de ces conditions est remplie :
 
-- **l'objectif est atteint**. Fixez-le **avant** de commencer, par exemple
+- *l'objectif est atteint*. Fixez-le avant de commencer, par exemple
   « indexer 100 000 documents en moins de 10 s sur ma machine ». Sans
   objectif, on ne s'arrête jamais, ou on s'arrête au hasard;
-- **le point chaud restant est hors de portée** : il est dans la
+- *le point chaud restant est hors de portée* : il est dans la
   bibliothèque standard, dans le système, ou il exigerait de changer de
   langage;
-- **le gain ne vaut plus le coût** : chaque optimisation rend le code un peu
+- *le gain ne vaut plus le coût* : chaque optimisation rend le code un peu
   plus difficile à lire et à modifier. Un gain de 3 % qui ajoute une
   antémémoire à invalider, un cas particulier ou une dépendance (contraire à
   la règle 4 d'`ARCHITECTURE.md`) ne vaut probablement pas la peine;
-- **les gains sont dans le bruit** : si deux itérations de suite ne donnent
+- *les gains sont dans le bruit* : si deux itérations de suite ne donnent
   rien de mesurable, reprofilez avant de continuer, ou arrêtez.
 
 ## Le TP3
 
 Le [TP3](../../evaluation.qmd#sec-tp3) vous demande d'appliquer cette
 démarche à `indexeur` : un banc amélioré (semaine 8), des profils avant et
-après (semaine 9), et **au moins cinq itérations** de la boucle, dont au
+après (semaine 9), et au moins cinq itérations de la boucle, dont au
 moins une proposée par l'agent et au moins une qui échoue. La page que vous
 venez de lire montre deux itérations et une hésitation. Il en reste
 plusieurs à trouver : la recherche, en particulier, a deux défauts révélés
 par le profil de la semaine 9. Et une fois ces défauts corrigés, le profil
 en révélera d'autres.
 
-Le rapport présente les gains **avec leur incertitude** et sous forme de
+Le rapport présente les gains avec leur incertitude et sous forme de
 courbe (plusieurs tailles), indique la complexité avant et après, et donne
 autant de place aux impasses qu'aux succès.
 
@@ -332,27 +334,27 @@ autant de place aux impasses qu'aux succès.
 Travaillez dans une branche `tp3`, à partir de votre référence de la
 semaine 8.
 
-1. **Figer la référence.** Copiez le paquet d'origine sous le nom
+1. *Figer la référence.* Copiez le paquet d'origine sous le nom
    `indexeur_ref` (hors de `src/`), et écrivez le test différentiel. Vérifiez
-   qu'il **échoue** si vous introduisez volontairement une erreur dans
+   qu'il échoue si vous introduisez volontairement une erreur dans
    `intersection` ou dans `score_bm25` (par exemple, en changeant `B`), puis
    annulez l'erreur.
 
-2. **Itération 1.** Reprenez votre prédiction de la semaine 9 pour la ligne 30
+2. *Itération 1.* Reprenez votre prédiction de la semaine 9 pour la ligne 30
    d'`Index.ajouter`. Rédigez la fiche, faites faire le changement par un
    agent, vérifiez, mesurez, décidez. Votre prédiction était-elle juste?
 
-3. **Reprofiler.** Où est maintenant le temps, pour l'indexation et pour la
+3. *Reprofiler.* Où est maintenant le temps, pour l'indexation et pour la
    recherche?
 
-4. **Itérations suivantes.** Demandez à un agent, dans une session neuve, de
-   **proposer** trois hypothèses d'optimisation d'après le nouveau profil, sans
+4. *Itérations suivantes.* Demandez à un agent, dans une session neuve, de
+   *proposer* trois hypothèses d'optimisation d'après le nouveau profil, sans
    rien modifier. Choisissez-en une, et menez-la jusqu'à la décision.
 
-5. **Journal.** Tenez le journal d'optimisation dès la première itération,
+5. *Journal.* Tenez le journal d'optimisation dès la première itération,
    impasses comprises.
 
-6. **Carnet.** Une entrée par session, avec le coût en jetons : les boucles
+6. *Carnet.* Une entrée par session, avec le coût en jetons : les boucles
    d'optimisation consomment beaucoup de contexte (sorties de bancs, profils).
    Vous y reviendrez à la semaine 13.
 
@@ -385,3 +387,79 @@ semaine 8.
 4. Un agent vous propose de réécrire `termes` en Rust, avec une extension
    Python. Que dit la règle 4 d'`ARCHITECTURE.md`? Qu'en pensez-vous, au vu de
    la loi d'Amdahl et du coût de maintenance?
+
+## Autoévaluation
+
+:::: {.qcm}
+::: {.question}
+Un agent propose trois optimisations dans un même commit, et le banc d'essai montre un gain de 30 %. Quel est le problème?
+
+- Un gain de 30 % est trop faible pour justifier un commit
+- On ne sait pas quel changement a aidé, et l'un d'eux ralentit peut-être le programme []{.bonne}
+- Le banc d'essai aurait dû être lancé par l'agent plutôt que par vous
+- Il fallait d'abord écrire une version en Rust pour comparer
+
+::: {.explication}
+Un seul changement à la fois. Plusieurs changements réunis se masquent les uns
+les autres : un gain global peut cacher une régression.
+:::
+:::
+
+::: {.question}
+Avant de remplacer la recherche linéaire de `Index.ajouter`, qu'est-ce qui doit être en place?
+
+- Un profil produit par l'agent, sans relecture
+- Une estimation du gain fournie par l'agent
+- Un test différentiel qui compare la nouvelle version à l'ancienne sur des entrées générées []{.bonne}
+- Une nouvelle dépendance de développement pour accélérer les tests
+
+::: {.explication}
+Une optimisation ne doit pas changer le comportement. Le test différentiel
+compare les sorties des deux versions et attrape une différence que les tests
+d'exemples laisseraient passer.
+:::
+:::
+
+::: {.question}
+Après la correction, le gain d'indexation est de ×4,1 à 2 000 documents et de ×13,2 à 8 000. Comment le rapporter?
+
+- « Le programme est quatre fois plus rapide. »
+- « Le programme est treize fois plus rapide. »
+- Par la moyenne des deux facteurs
+- Par la courbe : un changement de complexité donne un gain qui grandit avec la taille []{.bonne}
+
+::: {.explication}
+Le passage de quadratique à linéaire ne se résume pas en un seul nombre. Un
+facteur unique est vrai à une taille et faux aux autres.
+:::
+:::
+
+::: {.question}
+Précompiler l'expression régulière de `mots` ne change rien de mesurable. Que faites-vous de cette itération?
+
+- On l'efface de l'historique, puisqu'elle n'a rien donné
+- On la garde quand même : elle ne peut pas nuire
+- On la rejette et on l'inscrit au journal comme impasse, avec ses mesures []{.bonne}
+- On relance le banc jusqu'à obtenir un gain
+
+::: {.explication}
+Une impasse documentée évite de refaire l'essai, et elle montre que la
+démarche est honnête. Relancer le banc jusqu'à obtenir le résultat voulu,
+c'est choisir le bruit qui arrange.
+:::
+:::
+
+::: {.question}
+Une fois la ligne 30 corrigée, `termes` représente 82 % du temps d'indexation. Que dit la loi d'Amdahl sur le reste de `ajouter`?
+
+- Qu'on peut encore gagner un facteur 5 en l'optimisant
+- Que, même rendu gratuit, il ne ferait gagner qu'environ 22 % au plus []{.bonne}
+- Qu'il faut l'optimiser avant `termes`, parce qu'il est plus simple
+- Qu'elle ne s'applique pas à un programme Python
+
+::: {.explication}
+Si 82 % du temps reste dans `termes`, le gain maximal en accélérant le reste
+est 1/0,82 ≈ 1,22. Les efforts suivants doivent viser `termes`, ou s'arrêter.
+:::
+:::
+::::
