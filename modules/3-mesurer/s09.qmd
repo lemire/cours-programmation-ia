@@ -1,0 +1,363 @@
+# Profiler avant d'optimiser {#sec-s09}
+
+::: {.callout-note appearance="simple" .semaine}
+## Cette semaine
+
+Objectifs
+: Savoir où un programme passe son temps avant de chercher à l'accélérer.
+  Utiliser un profileur déterministe et un profileur par échantillonnage,
+  lire leur sortie et connaître leurs biais. Estimer le gain maximal d'une
+  optimisation avant de la faire (loi d'Amdahl).
+
+Lectures
+: Knuth (1974), *Structured Programming with go to Statements*, la
+  section 1 (la phrase célèbre et les deux pages qui l'entourent). Gregg
+  (2020), chapitre 2 (ce qui touche au profilage) et chapitre 6 (*CPUs*),
+  les pages sur les graphes de flammes. La documentation de
+  [`cProfile`](https://docs.python.org/fr/3/library/profile.html).
+
+Activité
+: Profiler l'indexation et la recherche d'`indexeur`, vous-même puis avec un
+  agent, et comparer.
+
+Durée estimée
+: 8 heures.
+:::
+
+## Ce que Knuth a vraiment écrit
+
+La phrase la plus citée de l'histoire de la performance logicielle est
+presque toujours citée tronquée. La voici dans son contexte
+[@knuth1974goto, p. 268] :
+
+> There is no doubt that the grail of efficiency leads to abuse. Programmers
+> waste enormous amounts of time thinking about, or worrying about, the speed
+> of noncritical parts of their programs, and these attempts at efficiency
+> actually have a strong negative impact when debugging and maintenance are
+> considered. We should forget about small efficiencies, say about 97% of the
+> time: premature optimization is the root of all evil.
+>
+> Yet we should not pass up our opportunities in that critical 3%. A good
+> programmer will not be lulled into complacency by such reasoning, he will be
+> wise to look carefully at the critical code; but only after that code has
+> been identified. It is often a mistake to make a priori judgments about what
+> parts of a program are really critical, since the universal experience of
+> programmers who have been using measurement tools has been that their
+> intuitive guesses fail.
+
+Autrement dit : n'optimisez pas les parties non critiques, **mais** ne
+négligez pas les parties critiques, et ne les devinez pas, **mesurez-les**.
+La phrase n'est pas un appel à ignorer la performance. C'est un appel à
+utiliser des instruments. Le même article dit, quelques lignes plus haut,
+qu'une amélioration de 12 % obtenue facilement ne devrait jamais être
+considérée comme marginale.
+
+Cette mise en garde vaut doublement avec un agent. Un modèle de langue n'a
+pas plus d'intuition que vous sur l'endroit où votre programme passe son
+temps, et il n'a pas exécuté votre programme. Ses propositions
+d'optimisation sont des devinettes **a priori**, exactement ce contre quoi
+Knuth met en garde.
+
+## La loi d'Amdahl
+
+Supposons qu'une partie du programme représente une fraction $p$ du temps
+total, et qu'on l'accélère d'un facteur $s$. Le gain global est :
+
+$$
+\text{accélération} = \frac{1}{(1 - p) + p / s}.
+$$
+
+Ce raisonnement, qu'on attribue à @amdahl1967, a une conséquence brutale :
+même si l'on rend la partie optimisée **infiniment** rapide ($s \to \infty$),
+le gain ne dépasse jamais $1 / (1 - p)$. Accélérer une fonction qui
+représente 10 % du temps total rapporte au plus 11 %. Accélérer une fonction
+qui en représente 80 % peut rapporter jusqu'à un facteur 5.
+
+Avant toute optimisation, demandez-vous donc : **quelle fraction du temps
+cette partie représente-t-elle?** Si vous ne le savez pas, vous ne savez pas
+si l'effort en vaut la peine. Le profileur sert à répondre à cette question.
+
+## Deux familles de profileurs
+
+**Un profileur déterministe** (*tracing profiler*) enregistre chaque appel
+et chaque retour de fonction. C'est le cas de `cProfile`, dans la
+bibliothèque standard. Il compte exactement le nombre d'appels, mais il
+ajoute un coût à **chaque** appel. Le code qui fait beaucoup de petits
+appels paraît donc plus lent qu'il ne l'est, et le code qui calcule sans
+appeler de fonction paraît relativement plus rapide.
+
+**Un profileur par échantillonnage** (*sampling profiler*) interrompt le
+programme à intervalles réguliers, par exemple cent fois par seconde, et
+note où il en est. Il ne compte pas les appels, mais il perturbe très peu le
+programme, et l'on peut l'attacher à un processus déjà en cours. C'est le
+cas de [py-spy](https://github.com/benfred/py-spy) et du profileur intégré à
+Python 3.15 (`python -m profiling.sampling`). Pour le code natif (C, C++,
+Rust), on utilise `perf` sous Linux ou Instruments sous macOS [@gregg2020systems].
+
+::: {.callout-note}
+## Les droits nécessaires
+
+Sous macOS, les profileurs par échantillonnage doivent lire la mémoire d'un
+autre processus, ce qui exige les droits d'administration (`sudo`). Sous
+Linux, y compris dans un Codespace, ils fonctionnent en général sans droits
+particuliers. Si vous ne pouvez pas utiliser `sudo`, `cProfile` et la mesure
+directe suffisent pour ce cours.
+:::
+
+## Profiler l'indexation
+
+On profile l'indexation de 2 000 documents synthétiques avec `indexeur`
+0.3.0. Le petit script `profil_index.py` génère le corpus, puis l'indexe une
+fois :
+
+```python
+from indexeur.corpus import synthetique
+from indexeur.index import Index
+
+corpus = synthetique(2000)
+
+def indexer():
+    index = Index()
+    for k, t in corpus.items():
+        index.ajouter(k, t)
+
+indexer()
+```
+
+```console
+$ uv run python -m cProfile -s tottime profil_index.py
+         10840083 function calls (10839928 primitive calls) in 2.305 seconds
+
+   Ordered by: internal time
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+     2000    0.997    0.000    2.059    0.001 index.py:20(ajouter)
+  2986184    0.234    0.000    0.356    0.000 texte.py:23(<genexpr>)
+   407902    0.181    0.000    0.550    0.000 {method 'join' of 'str' objects}
+     2000    0.123    0.000    0.176    0.000 random.py:460(choices)
+  2586184    0.122    0.000    0.122    0.000 {built-in method unicodedata.category}
+   400000    0.119    0.000    0.834    0.000 texte.py:26(normaliser)
+     2000    0.098    0.000    1.003    0.001 texte.py:38(termes)
+   400000    0.094    0.000    0.652    0.000 texte.py:20(sans_accents)
+```
+
+(Mesures faites sur un Apple M4 Max, macOS 15.7, Python 3.15.2, comme celles
+de la semaine 8.)
+
+### Lire un profil
+
+Les colonnes :
+
+- `ncalls` : le nombre d'appels;
+- `tottime` : le temps passé **dans** la fonction elle-même, sans compter les
+  fonctions qu'elle appelle (temps propre);
+- `cumtime` : le temps passé dans la fonction **et** dans tout ce qu'elle
+  appelle (temps cumulé);
+- `percall` : l'un ou l'autre divisé par le nombre d'appels.
+
+Triez par `tottime` (`-s tottime`) pour trouver les fonctions qui calculent,
+et par `cumtime` (`-s cumtime`) pour suivre la chaîne d'appels du haut vers
+le bas. Une fonction à fort `cumtime` mais faible `tottime` ne fait que
+déléguer : il faut descendre.
+
+Ici, deux choses ressortent.
+
+1. `ajouter` a un temps propre de près d'une seconde, soit plus de 40 % du
+   total, alors qu'elle ne fait presque rien d'autre qu'appeler `termes` et
+   remplir des dictionnaires. Quelque chose, **dans le corps** de `ajouter`,
+   coûte cher. `cProfile` ne dit pas quoi : il voit des fonctions, pas des
+   lignes.
+2. `termes` et ce qu'elle appelle (`normaliser`, `sans_accents`, le
+   générateur, `join`, `unicodedata.category`) totalisent environ une
+   seconde de `cumtime`. Ce sont des millions de petits appels.
+
+### Le biais du profileur
+
+Le profil donne environ 2,3 s au total, alors que la même indexation prend
+environ 1,27 s sans profileur. Le profileur a presque doublé le temps
+d'exécution. Ce surcoût n'est pas réparti également : il frappe surtout
+`termes`, qui fait des millions de petits appels.
+
+Vérifions par une **mesure directe**, sans profileur. Sur le même corpus,
+appeler `termes` sur tous les textes prend 0,25 s, et l'indexation complète
+1,27 s. `termes` représente donc environ 20 % du temps réel, et non 45 %
+comme le suggère le profil. Le reste, environ 1,0 s, est bien dans le corps
+de `ajouter`.
+
+Retenez cette leçon : **un profil donne des pistes, la mesure tranche.**
+Avant d'investir dans une optimisation, confirmez la fraction de temps
+qu'elle vise par une mesure directe.
+
+### Descendre à la ligne
+
+Pour savoir quelle ligne de `ajouter` coûte cher, on peut utiliser
+[line_profiler](https://github.com/pyutils/line_profiler)
+(`uv add --dev line_profiler`), qui chronomètre chaque ligne d'une fonction
+choisie :
+
+```python
+from line_profiler import LineProfiler
+
+lp = LineProfiler(Index.ajouter)
+lp.runcall(indexer)
+lp.print_stats(output_unit=1e-3, stripzeros=True)
+```
+
+```console
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+    24      2000        980.7      0.5     44.2          liste = termes(texte)
+    27    401995         39.9      0.0      1.8          for terme in liste:
+    28    399995         64.6      0.0      2.9              if terme not in self.postings:
+    30    399995        957.7      0.0     43.1              if identifiant not in self.postings[terme]:
+    31    256229         38.0      0.0      1.7                  self.postings[terme].append(identifiant)
+    33    399995         89.5      0.0      4.0              self.frequences[cle] = self.frequences.get(cle, 0) + 1
+```
+
+La ligne 30 coûte environ 960 ms. Elle vérifie si le document est déjà dans
+la liste des documents du terme. `self.postings[terme]` est une **liste** :
+le test `in` la parcourt du début à la fin. Pour un terme fréquent, présent
+dans presque tous les documents, la liste s'allonge à chaque document
+ajouté. Chaque ajout coûte donc un temps proportionnel au nombre de
+documents déjà indexés, et l'indexation entière, un temps proportionnel au
+**carré** de ce nombre. Le profil explique la courbe de la semaine 8.
+
+(Ici aussi, `line_profiler` surestime le coût de la ligne 24, l'appel à
+`termes`. Encore une fois, la mesure directe tranche.)
+
+### Une prédiction, avant de toucher au code
+
+Avec la loi d'Amdahl et la mesure directe, on peut **prédire** le gain avant
+d'écrire une seule ligne. Si la ligne 30 coûtait presque zéro, l'indexation
+de 2 000 documents passerait d'environ 1 270 ms à environ 1 270 − 960 ≈
+310 ms, soit un facteur 4 environ. L'écart devrait se creuser avec la taille,
+puisqu'on supprime la partie quadratique. Notez cette prédiction. La
+semaine 10 la confronte à la mesure.
+
+## Profiler la recherche
+
+Le même exercice sur les cinq requêtes du banc (index de 2 000 documents
+déjà construit, `cProfile` activé seulement autour des requêtes) donne :
+
+```console
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+    11224    0.048    0.000    0.048    0.000 {built-in method builtins.sum}
+        5    0.015    0.003    0.015    0.003 recherche.py:38(intersection)
+     8611    0.004    0.000    0.070    0.000 recherche.py:27(score_bm25)
+    11224    0.004    0.000    0.009    0.000 recherche.py:20(idf)
+    11224    0.003    0.000    0.052    0.000 index.py:49(longueur_moyenne)
+```
+
+La fonction intégrée `sum` est appelée 11 224 fois, une fois par couple
+(terme de la requête, document candidat), et elle représente plus de la
+moitié du temps. C'est `longueur_moyenne`, qui recalcule la somme des
+longueurs de **tous** les documents à chaque appel. Le calcul est juste, mais
+il est refait des milliers de fois alors que la valeur ne change pas entre
+deux ajouts. Vient ensuite `intersection`, qui teste l'appartenance à une
+liste, comme la ligne 30. Ces deux défauts expliquent le rapport proche de 4
+observé sur les requêtes à la semaine 8.
+
+## Le graphe de flammes
+
+Un profil en tableau devient difficile à lire dès que le programme est un
+peu gros. Le **graphe de flammes** (*flame graph*), popularisé par Brendan
+Gregg, représente chaque pile d'appels échantillonnée par une tour de
+rectangles. La largeur d'un rectangle est proportionnelle au temps passé
+dans la fonction et dans ses descendantes. On cherche les **plateaux
+larges** : ce sont les fonctions où le programme passe son temps.
+
+```bash
+sudo py-spy record -o flamme.svg -- python profil_index.py         # py-spy
+python -m profiling.sampling run --flamegraph -o flamme.html profil_index.py   # Python 3.15
+```
+
+Ouvrez le fichier produit dans un navigateur. Pour `indexeur`, vous verrez
+un large plateau `ajouter`, dont une partie seulement est couverte par
+`termes` : la partie non couverte, c'est le temps propre de `ajouter`, donc
+la ligne 30. Pour visualiser un profil `cProfile` déjà enregistré
+(`-o index.prof`), [snakeviz](https://jiffyclub.github.io/snakeviz/) donne une
+vue interactive semblable.
+
+## Faire profiler par l'agent
+
+Un agent peut lancer le profileur, lire la sortie et vous en donner un
+résumé. C'est utile, à trois conditions.
+
+1. **Exigez la sortie brute.** Demandez à l'agent d'enregistrer le profil
+   dans un fichier (`-o profils/avant.prof`, ou la sortie texte dans
+   `profils/avant.txt`) et de le versionner. Son résumé peut être juste ou
+   inventé, et le fichier permet de le vérifier.
+2. **Séparez le diagnostic du traitement.** « Profile l'indexation et
+   identifie les trois principaux points chauds, avec leur part du temps.
+   Ne modifie aucun fichier de `src/`. » Un agent à qui l'on demande à la fois
+   de profiler et d'optimiser saute souvent la première étape : il « voit »
+   le problème dans le code et le corrige, sans mesure.
+3. **Méfiez-vous des explications.** L'agent lira la ligne 30 et dira
+   correctement que le test d'appartenance dans une liste est linéaire. Il
+   pourra aussi affirmer, avec la même assurance, que la normalisation
+   Unicode est « coûteuse et devrait être mise en antémémoire », sans avoir
+   mesuré sa part réelle. Les deux affirmations ont l'air aussi
+   convaincantes l'une que l'autre. Seule la mesure les départage.
+
+Profiler soi-même au moins une fois reste indispensable : vous ne pouvez pas
+juger le résumé de l'agent si vous n'avez jamais lu un profil.
+
+## Activité
+
+Travaillez dans une branche `semaine-09`, à partir de votre référence de la
+semaine 8.
+
+1. **Profil déterministe.** Écrivez un petit script qui indexe 2 000
+   documents, profilez-le avec `cProfile` (`-s tottime`, puis `-s cumtime`)
+   et enregistrez les deux sorties dans `rapports/profils/`.
+
+2. **Mesure directe.** Mesurez, sans profileur, le temps de `termes` sur tout
+   le corpus et le temps de l'indexation complète. Comparez les fractions
+   avec celles du profil. Notez l'écart dans le carnet.
+
+3. **À la ligne.** Utilisez `line_profiler` sur `Index.ajouter`. Trouvez la
+   ligne responsable du comportement quadratique et expliquez **pourquoi**
+   elle est quadratique, en une phrase.
+
+4. **La recherche.** Faites le même travail pour les requêtes du banc.
+
+5. **Avec un agent.** Dans une session neuve, demandez à un agent de
+   profiler l'indexation et la recherche **sans modifier `src/`**, et d'écrire
+   un diagnostic dans `rapports/diagnostic-agent.md`, sorties brutes à
+   l'appui. Comparez son diagnostic au vôtre. A-t-il trouvé les mêmes points
+   chauds? A-t-il affirmé quelque chose qu'il n'a pas mesuré?
+
+6. **Prédire.** Pour chacun des points chauds trouvés, utilisez la loi
+   d'Amdahl et vos mesures directes pour **prédire** le gain maximal qu'on
+   obtiendrait en l'éliminant. Écrivez les prédictions dans
+   `rapports/predictions.md` et faites un commit. Vous les vérifierez la
+   semaine prochaine.
+
+7. **Carnet.** Une entrée par session.
+
+## À retenir
+
+- Knuth ne dit pas « n'optimisez pas ». Il dit : trouvez les 3 % critiques
+  **par la mesure**, puis optimisez-les.
+- La loi d'Amdahl borne le gain : une partie qui prend une fraction $p$ du
+  temps ne peut rapporter plus que $1/(1-p)$.
+- Un profileur déterministe compte tout, mais il déforme le temps des petits
+  appels. Un profileur par échantillonnage perturbe peu, mais il ne compte
+  pas.
+- `tottime` dit où l'on calcule, `cumtime` dit par où l'on passe. Il faut
+  parfois descendre à la ligne.
+- Un profil donne des pistes, la mesure directe tranche. Un diagnostic
+  d'agent sans sortie brute n'est pas un diagnostic.
+
+## Questions
+
+1. Le profil donne à `termes` environ 45 % du temps, et la mesure directe
+   environ 20 %. Expliquez l'écart à partir du fonctionnement de `cProfile`.
+2. Après correction de la ligne 30, `termes` deviendra la partie dominante de
+   l'indexation. Selon vous, quelle fraction du temps représentera-t-elle? Que
+   dit Amdahl du gain maximal qu'on pourrait encore espérer sans toucher à
+   `termes`?
+3. Pourquoi est-il dangereux de demander à un agent, dans une même phrase, de
+   « profiler et optimiser »?
+4. Dans quelles situations un profileur par échantillonnage serait-il le seul
+   choix possible?

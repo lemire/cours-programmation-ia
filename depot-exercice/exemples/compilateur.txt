@@ -1,0 +1,4 @@
+Un compilateur traduit un programme écrit dans un langage de haut niveau en
+instructions que le processeur sait exécuter. Il analyse le texte du
+programme, vérifie les types, puis optimise le code produit pour qu'il
+s'exécute plus vite.

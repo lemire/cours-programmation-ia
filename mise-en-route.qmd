@@ -1,0 +1,145 @@
+# Mise en route {.unnumbered}
+
+Cette page décrit l'environnement de travail du cours. Faites-la en entier
+avant la semaine 1 : comptez une heure, un peu plus si vous n'avez jamais
+installé d'agent de codage.
+
+## Ce qu'il vous faut
+
+| Outil | Pour quoi | Vérification |
+|-------|-----------|--------------|
+| Git 2.40 ou plus récent | versionner, comparer, arbres de travail (semaine 14) | `git --version` |
+| Python 3.10 ou plus récent | le dépôt d'exercice | `python3 --version` |
+| [uv](https://docs.astral.sh/uv/) | installer et exécuter le projet en une commande | `uv --version` |
+| Un éditeur de code | lire et relire le travail de l'agent | — |
+| Un agent de codage | voir ci-dessous | — |
+| Un compte GitHub (ou GitLab) | héberger votre dépôt, l'intégration continue | — |
+
+Le cours suppose un terminal de type Unix : macOS, Linux, ou Windows avec
+[WSL](https://learn.microsoft.com/fr-fr/windows/wsl/install). Les agents en
+ligne de commande fonctionnent mieux sous WSL que sous PowerShell.
+
+## Installer un agent de codage
+
+Choisissez **un** agent principal. Vous pourrez en essayer d'autres en cours
+de route : comparer deux agents sur la même tâche est d'ailleurs un bon
+exercice. Les critères qui comptent pour ce cours :
+
+1. L'agent peut **lire et modifier** les fichiers du dépôt.
+2. Il peut **exécuter des commandes** (tests, bancs d'essai), avec votre
+   permission.
+3. Il **montre** ce qu'il fait : quels fichiers il lit, quelles commandes il
+   lance.
+4. Il permet de connaître la **consommation de jetons** ou le coût d'une
+   session.
+
+| Agent | Forme | Documentation |
+|-------|-------|---------------|
+| Claude Code | ligne de commande, extensions d'éditeur | <https://docs.claude.com/en/docs/claude-code/overview> |
+| Codex CLI | ligne de commande | <https://developers.openai.com/codex/cli> |
+| GitHub Copilot (mode agent) | VS Code, JetBrains | <https://docs.github.com/fr/copilot> |
+| Cursor | éditeur | <https://docs.cursor.com> |
+| Grok | ligne de commande, Web | <https://docs.x.ai> |
+
+Suivez la documentation de l'agent choisi pour l'installer et vous
+authentifier. Vérifiez ensuite qu'il fonctionne dans un dossier vide, avec une
+demande sans risque : « Crée un fichier `bonjour.py` qui affiche la date du
+jour, puis exécute-le. » Observez **avant** d'accepter : l'agent vous
+demande-t-il la permission d'écrire le fichier? d'exécuter Python?
+
+::: {.callout-important}
+## Ne travaillez jamais sans Git
+
+Avant toute session avec un agent, le dépôt doit être propre (`git status`
+n'affiche rien) ou, à tout le moins, votre travail en cours doit être dans un
+commit. Un agent peut modifier vingt fichiers en une minute. `git diff` est
+votre première ligne de défense, et `git restore .` votre bouton
+d'annulation.
+:::
+
+## Le dépôt d'exercice
+
+Téléchargez [**indexeur.zip**](indexeur.zip), décompressez-le, puis
+faites-en votre propre dépôt :
+
+```bash
+unzip indexeur.zip
+cd indexeur
+git init
+git add .
+git commit -m "indexeur 0.3.0, version de départ"
+uv run pytest                           # 20 tests doivent passer
+uv run indexeur chercher exemples "sirop érable"
+```
+
+Créez ensuite un dépôt **privé** sur GitHub et poussez-y votre copie. Vos
+travaux seront remis sous forme de lien vers ce dépôt (ou d'archive de
+celui-ci) : la personne qui vous encadre doit y avoir accès.
+
+Prenez une demi-heure pour lire `README.md`, `ARCHITECTURE.md` et le code de
+`src/indexeur/`. C'est court, et c'est ce que vous demanderez à un agent de
+modifier pendant quinze semaines. Vous ne pouvez pas juger le travail d'un
+agent sur du code que vous ne connaissez pas.
+
+## Le carnet de bord {#sec-carnet}
+
+Créez à la racine de votre dépôt un fichier `CARNET.md`. Après **chaque**
+session de travail avec un agent, ajoutez-y une entrée :
+
+```markdown
+## 2027-09-14 — Ajouter la sortie JSON (tâche 2.1)
+
+- Agent et modèle : Claude Code, claude-sonnet-5-5
+- Durée : 25 min (dont 10 min de relecture)
+- Jetons ou coût : 180 k jetons en entrée, 9 k en sortie (≈ 0,70 $)
+- Demande initiale : voir taches/2.1-json.md
+- Résultat : accepté après correction
+- Ce qui a marché : les tests demandés ont été écrits en premier.
+- Ce qui n'a pas marché : l'agent a ajouté une dépendance (`orjson`)
+  contraire à la règle 4 d'ARCHITECTURE.md; retirée à la main.
+- Commit : 3f9c2e1
+```
+
+Cinq minutes par session suffisent. Soyez honnête, surtout sur les échecs :
+le carnet n'est pas noté pour ses succès, mais il est la **matière
+première** du bilan critique de la semaine 15. Un carnet qui ne contient que
+des réussites n'apprend rien à personne.
+
+Où trouver la consommation de jetons :
+
+- **Claude Code** : la commande `/cost` (ou `/usage`, selon la version et le
+  type de compte) pendant la session;
+- **Codex CLI** : le résumé affiché à la fin de la session, ou `/status`;
+- **Copilot et Cursor** : le tableau de bord d'utilisation du compte;
+- **API d'un fournisseur** : la console du fournisseur, qui donne le détail
+  par jour et par clé.
+
+Si votre outil ne donne pas de chiffre par session, notez au moins la durée
+et le nombre d'échanges.
+
+## Organisation suggérée du dépôt
+
+Au fil du cours, votre dépôt prendra cette forme :
+
+```
+indexeur/
+├── CARNET.md            # le carnet de bord
+├── AGENTS.md            # instructions pour les agents (semaine 12)
+├── taches/              # les fiches de tâche (semaines 2 à 4)
+├── src/indexeur/        # le code
+├── tests/               # les tests
+├── bancs/               # les bancs d'essai (semaine 8)
+└── rapports/            # les rapports des travaux notés
+```
+
+## En cas de problème
+
+- `uv run pytest` échoue dès le départ : vérifiez la version de Python
+  (`uv python list`). `uv python install 3.12` en installe une récente sans
+  toucher au Python du système.
+- L'agent ne trouve pas les fichiers : lancez-le **depuis la racine** du
+  dépôt.
+- L'agent tourne en rond ou fait n'importe quoi : arrêtez-le (`Échap` ou
+  `Ctrl-C`), annulez avec `git restore .`, et notez ce qui s'est passé dans le
+  carnet. C'est une donnée, pas un échec personnel. La semaine 13 explique
+  pourquoi cela arrive.

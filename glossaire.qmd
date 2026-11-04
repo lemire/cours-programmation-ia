@@ -1,0 +1,204 @@
+# Glossaire {.unnumbered}
+
+Les termes anglais usuels sont donnés en italique, entre parenthèses. Le
+numéro renvoie à la semaine où le terme est présenté.
+
+ADR (*architecture decision record*)
+: Fichier court et numéroté qui consigne une décision d'architecture, son
+  contexte et ses conséquences. [4](modules/1-formuler/s04.qmd)
+
+Agent de codage
+: Un modèle de langue, des outils (lire, chercher, modifier, exécuter) et une
+  boucle qui les fait alterner jusqu'à ce que le modèle déclare avoir fini.
+  [1](modules/1-formuler/s01.qmd)
+
+Arbre de travail (*worktree*)
+: Répertoire de travail supplémentaire rattaché au même dépôt Git, avec sa
+  propre branche. Permet de faire travailler plusieurs sessions en parallèle
+  sans qu'elles se marchent dessus. [14](modules/4-outiller/s14.qmd)
+
+Bac à sable (*sandbox*)
+: Isolement imposé par le système d'exploitation aux commandes de l'agent :
+  fichiers accessibles, accès au réseau. [11](modules/4-outiller/s11.qmd)
+
+Banc d'essai (*benchmark*)
+: Programme qui mesure un code dans des conditions fixées et reproductibles. [8](modules/3-mesurer/s08.qmd)
+
+Couverture (*coverage*)
+: Proportion des lignes ou des branches exécutées par la suite de tests. Une couverture élevée ne prouve pas que les tests vérifient quelque chose. [6](modules/2-verifier/s06.qmd)
+
+Débit (*throughput*)
+: Nombre d'opérations traitées par unité de temps. [8](modules/3-mesurer/s08.qmd)
+
+Échauffement (*warm-up*)
+: Exécutions non mesurées qui précèdent la mesure, pour que les caches et l'interpréteur soient dans un état stable. [8](modules/3-mesurer/s08.qmd)
+
+Graphe de flammes (*flame graph*)
+: Visualisation des piles d'appels échantillonnées; la largeur d'une case est proportionnelle au temps passé. [9](modules/3-mesurer/s09.qmd)
+
+Impasse
+: Itération d'optimisation mesurée puis rejetée, documentée pour qu'on ne la refasse pas. [10](modules/3-mesurer/s10.qmd)
+
+Intégration continue
+: Vérifications automatiques (tests, analyse) lancées à chaque poussée sur le dépôt. [7](modules/2-verifier/s07.qmd)
+
+Journal d'optimisation
+: Tableau des itérations d'optimisation : hypothèse, changement, mesures, décision, impasses comprises. [10](modules/3-mesurer/s10.qmd)
+
+Latence
+: Temps de traitement d'une seule requête. [8](modules/3-mesurer/s08.qmd)
+
+Loi d'Amdahl
+: Si l'on accélère une fraction *p* du temps d'exécution, le gain global ne peut dépasser 1/(1 − *p*). [9](modules/3-mesurer/s09.qmd)
+
+Carnet de bord
+: Le fichier `CARNET.md` où l'on consigne chaque session avec un agent :
+  tâche, durée, jetons, résultat. Matière première du bilan critique.
+  [Mise en route](mise-en-route.qmd#sec-carnet)
+
+Compaction
+: Remplacement de l'historique d'une session par un résumé, pour libérer la
+  fenêtre de contexte. [13](modules/4-outiller/s13.qmd)
+
+Compétence (*skill*)
+: Dossier qui contient un fichier `SKILL.md` (nom, description, instructions)
+  et, au besoin, des scripts. L'agent le charge à la demande, d'après sa
+  description. [12](modules/4-outiller/s12.qmd)
+
+Crochet (*hook*)
+: Programme que le harnais exécute à un moment précis (avant un appel
+  d'outil, après une modification…) pour journaliser, bloquer ou vérifier.
+  [11](modules/4-outiller/s11.qmd)
+
+Critère d'acceptation
+: Énoncé vérifiable qui dit quand une tâche est finie et juste, idéalement
+  sous la forme d'une commande qui réussit ou échoue.
+  [3](modules/1-formuler/s03.qmd)
+
+Dérive de périmètre (*scope creep*)
+: Modifications faites par l'agent en dehors de ce qui était demandé.
+  [1](modules/1-formuler/s01.qmd)
+
+Exfiltration
+: Sortie non autorisée de données vers l'extérieur, par exemple par une
+  requête Web lancée par un agent. [11](modules/4-outiller/s11.qmd)
+
+Fenêtre de contexte
+: Nombre maximal de jetons qu'un modèle peut recevoir en une requête.
+  [13](modules/4-outiller/s13.qmd)
+
+Fiche de tâche
+: Fichier versionné de `taches/` qui cadre une tâche : but, contexte,
+  périmètre, hors périmètre, contraintes, critère d'acceptation, commande de
+  vérification, compte rendu attendu. [3](modules/1-formuler/s03.qmd)
+
+Fichier d'instructions
+: Texte versionné avec le dépôt (`AGENTS.md`, `CLAUDE.md`,
+  `.github/copilot-instructions.md`…) que l'agent charge au début de chaque
+  session. [12](modules/4-outiller/s12.qmd)
+
+Harnais (*harness*)
+: Tout ce qui entoure le modèle : outils, permissions, environnement,
+  instructions, traces. [11](modules/4-outiller/s11.qmd)
+
+Injection d'invite indirecte (*indirect prompt injection*)
+: Instructions hostiles déposées dans un contenu que l'agent lira (page Web,
+  ticket, fichier, dépendance) et qu'il risque de suivre.
+  [11](modules/4-outiller/s11.qmd)
+
+Intégration
+: Fusion d'une branche dans la branche principale, suivie de l'exécution des
+  tests. [14](modules/4-outiller/s14.qmd)
+
+Invariant
+: Propriété que le code respecte toujours et dont d'autres parties dépendent.
+  [4](modules/1-formuler/s04.qmd)
+
+Jeton (*token*)
+: Unité de texte que le modèle lit et produit, et qui sert de base à la
+  facturation. Un mot français courant fait d'un à trois jetons.
+  [13](modules/4-outiller/s13.qmd)
+
+MCP (*Model Context Protocol*)
+: Protocole ouvert par lequel un agent se branche sur des serveurs qui lui
+  exposent des outils, des ressources et des invites.
+  [11](modules/4-outiller/s11.qmd)
+
+Moindre privilège
+: Principe qui consiste à ne donner à un composant que les droits
+  nécessaires à sa tâche. [11](modules/4-outiller/s11.qmd)
+
+Mutant
+: Copie du programme où l'on a introduit une petite erreur volontaire (un `<` changé en `<=`, une constante modifiée). [6](modules/2-verifier/s06.qmd)
+
+Mutant équivalent
+: Mutant qui ne change pas le comportement du programme, et qu'aucun test ne peut donc détecter. [6](modules/2-verifier/s06.qmd)
+
+Oracle
+: Implémentation de référence, simple et évidente, qui dit le résultat attendu. [6](modules/2-verifier/s06.qmd)
+
+Paquet halluciné, *slopsquatting*
+: Dépendance inventée par un modèle; et l'attaque qui consiste à publier un paquet malveillant sous ce nom. [7](modules/2-verifier/s07.qmd)
+
+Profileur déterministe
+: Profileur qui enregistre chaque appel de fonction (par exemple `cProfile`); précis, mais il ralentit et déforme l'exécution. [9](modules/3-mesurer/s09.qmd)
+
+Profileur par échantillonnage
+: Profileur qui relève la pile d'appels à intervalles réguliers (par exemple py-spy); peu intrusif. [9](modules/3-mesurer/s09.qmd)
+
+Pourriture du contexte (*context rot*)
+: Dégradation de la qualité du travail de l'agent à mesure que le contexte
+  s'allonge. [13](modules/4-outiller/s13.qmd)
+
+Refactoring préparatoire
+: Restructuration du code, sans changement de comportement, qui rend la
+  modification suivante simple. [4](modules/1-formuler/s04.qmd)
+
+Sous-agent
+: Session séparée, avec son propre contexte, à qui l'on confie une partie du
+  travail (souvent de l'exploration) et qui ne renvoie qu'une conclusion.
+  [13](modules/4-outiller/s13.qmd)
+
+Tâche bornée
+: Travail qu'on peut confier à un agent en une session, dont le périmètre est
+  explicite et dont le résultat se vérifie sans tout relire.
+  [2](modules/1-formuler/s02.qmd)
+
+Tâche d'exploration
+: Tâche qui lit et rapporte sans modifier aucun fichier.
+  [2](modules/1-formuler/s02.qmd)
+
+Réduction (*shrinking*)
+: Simplification automatique d'un contre-exemple trouvé par un test de propriété, jusqu'au cas minimal. [6](modules/2-verifier/s06.qmd)
+
+Score de mutation
+: Proportion des mutants que la suite de tests détecte. [6](modules/2-verifier/s06.qmd)
+
+Temps processeur
+: Durée pendant laquelle le processeur a exécuté le processus. [8](modules/3-mesurer/s08.qmd)
+
+Temps propre, temps cumulé
+: Dans un profil : le temps passé dans la fonction seule, et le temps passé dans la fonction et tout ce qu'elle appelle. [9](modules/3-mesurer/s09.qmd)
+
+Temps réel (*wall-clock time*)
+: Durée écoulée à l'horloge, attentes comprises. [8](modules/3-mesurer/s08.qmd)
+
+Test déterministe
+: Test qui donne toujours le même résultat sur le même code : pas d'horloge, de réseau ni de hasard non contrôlé. [5](modules/2-verifier/s05.qmd)
+
+Test différentiel
+: Test qui compare les sorties de deux implémentations de la même fonction, souvent sur des entrées générées. [6](modules/2-verifier/s06.qmd)
+
+Test instable (*flaky test*)
+: Test qui réussit ou échoue sans que le code ait changé. [5](modules/2-verifier/s05.qmd)
+
+Test localisé
+: Test qui, lorsqu'il échoue, dit où et quoi. [5](modules/2-verifier/s05.qmd)
+
+Test de propriété
+: Test qui vérifie une règle générale sur des entrées produites automatiquement (Hypothesis, QuickCheck). [6](modules/2-verifier/s06.qmd)
+
+Trifecta létale (*lethal trifecta*)
+: La réunion, dans un même agent, de données privées, de contenu non fiable
+  et d'un moyen de communiquer avec l'extérieur. Expression de
+  @willison2025trifecta. [11](modules/4-outiller/s11.qmd)

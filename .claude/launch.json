@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "cours",
+      "runtimeExecutable": "quarto",
+      "runtimeArgs": ["preview", "--port", "4400", "--no-browser"],
+      "port": 4400
+    },
+    {
+      "name": "cours-statique",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "4401", "--directory", "_site"],
+      "port": 4401
+    }
+  ]
+}

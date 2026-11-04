@@ -1,0 +1,75 @@
+project:
+  type: book
+  output-dir: _site
+  # Le dépôt d'exercice, en archive téléchargeable : _site/indexeur.zip.
+  post-render: python3 outils/archiver_depot.py
+  render:
+    - "*.qmd"
+    - "modules/**/*.qmd"
+
+lang: fr
+language:
+  title-block-author-single: "Professeur"
+  title-block-author-plural: "Professeurs"
+
+book:
+  title: "Programmation assistée par l'IA"
+  subtitle: "Discipline et outils pour le développement avec agents"
+  author:
+    name: "Daniel Lemire"
+    url: "https://www.teluq.ca/communaute/corps-professoral/dlemire"
+  favicon: images/logo.svg
+  search: true
+  page-navigation: true
+  sidebar:
+    style: docked
+    logo: images/logo.svg
+    collapse-level: 1
+  chapters:
+    - index.qmd
+    - mise-en-route.qmd
+    - part: "Bloc 1 — Formuler"
+      chapters:
+        - modules/1-formuler/s01.qmd
+        - modules/1-formuler/s02.qmd
+        - modules/1-formuler/s03.qmd
+        - modules/1-formuler/s04.qmd
+    - part: "Bloc 2 — Vérifier"
+      chapters:
+        - modules/2-verifier/s05.qmd
+        - modules/2-verifier/s06.qmd
+        - modules/2-verifier/s07.qmd
+    - part: "Bloc 3 — Mesurer"
+      chapters:
+        - modules/3-mesurer/s08.qmd
+        - modules/3-mesurer/s09.qmd
+        - modules/3-mesurer/s10.qmd
+    - part: "Bloc 4 — Outiller et orchestrer"
+      chapters:
+        - modules/4-outiller/s11.qmd
+        - modules/4-outiller/s12.qmd
+        - modules/4-outiller/s13.qmd
+        - modules/4-outiller/s14.qmd
+        - modules/4-outiller/s15.qmd
+  appendices:
+    - evaluation.qmd
+    - glossaire.qmd
+    - references.qmd
+
+bibliography: references.bib
+nocite: "@*"
+
+format:
+  html:
+    theme:
+      light: cosmo
+      dark: [darkly, theme-sombre.scss]
+    respect-user-color-scheme: true
+    css: styles.css
+    toc: true
+    toc-title: "Sur cette page"
+    code-copy: true
+    include-after-body:
+      - _includes/theme.html
+      - _includes/liens.html
+    number-depth: 1

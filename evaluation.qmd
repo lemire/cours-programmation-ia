@@ -1,0 +1,175 @@
+# Évaluation {.unnumbered}
+
+| Travail | Semaine de remise | Pondération |
+|---------|:-----------------:|:-----------:|
+| TP1 — Formulation de tâches agentiques bornées | 4 | 15 % |
+| TP2 — Tests adaptés au travail agentique | 7 | 20 % |
+| TP3 — Boucle d'optimisation par bancs d'essai et profilage | 10 | 20 % |
+| TP4 — Harnais d'outils borné et auditable | 13 | 20 % |
+| Travail final — Orchestration et bilan critique | 15 | 25 % |
+| **Total** | | **100 %** |
+
+Les énoncés officiels, les dates précises et le dépôt des travaux se trouvent
+dans l'environnement d'apprentissage de la TÉLUQ. Cette page en donne
+l'esprit et les livrables.
+
+## Règles communes
+
+- **Tout est dans le dépôt.** Chaque travail se remet sous forme d'un lien
+  vers une étiquette Git (`git tag tp1`, puis `git push --tags`) de votre
+  dépôt privé, auquel la personne qui vous encadre a accès. Le rapport est un
+  fichier Markdown dans `rapports/`.
+- **Le carnet fait foi.** Les affirmations du rapport (temps passé, nombre
+  d'essais, coût) doivent pouvoir être retrouvées dans `CARNET.md` et dans
+  l'historique Git.
+- **L'usage d'agents est requis**, et non toléré : c'est l'objet du cours.
+  Vous êtes cependant responsable de chaque ligne remise. « C'est l'agent qui
+  l'a écrit » n'est jamais une explication recevable d'une erreur.
+- **Les échecs documentés valent des points.** Une impasse bien analysée
+  vaut mieux qu'un succès inexpliqué.
+- **Longueur.** Les rapports sont courts : de 1 500 à 2 500 mots, sans
+  compter les tableaux et les extraits de code.
+
+## TP1 — Formulation de tâches agentiques bornées (15 %) {#sec-tp1}
+
+**Objectif.** Décomposer une demande de modification sur un dépôt existant en
+tâches bornées, vérifiables et alignées sur l'architecture du projet, puis
+comparer les résultats obtenus avec un cadrage flou et avec un cadrage
+précis.
+
+**Démarche.**
+
+1. Choisissez **une** des demandes du `README.md` d'`indexeur` (sauf la
+   demande 3, réservée au TP3).
+2. Donnez-la à un agent **telle quelle**, dans une session neuve, sur une
+   branche `flou`. Laissez-le aller jusqu'au bout sans l'aider. Notez tout
+   dans le carnet.
+3. Sur une branche `precis`, partant du même commit, décomposez la demande en
+   au moins trois fiches de tâche (`taches/*.md`), selon le gabarit vu à la
+   semaine 3. Faites exécuter chaque fiche par l'agent, dans une session
+   neuve chaque fois.
+4. Comparez les deux branches.
+
+**Livrables.** Les deux branches; les fiches de tâche; un rapport
+(`rapports/tp1.md`) qui compare les deux approches selon des critères
+explicites : la demande est-elle satisfaite? les règles d'`ARCHITECTURE.md`
+sont-elles respectées? les tests passent-ils, et les nouveaux tests
+vérifient-ils quelque chose? combien de temps et de jetons chaque approche
+a-t-elle coûté? qu'avez-vous dû corriger à la main?
+
+**Critères.** Qualité des fiches : bornées, vérifiables, alignées (40 %).
+Rigueur de la comparaison (40 %). Clarté du rapport (20 %).
+
+## TP2 — Tests adaptés au travail agentique (20 %) {#sec-tp2}
+
+**Objectif.** Concevoir une suite de tests déterministes, localisés et liés à
+la tâche, servant de critère d'acceptation au travail d'un agent, et
+démontrer qu'elle détecte les régressions introduites par celui-ci.
+
+**Démarche.**
+
+1. Choisissez une nouvelle demande du `README.md` (ou une demande que vous
+   formulez vous-même, de taille comparable).
+2. **Avant** toute délégation, écrivez la suite de tests qui servira de
+   critère d'acceptation : des tests d'exemples, au moins une propriété
+   (semaine 6) et au moins un test différentiel ou de référence.
+3. Faites implémenter la fonctionnalité par un agent, sans lui permettre de
+   modifier les tests (semaine 7).
+4. Évaluez la suite : couverture, puis **score de mutation** (semaine 6).
+   Demandez ensuite à un agent d'introduire délibérément cinq régressions
+   plausibles, dans une session à part, sans voir les tests : combien la
+   suite en détecte-t-elle?
+
+**Livrables.** Le code et les tests; les résultats de couverture et de
+mutation; un rapport (`rapports/tp2.md`) qui justifie chaque famille de
+tests, présente les régressions détectées et manquées, et explique ce qu'il
+faudrait pour attraper les secondes.
+
+**Critères.** Pertinence et qualité des tests (40 %). Démonstration de la
+détection (30 %). Analyse critique (30 %).
+
+## TP3 — Boucle d'optimisation par bancs d'essai et profilage (20 %) {#sec-tp3}
+
+**Objectif.** Établir un banc d'essai reproductible, profiler un programme,
+conduire avec un agent une série d'itérations d'optimisation et documenter
+les gains mesurés ainsi que les impasses.
+
+**Démarche.**
+
+1. Critiquez et améliorez le banc d'essai fourni (`bancs/banc_indexation.py`) :
+   tailles d'entrée, répétitions, dispersion, conditions de la machine
+   (semaine 8).
+2. Profilez l'indexation et la recherche; identifiez les points chauds
+   (semaine 9).
+3. Conduisez **au moins cinq itérations** de la boucle *hypothèse →
+   changement → mesure → décision* (semaine 10), dont au moins une
+   proposée par l'agent et au moins une qui échoue.
+4. Pour chaque itération : un commit (gardé) ou une branche abandonnée (rejetée),
+   et une ligne dans le journal d'optimisation.
+
+**Livrables.** Le banc d'essai amélioré; les profils (avant et après); le
+journal d'optimisation (`rapports/tp3-journal.md`); un rapport
+(`rapports/tp3.md`) qui présente les gains **avec leur incertitude**, la
+complexité avant et après, et les impasses.
+
+**Critères.** Rigueur du banc et des mesures (35 %). Usage du profilage pour
+guider le travail (25 %). Qualité de la boucle et du journal, impasses
+comprises (25 %). Rapport (15 %).
+
+## TP4 — Harnais d'outils borné et auditable (20 %) {#sec-tp4}
+
+**Objectif.** Configurer un environnement de développement agentique
+(serveurs MCP, intégration Git, permissions), versionner avec le dépôt des
+instructions et des compétences d'équipe, puis justifier les limites
+imposées.
+
+**Démarche.**
+
+1. Écrivez un fichier d'instructions (`AGENTS.md`, et au besoin son
+   équivalent pour votre agent) qui encode les règles du projet (semaine 12).
+2. Écrivez au moins **deux compétences** (*skills*) ou commandes
+   réutilisables, par exemple « ajouter une fonctionnalité selon la démarche
+   test d'abord » et « mesurer une optimisation ».
+3. Configurez les permissions de l'agent : ce qu'il peut faire sans
+   demander, ce qu'il doit demander, ce qui lui est interdit (semaine 11).
+4. Branchez au moins un serveur MCP utile au projet et justifiez-le; montrez
+   ce qu'il expose.
+5. Rendez le travail **auditable** : journal des commandes, crochets
+   (*hooks*) ou intégration continue qui vérifient les règles.
+6. Éprouvez le harnais : une session où l'agent tente (sur votre demande)
+   une action interdite, et la trace qui le montre.
+
+**Livrables.** La configuration versionnée; un rapport (`rapports/tp4.md`) qui
+justifie chaque limite (quel risque elle couvre, ce qu'elle coûte en
+commodité) et présente l'épreuve du harnais.
+
+**Critères.** Pertinence des instructions et des compétences (30 %). Rigueur
+des permissions et de l'audit (35 %). Justification des limites (35 %).
+
+## Travail final — Orchestration et bilan critique (25 %) {#sec-final}
+
+**Objectif.** Mener une tâche de développement en sessions parallèles sans
+collisions (arbres de travail Git), puis produire un bilan critique de
+l'apport réel des agents : gains observés, erreurs évitées ou amplifiées,
+coûts en jetons, risques de qualité et de sécurité.
+
+**Démarche.**
+
+1. Choisissez une évolution d'`indexeur` qui se découpe en **au moins trois
+   sous-tâches parallélisables** (par exemple : sauvegarde de l'index sur
+   disque, recherche avec OU, extraits autour des mots trouvés).
+2. Planifiez le découpage pour éviter les collisions : quels fichiers, quelles
+   interfaces, dans quel ordre on intègre (semaine 14).
+3. Menez les sous-tâches dans des arbres de travail Git distincts, avec des
+   sessions d'agent concurrentes, puis intégrez-les.
+4. Rédigez le bilan critique (semaine 15), appuyé sur **votre carnet de
+   quinze semaines**.
+
+**Livrables.** L'historique Git qui montre les branches parallèles et leur
+intégration; le plan de découpage; le bilan critique
+(`rapports/bilan.md`, de 2 500 à 4 000 mots), qui confronte vos données à la
+littérature vue au cours.
+
+**Critères.** Orchestration : découpage, absence de collisions, intégration
+(35 %). Bilan critique : appui sur des données, honnêteté, confrontation à la
+littérature (50 %). Clarté (15 %).

@@ -1,0 +1,3 @@
+Un test automatisé exécute une petite partie du programme et vérifie que le
+résultat est celui attendu. Un bon test est rapide, déterministe et ne vérifie
+qu'une chose. Quand il échoue, il dit précisément ce qui ne va pas.

@@ -1,0 +1,116 @@
+# Présentation {.unnumbered}
+
+Un agent de codage (Claude Code, Codex, Cursor, GitHub Copilot, Grok…) lit
+votre dépôt, modifie des fichiers, exécute des tests et propose un correctif
+en quelques minutes. C'est une puissance réelle. Elle a toutefois un défaut :
+elle **amplifie les erreurs de cadrage**. Une demande floue donne maintenant
+deux cents lignes de code plausibles, et pas seulement un paragraphe vague. Un
+test faible laisse passer une régression qu'aucun humain n'a relue. Une
+« optimisation » que personne n'a mesurée arrive dans la branche principale.
+
+Ce cours ne contient pas de liste de « prompts magiques ». Il enseigne des
+**habitudes de travail** : celles qui, avant l'arrivée des agents, faisaient
+déjà la différence entre un projet qui tient et un projet qui s'effondre. Il
+s'agit de découper le travail, d'écrire des tests qui veulent dire quelque
+chose, de mesurer avant d'affirmer et de garder la trace de ce qu'on fait. Les
+agents ne rendent pas ces habitudes inutiles. Ils les rendent indispensables,
+parce qu'ils produisent du travail plus vite que vous ne pouvez le relire.
+
+## Ce que vous saurez faire
+
+Au terme du cours, vous serez en mesure de :
+
+- formuler des tâches agentiques **bornées, vérifiables et alignées** sur
+  l'architecture d'un projet;
+- concevoir des **tests adaptés au travail agentique** : déterministes,
+  localisés et liés à la tâche;
+- appliquer une démarche disciplinée de **vérification et d'optimisation**
+  (tests automatisés, bancs d'essai, profilage) au travail fait avec des
+  agents;
+- configurer un **harnais d'outils borné et auditable** (MCP, Git,
+  permissions) et versionner avec le dépôt des instructions et des
+  compétences d'équipe;
+- **gérer le contexte** des sessions pour limiter la dérive et le gaspillage
+  de jetons;
+- **orchestrer des sessions parallèles** sans collisions (arbres de travail
+  Git);
+- **évaluer de manière critique** l'apport réel des agents, ainsi que les
+  risques de qualité et de sécurité qu'ils introduisent.
+
+## Les quatre blocs
+
+| Bloc | Semaines | Question | Remise |
+|------|----------|----------|--------|
+| 1 — **Formuler** | 1 à 4 | Comment transformer une demande en tâches qu'un agent peut réussir, et dont on peut vérifier le résultat? | TP1 (semaine 4) |
+| 2 — **Vérifier** | 5 à 7 | Comment savoir, sans tout relire, que le travail d'un agent est correct? | TP2 (semaine 7) |
+| 3 — **Mesurer** | 8 à 10 | Comment savoir qu'un changement rend le programme plus rapide, et de combien? | TP3 (semaine 10) |
+| 4 — **Outiller et orchestrer** | 11 à 15 | Comment donner à l'agent les bons outils, les bonnes instructions et le bon contexte, et faire travailler plusieurs sessions sans qu'elles se nuisent? | TP4 (semaine 13), travail final (semaine 15) |
+
+Le détail des travaux notés est à la page [Évaluation](evaluation.qmd).
+
+## Un dépôt réel, du début à la fin
+
+Toutes les activités se font sur un vrai dépôt de code, qui vous suit
+pendant les quinze semaines : [**indexeur**](indexeur.zip), un petit moteur
+de recherche plein texte en Python. Il est court (environ 300 lignes), testé,
+documenté, et il a une architecture qu'il faut respecter. Il a aussi de vrais
+défauts : une indexation dont le temps croît comme le carré du nombre de
+documents, des fonctionnalités qui manquent, des tests qui ne vérifient pas
+tout. Les demandes d'utilisateurs de son `README.md` alimentent les travaux
+des trois premiers blocs.
+
+Si vous préférez travailler sur un autre projet, par exemple un logiciel
+libre auquel vous contribuez ou un projet de votre milieu de travail, c'est
+possible, avec l'accord de la personne qui vous encadre. Le projet doit avoir
+des tests, se construire en une commande et compter au moins quelques
+milliers de lignes.
+
+## Comment on travaille
+
+Chaque semaine suit le même rythme :
+
+1. **Lecture** : le texte de la semaine, et une ou deux lectures
+   externes, souvent en anglais.
+2. **Démonstration** : des exemples concrets de demandes faites à un agent, de
+   ce qu'il a produit et de ce qui n'allait pas.
+3. **Activité** : un exercice sur le dépôt `indexeur`, avec un agent de
+   codage. Vous consignez chaque session dans votre **carnet de bord** (voir la
+   [mise en route](mise-en-route.qmd#sec-carnet)).
+4. **Retour critique** : quelques questions sur ce qui a marché, ce qui a
+   échoué, et pourquoi.
+
+Prévoyez de 8 à 10 heures par semaine.
+
+## Le carnet de bord
+
+Le carnet de bord est le fil conducteur du cours. Vous y notez chaque session
+de travail avec un agent : la tâche, le temps passé, les jetons consommés,
+ce qui a été accepté, corrigé ou refusé. Au bout de quinze semaines, il
+contient des données sur **votre** expérience, et non sur celle d'un billet
+de blogue. Le bilan critique du travail final s'appuie sur ces données.
+
+## Quel agent?
+
+Le cours ne dépend d'aucun produit. Les exemples utilisent surtout des agents
+en ligne de commande (Claude Code, Codex CLI), parce que tout y est visible :
+les fichiers lus, les commandes exécutées, les jetons consommés. Cursor,
+GitHub Copilot (mode agent), Grok ou tout autre agent capable de lire et de
+modifier un dépôt et d'exécuter des commandes conviennent aussi. Les outils
+changent tous les trois mois. Les habitudes enseignées ici, elles, ne
+changent pas.
+
+::: {.callout-warning}
+## Des frais sont possibles
+
+Les agents de codage sont payants au-delà de quotas gratuits souvent
+modestes. Prévoyez soit un abonnement mensuel à un agent, soit un crédit
+d'API auprès d'un fournisseur de modèles. Le cours vous apprend à mesurer ce
+que vous dépensez, et à dépenser moins.
+:::
+
+## Préalables
+
+Vous savez déjà programmer, et vous savez utiliser un éditeur, Git et une
+suite de tests. Le cours n'exige aucune connaissance en apprentissage
+automatique. Une bonne partie de la documentation des outils est en
+anglais.
