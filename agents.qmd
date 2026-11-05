@@ -50,6 +50,11 @@ la personne qui vous encadre.
   confortables. Les agents en ligne de commande rendent tout visible : les
   commandes, les fichiers lus, les jetons. Pour apprendre, la visibilité
   compte.
+- Pour relire le travail de n'importe lequel de ces agents comme une demande
+  de tirage (commentaires sur des lignes, modifications suggérées que l'agent
+  applique), sans rien pousser : le serveur MCP et la commande
+  `lemirecodechat`, présentés à la
+  [semaine 7](modules/2-verifier/s07.qmd).
 - Essayer deux agents sur la même fiche de tâche est un excellent exercice. Le
   carnet de bord vous dira lequel vous convient, sur vos données.
 

@@ -155,6 +155,92 @@ réponse n'est pas de le lire en diagonale, mais de le refuser et de
 découper la tâche ([semaine 2](../1-formuler/s02.qmd)).
 :::
 
+## Relire comme une demande de tirage, depuis la ligne de commande
+
+`git diff` montre le travail, mais ne permet pas d'y répondre. Pour
+signaler un défaut à l'agent, il faut le décrire de mémoire dans
+l'invite : « dans `recherche.py`, vers la ligne 40, la boucle… ». C'est
+imprécis, et l'on finit par corriger soi-même ce qu'on aurait dû renvoyer.
+Sur GitHub, une demande de tirage règle ce problème : on commente une ligne
+précise, on propose une modification. Mais il faut d'abord pousser une
+branche, et attendre.
+
+[lemirecodechat](https://github.com/lemire/lemirecodechat) [@lemirecodechat2026]
+apporte cette relecture sur votre machine, sans rien pousser. L'agent lance
+la commande dans le dépôt; elle ouvre dans votre navigateur une page locale
+qui présente le diff comme une demande de tirage. Vous y commentez des
+lignes, ou vous modifiez le code directement (mode *Edit*, touche `e`) :
+chaque modification devient une *suggestion* précise, avec le texte
+d'origine, le texte voulu et un patch. Quand vous soumettez, l'agent reçoit
+la revue en JSON, applique les suggestions telles quelles, corrige le
+reste, et répond à chaque commentaire. Le tour suivant affiche ses réponses
+à côté de vos commentaires.
+
+*L'installer.* Il faut Node.js 20 ou plus récent, et Git.
+
+```bash
+git clone https://github.com/lemire/lemirecodechat.git
+cd lemirecodechat
+npm install
+npm run build
+cd packages/cli && npm link      # met lemirecodechat dans le PATH
+lemirecodechat --version
+```
+
+*Le brancher sur votre agent.* lemirecodechat est un serveur MCP
+([semaine 11](../4-outiller/s11.qmd)) qui expose deux outils :
+`codechat_review` ouvre la page et attend votre revue, `codechat_reply`
+enregistre les réponses de l'agent. On l'enregistre une fois pour toutes :
+
+```bash
+claude mcp add --scope user --transport stdio lemirecodechat -- lemirecodechat mcp
+codex mcp add lemirecodechat -- lemirecodechat mcp
+gemini mcp add --scope user lemirecodechat lemirecodechat mcp
+grok mcp add lemirecodechat -- lemirecodechat mcp
+```
+
+`lemirecodechat mcp --setup` affiche les commandes pour les autres agents
+(Cursor, VS Code, OpenCode…). Un agent sans MCP, comme Aider, peut utiliser
+la ligne de commande directement : copiez le fichier
+`skills/lemirecodechat/SKILL.md` du dépôt dans ses instructions
+(`AGENTS.md`, [semaine 12](../4-outiller/s12.qmd)) pour qu'il sache lire la
+revue. Avec Claude Code, ce fichier s'installe aussi comme compétence :
+`cp -R skills/lemirecodechat ~/.claude/skills/`.
+
+*S'en servir.* Demandez simplement à l'agent : « Fais-moi relire tes
+modifications avec lemirecodechat. » Vous pouvez aussi lancer la commande
+vous-même :
+
+```bash
+lemirecodechat -d "Sortie JSON de la recherche"   # modifications non validées
+lemirecodechat -b main -d "Sortie JSON"           # tout ce qui a changé depuis main
+lemirecodechat sessions                           # les revues passées
+```
+
+Par défaut, seules les modifications non validées sont présentées. Si
+l'agent a déjà fait des commits, `-b main` compare l'arbre de travail à la
+branche principale; la page indique toujours lequel des deux elle montre.
+La commande bloque jusqu'à votre soumission (30 minutes au plus; `-t` change
+la limite). Certains agents interrompent les commandes trop longues :
+Claude Code, par exemple, arrête une commande après 2 minutes, d'où l'intérêt
+de passer par MCP ou par la compétence, qui lance la commande en arrière-plan.
+
+Trois propriétés en font un outil de discipline, pas seulement de confort :
+
+- *Seule une soumission approuve.* Une revue abandonnée (onglet fermé, délai
+  dépassé) n'est jamais une approbation, et la compétence demande à l'agent
+  de vous le signaler plutôt que d'interpréter votre silence.
+- *Une suggestion s'applique telle quelle.* Si le texte d'origine a changé
+  entre-temps, l'agent doit le dire, pas deviner. Vous n'avez pas à vérifier
+  qu'il a « compris » votre correction : c'est la vôtre, au caractère près.
+- *Le diff reste local.* Rien ne quitte votre machine, sinon ce que l'agent
+  envoie déjà à son fournisseur.
+
+L'outil ne change rien à l'ordre de relecture : on regarde toujours la
+liste des fichiers d'abord, les tests avant le code. Il ne remplace pas non
+plus l'intégration continue ni vos propres tests : relire n'est pas
+exécuter.
+
 ## Protéger les tests
 
 À la [semaine 5](s05.qmd), on a fait un commit des tests d'acceptation avant
@@ -380,7 +466,15 @@ Travaillez dans une branche `semaine-07`.
 4. *Revue réelle.* Reprenez le travail de la semaine 5 et appliquez-lui la
    liste de contrôle, case par case. Qu'aviez-vous laissé passer?
 
-5. *Carnet.* Une entrée par session, en décrivant précisément le
+5. *Relire avec lemirecodechat.* Installez lemirecodechat et branchez-le
+   sur votre agent. Confiez-lui une petite tâche (par exemple, un message
+   d'erreur clair quand le dossier passé à la commande n'existe pas), puis
+   demandez-lui de vous faire relire ses modifications. Laissez au moins un
+   commentaire et une suggestion de modification. Vérifiez ensuite, avec `git diff`,
+   que votre suggestion a été appliquée au caractère près, et lisez les
+   réponses de l'agent au tour suivant.
+
+6. *Carnet.* Une entrée par session, en décrivant précisément le
    comportement de l'agent à l'étape 3.
 
 ## Le TP2
