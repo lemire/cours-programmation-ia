@@ -44,6 +44,19 @@ harnais l'élague. Et à chaque tour, le modèle reçoit tout le contexte
 accumulé. Une session de quarante tours, c'est quarante requêtes, dont la
 dernière contient les trente-neuf précédentes.
 
+::: {.callout-note collapse="true"}
+## Sous le capot : jetons et attention
+
+Le découpage en jetons est appris sur le corpus d'entraînement, surtout
+anglais : un texte français, un identifiant inventé ou une longue chaîne
+hexadécimale coûtent plus de jetons qu'un texte anglais courant. Chaque
+modèle a son tokeniseur, donc comparez vos mesures avec le même modèle.
+Dans chaque couche, l'*attention* compare chaque position à toutes les
+précédentes et répartit entre elles des poids dont la somme vaut 1. Plus le
+contexte est long, plus le calcul coûte, et moins chaque élément pèse. Voir
+l'annexe [Sous le capot](../../llm.qmd).
+:::
+
 ## Ce qui remplit le contexte
 
 Au début d'une session, avant même votre demande, le contexte contient déjà :
@@ -219,6 +232,21 @@ la partie du contexte qui n'a pas changé depuis la requête précédente. Les
 *abonnements* forfaitaires masquent le coût par requête, mais imposent des
 quotas. Dans les deux cas, la consommation reste mesurable, et c'est elle que
 vous notez dans le carnet.
+
+::: {.callout-note collapse="true"}
+## Sous le capot : le cache clé-valeur
+
+Pendant la génération, le modèle garde en mémoire, pour chaque jeton déjà lu,
+une clé et une valeur par couche : c'est le cache clé-valeur. Il occupe de
+l'ordre d'une fraction de mégaoctet par jeton, soit des dizaines de
+gigaoctets de mémoire de carte graphique pour un contexte de 100 000 jetons.
+La mise en cache des préfixes réutilise ce cache quand le début du contexte
+n'a pas changé. Gardez donc stable le début de vos sessions (instructions,
+`AGENTS.md`) : le modifier en cours de route invalide le cache. Le cache
+explique aussi pourquoi le délai avant le premier jeton grandit avec le
+contexte, même pour une réponse courte. Voir l'annexe
+[Sous le capot](../../llm.qmd#sec-llm-cache).
+:::
 
 Faisons un calcul approximatif. Une session de 40 tours dont le contexte
 passe linéairement de 20 000 à 120 000 jetons envoie au total environ

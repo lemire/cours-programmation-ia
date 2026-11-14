@@ -300,6 +300,19 @@ leurs modèles à résister, et ils y parviennent de mieux en mieux, mais
 essayer mille fois. Il faut donc raisonner sur ce que l'agent peut
 faire, et non sur ce qu'il voudra faire.
 
+::: {.callout-note collapse="true"}
+## Sous le capot : pourquoi le modèle ne sépare pas instructions et données
+
+Les formats de conversation balisent les rôles (système, utilisateur,
+résultat d'outil), et l'entraînement apprend au modèle à obéir aux premiers
+plutôt qu'aux derniers. Mais ces balises ne sont que des jetons parmi
+d'autres, et cette obéissance n'est qu'une préférence apprise. Rien dans
+l'architecture n'empêche une phrase impérative lue dans un fichier de
+peser sur la suite. C'est pourquoi la défense passe par les permissions et
+le bac à sable, et non par le modèle. Voir l'annexe
+[Sous le capot](../../llm.qmd#sec-llm-instructions).
+:::
+
 Simon Willison a donné à ce raisonnement une forme facile à retenir, la
 *trifecta létale*. Un agent devient dangereux quand il réunit trois
 capacités :

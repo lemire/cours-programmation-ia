@@ -72,6 +72,21 @@ Avant de confier une tâche sur un dépôt, lisez-le, dans cet ordre.
 projet de cent mille lignes, c'est impossible, et c'est là que l'agent devient
 utile comme lecteur.
 
+::: {.callout-note collapse="true"}
+## Sous le capot : comment l'agent trouve le code
+
+Avant de modifier, l'agent doit *récupérer* les bons passages du dépôt et
+les placer dans son contexte. C'est une forme de génération augmentée par
+récupération (RAG). Certains agents, comme Cursor, indexent le dépôt par
+plongements et cherchent par le sens. D'autres, comme Claude Code et Codex
+CLI, cherchent avec `grep` et lisent les fichiers, comme vous le feriez. Dans
+les deux cas, posez trois questions au journal de la session. *Pertinence* :
+l'agent a-t-il lu les bons fichiers? *Fidélité* : ce qu'il affirme vient-il
+de ce qu'il a lu, ou le devine-t-il? *Vérité* : ce qu'il a lu (un
+commentaire, une documentation) est-il à jour? Voir l'annexe
+[Sous le capot](../../llm.qmd#sec-llm-recherche).
+:::
+
 ## Faire expliquer, puis vérifier
 
 À la semaine 1, vous avez demandé à l'agent d'expliquer l'architecture

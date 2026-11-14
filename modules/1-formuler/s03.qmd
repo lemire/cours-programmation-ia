@@ -315,6 +315,22 @@ Corrigez la fiche, annulez les modifications et relancez dans une session
 neuve. C'est plus lent la première fois, mais vos fiches s'améliorent, et le
 TP1 vous demandera justement de montrer cette amélioration.
 
+::: {.callout-note collapse="true"}
+## Sous le capot : instruction, données, exemples, format
+
+Pour le modèle, tout ce que vous envoyez est une seule suite de jetons. Une
+demande claire sépare donc quatre choses : l'*instruction* (le but et le
+critère d'acceptation), les *données* (le contexte, les fichiers en cause,
+désignés comme tels), les *exemples* (une entrée et la sortie attendue) et
+le *format de sortie* (le rapport). Le gabarit de fiche suit ce découpage.
+
+Distinguez aussi la forme du fond. Un modèle peut être contraint à produire
+du JSON toujours valide, mais pas toujours exact. De même, un code qui
+compile, passe le linter et respecte le style peut être faux. La commande de
+vérification de la fiche doit porter sur le fond : des tests, pas seulement
+`ruff`. Voir l'annexe [Sous le capot](../../llm.qmd#sec-llm-instructions).
+:::
+
 ## Activité
 
 Travaillez sur votre branche `semaine-02`, ou sur une nouvelle branche

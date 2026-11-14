@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 300" role="img" aria-labelledby="titre desc" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="13">
+  <title id="titre">D'un texte au jeton suivant</title>
+  <desc id="desc">Le texte est découpé en jetons; chaque jeton devient un vecteur; une pile de couches Transformer, qui contiennent l'attention, transforme ces vecteurs; la dernière couche donne une probabilité pour chaque jeton possible; on en tire un, qu'on ajoute au texte, et on recommence.</desc>
+  <defs>
+    <marker id="fleche" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#52514e"/>
+    </marker>
+  </defs>
+  <rect width="720" height="300" fill="#fcfcfb"/>
+
+  <g fill="#ffffff" stroke="#b9b8b2" stroke-width="1">
+    <rect x="16" y="60" width="118" height="110" rx="6"/>
+    <rect x="158" y="60" width="118" height="110" rx="6"/>
+    <rect x="300" y="60" width="118" height="110" rx="6"/>
+    <rect x="442" y="60" width="118" height="110" rx="6" stroke="#2a78d6" stroke-width="1.5"/>
+    <rect x="584" y="60" width="120" height="110" rx="6"/>
+  </g>
+
+  <g fill="#0b0b0b" text-anchor="middle">
+    <text x="75" y="86">Texte</text>
+    <text x="217" y="86">Jetons</text>
+    <text x="359" y="86">Plongements</text>
+    <text x="501" y="86">Transformer</text>
+    <text x="644" y="86">Jeton suivant</text>
+  </g>
+  <g fill="#52514e" font-size="12" text-anchor="middle">
+    <text x="75" y="114" font-family="ui-monospace, Menlo, Consolas, monospace">def chercher</text>
+    <text x="75" y="136">ce que le modèle</text>
+    <text x="75" y="152">a déjà reçu</text>
+
+    <text x="217" y="114">des numéros</text>
+    <text x="217" y="130">entiers, tirés d'un</text>
+    <text x="217" y="146">vocabulaire fixe</text>
+
+    <text x="359" y="114">un vecteur</text>
+    <text x="359" y="130">de quelques milliers</text>
+    <text x="359" y="146">de nombres par jeton</text>
+
+    <text x="501" y="114">des dizaines</text>
+    <text x="501" y="130">de couches,</text>
+    <text x="501" y="146">chacune avec attention</text>
+
+    <text x="644" y="114">une probabilité</text>
+    <text x="644" y="130">pour chaque jeton</text>
+    <text x="644" y="146">du vocabulaire</text>
+  </g>
+
+  <g fill="none" stroke="#52514e" stroke-width="1.5" marker-end="url(#fleche)">
+    <path d="M136 115 L154 115"/>
+    <path d="M278 115 L296 115"/>
+    <path d="M420 115 L438 115"/>
+    <path d="M562 115 L580 115"/>
+    <path d="M644 172 C644 236 75 236 75 172"/>
+  </g>
+  <g fill="#52514e" font-size="12" text-anchor="middle">
+    <text x="360" y="44">Chaque position ne regarde que les positions précédentes (masque causal).</text>
+    <text x="360" y="252">on tire un jeton (température, top-p), on l'ajoute au texte, et on recommence</text>
+  </g>
+
+  <text x="360" y="286" text-anchor="middle" fill="#52514e" font-size="12">Le tirage choisit une suite plausible. Rien dans ce mécanisme ne la vérifie.</text>
+</svg>

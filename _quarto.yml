@@ -55,6 +55,7 @@ book:
         - modules/4-outiller/s14.qmd
         - modules/4-outiller/s15.qmd
   appendices:
+    - llm.qmd
     - evaluation.qmd
     - glossaire.qmd
     - references.qmd
