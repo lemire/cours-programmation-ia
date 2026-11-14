@@ -1,19 +1,6 @@
 # Sous le capot : le modèle de langue {#sec-llm}
 
-::: {.callout-note appearance="simple"}
-## D'où vient cette page
 
-Cette annexe reprend, en les adaptant, des éléments du cours SCI1040
-[*Les grands modèles de langage (LLM)*](https://khadidjahenniteluq.github.io/teluq-cours-llm/)
-de la professeure Khadidja Henni (TÉLUQ) [@henni2026llm]. Elle en
-garde ce qui aide à travailler avec un agent de codage : les jetons,
-l'attention, la génération, l'alignement, le cache, la recherche par le sens
-et les limites qui en découlent. Pour aller plus loin, son cours traite
-aussi de l'ajustement fin (LoRA, quantification), des modèles multimodaux et
-du déploiement. Son cours
-[*Modèles génératifs profonds*](https://khadidjahenniteluq.github.io/DeepGM-course-teluq/)
-couvre les autres familles de modèles génératifs (VAE, GAN, diffusion).
-:::
 
 Le cours n'exige aucune connaissance en apprentissage automatique, et cette
 page reste facultative. Elle répond pourtant à une question que vous vous

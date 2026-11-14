@@ -114,7 +114,4 @@ que vous dépensez, et à dépenser moins.
 
 Vous savez déjà programmer, et vous savez utiliser un éditeur, Git et une
 suite de tests. Le cours n'exige aucune connaissance en apprentissage
-automatique. Pour qui veut comprendre ce qui se passe à l'intérieur du
-modèle, l'annexe [Sous le capot](llm.qmd), tirée du cours SCI1040 de
-Khadidja Henni, est facultative. Une bonne partie de la documentation des outils est en
-anglais.
+automatique.

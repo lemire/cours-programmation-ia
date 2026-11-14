@@ -65,20 +65,6 @@ fini, la boucle s'arrête. Tout ce qui garantit la qualité du résultat, que
 ce soit un test, une mesure ou une relecture, doit être ajouté par vous :
 dans la demande, dans les outils ou dans votre façon de travailler.
 
-::: {.callout-note collapse="true"}
-## Sous le capot : ce que fait le modèle
-
-À chaque tour de boucle, le modèle relit tout le contexte, découpé en
-jetons, et produit sa réponse un jeton à la fois. Chaque jeton est tiré parmi
-les suites les plus probables étant donné ce qui précède. Le modèle produit
-donc le texte *plausible*, pas le texte *vérifié*. Il a en outre été ajusté
-pour donner des réponses assurées et complètes, que les humains préfèrent. Un
-« C'est fait! » sans test exécuté est exactement le genre de suite qu'il juge
-probable. Deux sessions lancées avec la même demande ne donnent pas non plus
-le même résultat : le tirage introduit de la variation. L'annexe
-[Sous le capot](../../llm.qmd) détaille ces mécanismes, d'après le cours
-SCI1040 de Khadidja Henni.
-:::
 
 ## L'amplification
 
