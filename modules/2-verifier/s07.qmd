@@ -6,8 +6,9 @@
 Objectifs
 : Fixer des critères d'acceptation explicites. Relire un diff produit par
   un agent de manière efficace. Protéger les tests du critère contre
-  l'agent. Mettre en place une intégration continue. Reconnaître les risques
-  de sécurité propres au code produit par un agent.
+  l'agent. Situer les relecteurs automatiques par rapport à votre propre
+  relecture. Mettre en place une intégration continue. Reconnaître les
+  risques de sécurité propres au code produit par un agent.
 
 Lectures
 : @perry2023insecure, le résumé, l'introduction et la discussion.
@@ -17,7 +18,8 @@ Lectures
 Activité
 : Mettre en place l'intégration continue et la protection des tests sur
   votre dépôt `indexeur`, puis observer comment un agent réagit à un test
-  qu'il ne peut pas satisfaire honnêtement.
+  qu'il ne peut pas satisfaire honnêtement. Comparer votre relecture à celle
+  d'un relecteur automatique sur des défauts introduits exprès.
 
 Durée estimée
 : 9 heures, plus le TP2.
@@ -240,6 +242,72 @@ L'outil ne change rien à l'ordre de relecture : on regarde toujours la
 liste des fichiers d'abord, les tests avant le code. Il ne remplace pas non
 plus l'intégration continue ni vos propres tests : relire n'est pas
 exécuter.
+
+## Les relecteurs automatiques
+
+lemirecodechat vous fait relire le travail de l'agent. Une autre famille
+d'outils confie la relecture à un modèle : le relecteur lit le diff et
+commente des lignes, comme le ferait un collègue. En voici quelques-uns, en
+novembre 2026 :
+
+| Outil | Où il relit | Comment le déclencher |
+|---|---|---|
+| [CodeRabbit](https://www.coderabbit.ai) | demandes de tirage (GitHub, GitLab), arbre de travail | application installée sur le dépôt; `coderabbit review --plain` en ligne de commande |
+| [Copilot code review](https://docs.github.com/en/copilot/concepts/agents/code-review) | demandes de tirage GitHub | choisir Copilot dans le menu *Reviewers* |
+| [Codex](https://developers.openai.com/codex/integrations/github) | arbre de travail, demandes de tirage | `/review` dans la CLI; commentaire `@codex review` sur GitHub |
+| Claude Code | arbre de travail, demandes de tirage | `/code-review`, `/security-review` |
+
+Les produits et services changent vite, et la plupart sont payants au-delà
+d'un quota ou réservés aux dépôts publics dans leur version gratuite. Vérifiez les
+conditions avant de vous en servir.
+
+*Ce qu'ils font bien.* Ils lisent tout le diff, à toute heure, sans se
+lasser. Ils repèrent bien les défauts locaux : une exception avalée, un
+cas `None` oublié, une docstring qui contredit le code, un motif connu de
+vulnérabilité. La plupart lisent aussi les fichiers d'instructions du dépôt
+([semaine 12](../4-outiller/s12.qmd)), et peuvent donc vérifier une partie
+des règles d'`ARCHITECTURE.md` si vous les y renvoyez.
+
+*Ce qu'ils ne font pas.* Ils ne remplacent aucune des étapes précédentes.
+
+- *Relire n'est pas exécuter.* Le relecteur ne lance pas vos tests
+  d'acceptation. Son silence ne prouve rien.
+- *Des angles morts corrélés.* Un modèle qui relit le travail d'un modèle,
+  souvent de la même famille, partage ses hypothèses. Il trouve facilement
+  ce que l'auteur aurait aussi trouvé en se relisant, et passe à côté de ce
+  que l'auteur n'a pas vu. Un relecteur d'une autre famille, dans une
+  session qui n'a pas écrit le code, vaut mieux que l'agent qui se relit
+  lui-même.
+- *Du bruit, sur un ton assuré.* Un relecteur produit souvent plus de
+  commentaires qu'il n'y a de défauts : remarques de style, fausses
+  alertes, suggestions hors du périmètre. Toutes sont formulées avec la
+  même assurance. Trier ce bruit coûte de l'attention, celle-là même que la
+  relecture cherche à économiser.
+- *Il ne connaît pas votre intention.* Il voit le diff, pas la fiche de
+  tâche. Il ne peut pas savoir qu'un fichier modifié était hors du
+  périmètre, ni qu'une fonctionnalité demandée manque.
+- *Il lit du contenu non fiable.* Sur une demande de tirage, le relecteur lit
+  ce qu'un tiers a écrit. Une description ou un commentaire de code peut
+  contenir des instructions qui lui sont destinées : c'est l'injection
+  d'invite de la [semaine 11](../4-outiller/s11.qmd).
+
+*La discipline.* Trois règles en découlent.
+
+1. *Relisez d'abord, consultez ensuite.* Si vous lisez le rapport du
+   relecteur avant le diff, vous ne chercherez plus que ce qu'il a signalé.
+   C'est l'effet d'ancrage. Faites votre propre passe, puis comparez.
+2. *Chaque commentaire appelle une décision.* Accepté, ou refusé avec une
+   raison. Évitez la boucle « corrige tous les commentaires de CodeRabbit » :
+   elle produit un nouveau diff que personne n'a relu, en réponse à des
+   remarques que personne n'a triées.
+3. *L'approbation du relecteur n'est pas la vôtre.* Le critère 1 tient
+   toujours : c'est vous qui lancez les tests, et c'est vous qui acceptez.
+
+Un relecteur automatique et lemirecodechat se complètent. L'agent lance
+le relecteur, puis ouvre lemirecodechat avec la liste des remarques dans
+la description de la revue. Vous y décidez, par vos commentaires, de ce qui
+sera corrigé. L'agent ne corrige que cela, puis vous relisez ses
+corrections au tour suivant.
 
 ## Protéger les tests
 
@@ -474,8 +542,44 @@ Travaillez dans une branche `semaine-07`.
    que votre suggestion a été appliquée au caractère près, et lisez les
    réponses de l'agent au tour suivant.
 
-6. *Carnet.* Une entrée par session, en décrivant précisément le
-   comportement de l'agent à l'étape 3.
+6. *Vous contre la machine.* Partez du travail accepté à l'étape 5, dans
+   une branche `semaine-07-revue`.
+
+   a. Dans une session neuve, demandez à un agent d'introduire quatre
+      défauts discrets, d'au moins trois sortes différentes (exception
+      avalée, cas particulier qui reconnaît une donnée des tests, assertion
+      affaiblie, erreur d'une unité dans une borne, dépendance ajoutée…),
+      sans commentaire qui les trahisse. Il écrit la liste des défauts dans
+      un fichier *hors* du dépôt, par exemple `../defauts.txt`. Ne lisez
+      ni ce fichier ni la conversation. Faites un commit.
+
+   b. Relisez le diff vous-même avec `lemirecodechat -b main`, en suivant
+      l'ordre de relecture. Laissez un commentaire sur chaque défaut que vous
+      croyez trouver, puis soumettez. Notez votre temps.
+
+   c. Faites ensuite relire le même diff par un relecteur automatique, dans
+      une session qui n'a pas introduit les défauts : `coderabbit review
+      --plain`, `/review` de Codex, `/code-review` de Claude Code, ou
+      Copilot sur une demande de tirage. Conservez son rapport.
+
+   d. Ouvrez enfin `../defauts.txt`, et dressez le tableau suivant dans
+      votre carnet :
+
+      | Défaut introduit | Trouvé par vous | Trouvé par le relecteur |
+      |---|---|---|
+      | … | oui / non | oui / non |
+
+      Ajoutez le nombre de commentaires du relecteur qui ne correspondent à
+      aucun défaut, et classez-les : faux positifs, remarques de style,
+      vrais défauts que l'agent n'avait pas prévus.
+
+   e. Demandez à l'agent de vous présenter les remarques du relecteur dans
+      lemirecodechat. Acceptez ou refusez chacune par un commentaire, avec
+      une raison. Vérifiez avec `git diff` qu'il n'a corrigé que ce que vous
+      avez accepté. Annulez ensuite tout ce travail.
+
+7. *Carnet.* Une entrée par session, en décrivant précisément le
+   comportement de l'agent à l'étape 3, et votre tableau de l'étape 6.
 
 ## Le TP2
 
@@ -495,6 +599,9 @@ attrapent.
   critères écrits à l'avance.
 - Lisez un diff dans l'ordre : vue d'ensemble, tests, dépendances, code dans
   l'ordre des dépendances, exécution.
+- Un relecteur automatique est un filtre de plus, pas une approbation.
+  Relisez d'abord, consultez-le ensuite, et décidez de chacune de ses
+  remarques.
 - Une consigne n'est pas un contrôle. Protégez les tests par la
   vérification (`git diff`, restauration), la séparation des sessions, les
   permissions de l'outil et l'intégration continue.
@@ -516,7 +623,11 @@ attrapent.
 3. Pour un projet qui a des dizaines de dépendances, la parade « vous
    décidez de chaque dépendance » est-elle réaliste? Que proposeriez-vous
    à une équipe?
-4. Perry et ses collègues observent que l'assistance augmente la confiance
+4. À l'étape 6, quels défauts le relecteur automatique a-t-il manqués, et
+   lesquels avez-vous manqués? Les deux listes se recoupent-elles? Qu'en
+   concluez-vous sur la valeur d'un relecteur de la même famille de modèles
+   que l'agent?
+5. Perry et ses collègues observent que l'assistance augmente la confiance
    plus qu'elle n'augmente la qualité. Dans votre carnet, trouvez-vous des
    moments où vous avez accepté un travail trop vite? Qu'est-ce qui vous a
    convaincu?
@@ -550,6 +661,21 @@ Pourquoi lit-on les modifications de `tests/` avant celles du code?
 ::: {.explication}
 Un code qui passe des tests affaiblis ne prouve rien. Mieux vaut le savoir
 avant d'investir du temps dans la lecture du code.
+:::
+:::
+
+::: {.question}
+Un relecteur automatique n'a rien signalé sur le diff de l'agent. Que
+pouvez-vous en conclure?
+
+- Que le diff peut être fusionné
+- Que les tests d'acceptation passent
+- Peu de chose : il n'a rien exécuté, ne connaît pas la fiche de tâche, et partage des angles morts avec l'agent []{.bonne}
+- Que l'architecture est respectée, puisqu'il lit `AGENTS.md`
+
+::: {.explication}
+Le relecteur est un filtre de plus. Son silence ne remplace ni vos tests,
+ni la comparaison avec le périmètre de la fiche, ni votre décision.
 :::
 :::
 
